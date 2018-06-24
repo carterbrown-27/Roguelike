@@ -1,26 +1,31 @@
 import java.awt.Point;
 
 public class ActionLibrary {
-	private static Entity e;
-	private static Pathfinder pf = new Pathfinder();
-	public static Player player = Main.player;
-	private static Map map;
-	private static Pathfinder.PointBFS pBFS;
+	private Entity e;
+	private Pathfinder pf = new Pathfinder();
+	public Player player = Main.player;
+	private Map map;
+	private Pathfinder.PointBFS pBFS;
 	
 	ActionLibrary(Entity _e){
 		e = _e;
 		map = e.map;
 		
-		// goes reverse, therefore last point will be first
-		pBFS = pf.pathfindBFS(player.e.getPos(),e.getPos(),map.copyMap());
+		updatePath();
 	}
 	
-	public static boolean move(){
+	//goes reverse, therefore last point will be first
+	public void updatePath(){
+		pBFS = pf.pathfindBFS(player.e.getPos(),e.getPos(),map.copyMap(), true);
+	}
+	
+	public boolean move(){
+		updatePath();
 		Point p = pBFS.getPos();
 		return e.move(getDir(p));
 	}
 	
-	public static boolean melee(){
+	public boolean melee(){
 		int dir = getDir(player.e.getPos());
 		if(dir!=-1){
 			// TODO: attack script
@@ -29,7 +34,7 @@ public class ActionLibrary {
 	}
 	
 	
-	public static int getDir(Point d){
+	public int getDir(Point d){
 		if(d.x==e.getX()-1) return 0;
 		if(d.y==e.getY()+1) return 1;
 		if(d.x==e.getX()+1) return 2;
