@@ -1,40 +1,60 @@
 import java.awt.Point;
+import java.math.MathContext;
+import java.util.Random;
 
 public class ActionLibrary {
-	private static Entity e;
-	private static Pathfinder pf = new Pathfinder();
-	public static Player player = Main.player;
-	private static Map map;
-	private static Pathfinder.PointBFS pBFS;
+	private Entity e;
+	private Pathfinder pf = new Pathfinder();
+	public Entity player;
+	private Map map;
+	private Pathfinder.PointBFS pBFS;
+	public int distance;
+	private Random rng = new Random();
 	
 	ActionLibrary(Entity _e){
 		e = _e;
 		map = e.map;
+		player = map.player;
+		updatePath();
+	}
+	
+	//goes reverse, therefore last point will be first
+	public void updatePath(){
+		if(player == null) System.out.println("NO PLAYERRRRRRR AHHHH");
+		pBFS = pf.pathfindBFS(player.getPos(),e.getPos(),map.copyMap(), true);
 		
-		// goes reverse, therefore last point will be first
-		pBFS = pf.pathfindBFS(player.e.getPos(),e.getPos(),map.copyMap());
+		distance = 0;
+		Pathfinder.PointBFS temp = pBFS;
+		while(temp!=null && temp.getParent()!=null){
+			distance++;
+			temp = temp.getParent();
+		}
 	}
 	
-	public static boolean move(){
-		Point p = pBFS.getPos();
-		return e.move(getDir(p));
+	public boolean move(){
+		updatePath();
+		pBFS = pBFS.getParent();
+		if(pBFS!=null){
+			Point p = pBFS.getPos();
+			return e.move(e.getDir(p));
+		}
+		return false;
 	}
 	
-	public static boolean melee(){
-		int dir = getDir(player.e.getPos());
+	public boolean melee(){
+		int dir = e.getDir(player.getPos());
 		if(dir!=-1){
 			// TODO: attack script
+			// System.out.println("ATTACK!");
+			// hits for random between 1/2 strength and 1 & 1/2 strength
+			player.HP -= Math.round(e.STRENGTH/2 + (rng.nextDouble()*e.STRENGTH));
 		}
 		return true;
 	}
 	
-	
-	public static int getDir(Point d){
-		if(d.x==e.getX()-1) return 0;
-		if(d.y==e.getY()+1) return 1;
-		if(d.x==e.getX()+1) return 2;
-		if(d.y==e.getY()-1) return 3;
-		return -1;
+	public boolean lunge(){
+		e.SP -= 3;
+		// System.out.println("Lunge:");
+		return (move() && melee());
 	}
-	
 }

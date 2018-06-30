@@ -1,29 +1,59 @@
 import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.io.*;
-
-import javax.imageio.ImageIO;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class Player extends KeyAdapter {
-	public static Entity e;
-	public static BufferedImage img;
-	public static Map map;
+	public Entity e;
+	public BufferedImage img;
+	public Map map;
 	
-	public static int ViewDistance = 4;
-	public static int Luminosity = 3;
+	public int ViewDistance = 4;
+	public int Luminosity = 3;
+	
+	public Random rng = new Random();
 	
 	Player(int x, int y, Map _map){
-		try{
-			img = ImageIO.read(new File(MapTypes.PATH+"sourcedItems.png")).getSubimage(2*Map.tileSize, 6*Map.tileSize+6, Map.tileSize, Map.tileSize);
-		}catch(Exception e){
-			System.out.println("image not found.");
-		};
-		this.e = new Entity("player",x,y,_map,img);
+		map = _map;
+		this.e = new Entity(Creature.PLAYER,x,y,map);
+		map.player = this.e;
 	}
 	
-	public void move(int dir){
-		e.move(dir);
+	public void basic(int dir){
+		if(!e.move(dir)){
+			if(melee(dir)) Main.takeTurn();
+		}else{
+			Main.takeTurn();
+		}
 	}
+	
+	public boolean melee(int dir){
+		Entity target = targetAdjacent(dir);
+		if(target!=null){
+			target.HP -= Math.round(e.STRENGTH/2 + (rng.nextDouble()*e.STRENGTH));
+			System.out.println(target.name+" 's HP: "+target.HP);
+			return true;
+		}
+		return false;
+	}
+	
+	public Entity targetAdjacent(int dir){
+		for(Entity i: map.entities.values()){
+			if(e.getDir(i.getPos()) ==  dir){
+				return i;
+			}
+		}
+		return null;
+	}
+	
+//	public ArrayList<Entity> getAdjacents() {
+//		ArrayList<Entity> targets = new ArrayList<Entity>();
+//		for(Entity i: map.entities.values()){
+//			if(i.isAdjacentTo(e.getPos())){
+//				targets.add(i);
+//			}
+//		}
+//		return targets;
+//	}
+
 }
