@@ -34,6 +34,7 @@ public class Entity {
 		if(!creature.equals(Creature.PLAYER)){
 			name = map.addEntity(this);
 			ai = new AI(this);
+			System.out.println("AI attached.");
 		}else{
 			name = "player";
 		}
@@ -50,7 +51,7 @@ public class Entity {
 	public boolean awakeCheck(){
 		// TODO: upgrade
 		if(awake) return true;
-		if(Math.abs(map.player.x-x) <=5 && Math.abs(map.player.y-y) <= 5){
+		if(Math.abs(map.player.x-x) <=4 && Math.abs(map.player.y-y) <= 4){
 			awake = true;
 			return true;
 		}
@@ -58,6 +59,10 @@ public class Entity {
 	}
 	
 	public boolean takeTurn(){
+		if (HP<=0) {
+			System.out.println("You defeated the " + creature.NAME + ".");
+			return false; // dead
+		}
 		if(awakeCheck()){
 			if(!ai.takeTurn()){
 				System.out.println("You defeated the "+creature.NAME+".");
@@ -141,6 +146,21 @@ public class Entity {
 		if(d.y==y+1) return 1;
 		if(d.x==x+1) return 2;
 		if(d.y==y-1) return 3;
+		
 		return -1;
+	}
+
+	public Point getPoint(int dir){
+		if(dir == 0) return new Point(x-1,y);
+		if(dir == 1) return new Point(x,y+1);
+		if(dir == 2) return new Point(x+1,y);
+		if(dir == 3) return new Point(x,y-1);
+		
+		if(dir == 4) return new Point(x-1,y+1);
+		if(dir == 5) return new Point(x+1,y+1);
+		if(dir == 6) return new Point(x+1,y-1);
+		if(dir == 7) return new Point(x-1,y-1);
+		
+		return null;
 	}
 }

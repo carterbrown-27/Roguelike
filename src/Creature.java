@@ -13,18 +13,26 @@ public enum Creature {
 	FROG	 (5),
 	SPIDER (6);
 	
-	// code
+	// fields
 	public BufferedImage sourcedItems;
 	
-	public double STRENGTH;
-
-	public int HP_MAX;
-	
-	public int SP_MAX;
+	public double STRENGTH = 1;
+	public int HP_MAX = 1;
+	public int SP_MAX = 1;
 	public int SP_REGEN = 1;
+	public double SPEED = 1.0;
+	public int EVASIVENESS = 1; // out of 10 how many are dodges.
+	
 	
 	public BufferedImage SPRITE;
 	public String NAME;
+	
+	// attributes
+	public boolean hasAI = true;
+	
+	public boolean isFlying = false;
+	public boolean isAmphibious = false;
+	// methods
 	
 	Creature(int type){
 		try {
@@ -41,27 +49,48 @@ public enum Creature {
 		}
 	}
 	
-	private BufferedImage subImage(int x, int y){
+	public BufferedImage subImage(int x, int y){
 		return sourcedItems.getSubimage(x*24, y*24+y, 24, 24);
 	}
 	
 	private void createPlayer(){
 		NAME = "player";
-		this.SPRITE = subImage(2,6);
+		SPRITE = subImage(2,6);
 		
-		this.STRENGTH = 3;
-		this.HP_MAX = 20;
-		this.SP_MAX = 5;
+		STRENGTH = 3;
+		HP_MAX = 30;
+		SP_MAX = 5;
 		
+		hasAI = false;
 	}
 	
 	private void createRat(){
 		NAME = "rat";
-		this.SPRITE = subImage(3,8);
+		try {
+			SPRITE = ImageIO.read(new File("imgs/rat.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		this.STRENGTH = 2;
-		this.HP_MAX = 7;
-		this.SP_MAX = 3;
+		STRENGTH = 2;
+		HP_MAX = 5;
+		SP_MAX = 3;
+		SPEED = 1.0;
+		EVASIVENESS = 2;
+	}
+	
+	private void createBat(){
+		NAME = "bat";
+		SPRITE = subImage(3,8);
+		
+		STRENGTH = 2;
+		HP_MAX = 5;
+		SP_MAX = 4;
+		SPEED = 0.8;
+		EVASIVENESS = 6;
+		
+		isFlying = true;
 	}
 	
 //	private BufferedImage getSprite(String path){

@@ -44,7 +44,7 @@ public class Pathfinder {
 				return p;
 			}
 			if(!isOpen(p,q,p.x,p.y,temp)){
-				continue;
+				break;
 			}
 			
 			// up
@@ -112,7 +112,7 @@ public class Pathfinder {
 			}
 		}
 		if(_x<0 || _y<0 | _x>=_map.length || _y>=_map[_x].length) return false;
-		if(_map[_x][_y] != 1) return true;
+		if(_map[_x][_y] != 1 && _map[_x][_y] != 6) return true;
 		return false;
 	}
 	

@@ -8,9 +8,11 @@ public class AI {
 	public Entity player;
 	
 	AI(Entity e){
+		System.out.println("configuring AI...");
 		this.e = e;
 		this.lib = new ActionLibrary(this.e);
 		player = e.map.player;
+		System.out.println("done.");
 	}
 	
 	public boolean takeTurn(){
@@ -32,7 +34,7 @@ public class AI {
 	
 	public void rat(){
 		if(e.isAdjacentTo(player.getPos())){
-			lib.melee();
+			lib.melee(1);
 		}else if(lib.distance == 2 && e.SP >= 3){
 			lib.lunge();
 		}else{
