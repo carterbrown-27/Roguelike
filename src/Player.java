@@ -11,7 +11,7 @@ public class Player extends KeyAdapter {
 	public Map map;
 	
 	public int ViewDistance = 6;
-	public int Luminosity = 6;
+	public int Luminosity = 4;
 	
 	public Ability ability = Ability.BASIC;
 	public int step = 0;

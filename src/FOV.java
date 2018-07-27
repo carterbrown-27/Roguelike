@@ -11,10 +11,10 @@ public class FOV {
 		DOWN_LEFT (-1,+1);
 
 		/**
-		 * UP = -x
-		 * DOWN = +x
-		 * LEFT = -y
-		 * RIGHT = +y
+		 * UP = -y
+		 * DOWN = +y
+		 * LEFT = -x
+		 * RIGHT = +x
 		 **/
 		int deltaX;
 		int deltaY;
@@ -32,17 +32,19 @@ public class FOV {
 	int startY;
 	int width;
 	int height;
+	int radius;
 
-	public boolean[][] calculate(boolean[][] opacityMap, int startX, int startY){
+	public boolean[][] calculate(boolean[][] opacityMap, int startX, int startY, int radius){
 		this.opacityMap = opacityMap;
 		this.startX = startX;
 		this.startY = startY;
-		this.width = opacityMap.length;
-		this.height = opacityMap[0].length;
+		this.height = opacityMap.length;
+		this.width = opacityMap[0].length;
+		this.radius = radius;
 		
-		this.lightMap = new boolean[opacityMap.length][opacityMap[0].length];
+		this.lightMap = new boolean[height][width];
 
-		lightMap[startX][startY] = true;
+		lightMap[startY][startX] = true;
 		for(DIAGONAL d: DIAGONAL.values()){
 			// does both directions from the diagonal
 			// every direction's start is 1, end is 0, other args are multipliers
@@ -64,7 +66,6 @@ public class FOV {
 	 * 				@
 	 */
 	public void castLight(int row, double start, double end, int xx, int xy, int yx, int yy){
-		int radius = Main.player.ViewDistance;
 		double newStart = 0.0f;
 		if (start < end) {
 			return;
@@ -82,8 +83,8 @@ public class FOV {
 				int currentY = startY + deltaX * yx + deltaY * yy;
 				
 				// calculates the slopes
-				double leftSlope = (deltaX - 0.5f) / (deltaY + 0.5f);
-				double rightSlope = (deltaX + 0.5f) / (deltaY - 0.5f);
+				double leftSlope = (deltaX - 0.5) / (deltaY + 0.5);
+				double rightSlope = (deltaX + 0.5) / (deltaY - 0.5);
 				
 				// if in bounds continue
 				if (!(currentX >= 0 && currentY >= 0 && currentX < this.width && currentY < this.height) || start < rightSlope) {
@@ -93,10 +94,10 @@ public class FOV {
 				}
 
 				// light space if reached
-				lightMap[currentX][currentY] = true;
+				lightMap[currentY][currentX] = true;
 
 				if (blocked) { //previous cell was a blocking one
-					if (opacityMap[currentX][currentY]) {//hit a wall
+					if (!opacityMap[currentY][currentX]) {//hit a wall
 						newStart = rightSlope;
 						continue;
 					} else {
@@ -104,7 +105,7 @@ public class FOV {
 						start = newStart;
 					}
 				} else {
-					if (opacityMap[currentX][currentY] && distance < radius){ //hit a wall within sight line
+					if (!opacityMap[currentY][currentX] && distance < radius){ //hit a wall within sight line
 						blocked = true;
 						// recur
 						castLight(distance + 1, start, leftSlope, xx, xy, yx, yy);

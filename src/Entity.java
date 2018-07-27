@@ -25,6 +25,8 @@ public class Entity {
 	
 	public boolean awake = false;
 	
+	public FOV fov = new FOV();
+	
 	Entity(Creature _creature, int _x, int _y, Map _map){
 		x = _x;
 		y =_y;
@@ -51,7 +53,8 @@ public class Entity {
 	public boolean awakeCheck(){
 		// TODO: upgrade
 		if(awake) return true;
-		if(Math.abs(map.player.x-x) <=4 && Math.abs(map.player.y-y) <= 4){
+		boolean[][] vision = fov.calculate(map.buildOpacityMap(), x, y, Main.player.Luminosity);
+		if(vision[Main.player.e.y][Main.player.e.x]){
 			awake = true;
 			return true;
 		}
@@ -83,26 +86,26 @@ public class Entity {
 	// ur: 4,rd: 5, dl: 6, lu: 7
 	public boolean move(int dir){
 		boolean sxs = true;
-		if(dir == 0 && map.isFullOpen(x-1,y)){
-			x--;
-		} else if(dir == 1 && map.isFullOpen(x,y+1)){
-			y++;
-		} else if(dir == 2 && map.isFullOpen(x+1, y)){
-			x++;
-		} else if(dir == 3 && map.isFullOpen(x, y-1)){
+		if(dir == 0 && map.isFullOpen(x,y-1)){
 			y--;
+		} else if(dir == 1 && map.isFullOpen(x+1,y)){
+			x++;
+		} else if(dir == 2 && map.isFullOpen(x,y+1)){
+			y++;
+		} else if(dir == 3 && map.isFullOpen(x-1,y)){
+			x--;
 		} else if(dir == 4 && diagonalCheck(4)){
-			x--;
-			y++;
+			y--;
+			x++;
 		} else if(dir == 5 && diagonalCheck(5)){
-			x++;
 			y++;
-		} else if(dir == 6 && diagonalCheck(6)){
 			x++;
-			y--;
-		} else if(dir == 7 && diagonalCheck(7)){
+		} else if(dir == 6 && diagonalCheck(6)){
+			y++;
 			x--;
+		} else if(dir == 7 && diagonalCheck(7)){
 			y--;
+			x--;
 		}else{
 			sxs = false;
 		}
@@ -111,16 +114,16 @@ public class Entity {
 	
 	public boolean diagonalCheck(int dir){
 		int blocks = 0;
-		if((dir == 4 || dir == 5)&& !map.isFullOpen(x, y+1)) blocks++;
-		if((dir == 5 || dir == 6)&& !map.isFullOpen(x+1, y)) blocks++;
-		if((dir == 6 || dir == 7)&& !map.isFullOpen(x, y-1)) blocks++;
-		if((dir == 7 || dir == 4)&& !map.isFullOpen(x-1, y)) blocks++;
+		if((dir == 4 || dir == 5)&& !map.isFullOpen(x+1,y)) blocks++;
+		if((dir == 5 || dir == 6)&& !map.isFullOpen(x, y+1)) blocks++;
+		if((dir == 6 || dir == 7)&& !map.isFullOpen(x-1, y)) blocks++;
+		if((dir == 7 || dir == 4)&& !map.isFullOpen(x, y-1)) blocks++;
 		
 		if(blocks>=2) return false;
 		
-		if(dir == 4 && !map.isFullOpen(x-1,y+1)) return false;
+		if(dir == 4 && !map.isFullOpen(x+1,y-1)) return false;
 		if(dir == 5 && !map.isFullOpen(x+1,y+1)) return false;
-		if(dir == 6 && !map.isFullOpen(x+1,y-1)) return false;
+		if(dir == 6 && !map.isFullOpen(x-1,y+1)) return false;
 		if(dir == 7 && !map.isFullOpen(x-1,y-1)) return false;
 		
 		return true;
@@ -138,29 +141,30 @@ public class Entity {
 	}
 	
 	public int getDir(Point d){
-		if(d.x==x-1 && d.y == y+1) return 4;
+		if(d.x==x+1 && d.y == y-1) return 4;
 		if(d.x==x+1 && d.y == y+1) return 5;
-		if(d.x==x+1 && d.y == y-1) return 6;
+		if(d.x==x-1 && d.y == y+1) return 6;
 		if(d.x==x-1 && d.y == y-1) return 7;
-		if(d.x==x-1) return 0;
-		if(d.y==y+1) return 1;
-		if(d.x==x+1) return 2;
-		if(d.y==y-1) return 3;
+		if(d.y==y-1) return 0;
+		if(d.x==x+1) return 1;
+		if(d.y==y+1) return 2;
+		if(d.x==x-1) return 3;
 		
 		return -1;
 	}
 
 	public Point getPoint(int dir){
-		if(dir == 0) return new Point(x-1,y);
-		if(dir == 1) return new Point(x,y+1);
-		if(dir == 2) return new Point(x+1,y);
-		if(dir == 3) return new Point(x,y-1);
+		if(dir == 0) return new Point(x,y-1);
+		if(dir == 1) return new Point(x+1,y);
+		if(dir == 2) return new Point(x,y+1);
+		if(dir == 3) return new Point(x-1,y);
 		
-		if(dir == 4) return new Point(x-1,y+1);
+		if(dir == 4) return new Point(x+1,y-1);
 		if(dir == 5) return new Point(x+1,y+1);
-		if(dir == 6) return new Point(x+1,y-1);
+		if(dir == 6) return new Point(x-1,y+1);
 		if(dir == 7) return new Point(x-1,y-1);
 		
 		return null;
 	}
+	/** rf **/
 }

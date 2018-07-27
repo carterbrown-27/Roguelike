@@ -61,14 +61,14 @@ public class Map {
 		}else{
 			generateCaves();
 		}
-		
+
 		System.out.println("placing exits...");
 		placeExits();
 		System.out.println("exits placed");
 		printMap();
 		System.out.println("building tile map...");
 		buildTileMap();
-		
+
 		System.out.println("done.");
 		if(debugFlag) System.out.println("debug flag raised");
 	}
@@ -80,13 +80,13 @@ public class Map {
 	}
 
 	public boolean isOnMap(int x, int y){
-		if(x>=height || y>= width || x<0 || y<0) return false;
+		if(x>=width || y>= height || x<0 || y<0) return false;
 		return true;
 	}
 
 	public boolean isOpen(int x, int y){
 		if(!isOnMap(x,y)) return false;
-		if(map[x][y]!=1 && map[x][y]!=6) return true;
+		if(map[y][x]!=1 && map[y][x]!=6) return true;
 		return false;
 	}
 
@@ -100,16 +100,16 @@ public class Map {
 
 
 	public void generateCaves(){
-		for(int x=0; x < height; x++){
-			for(int y=0; y < width; y++){
+		for(int x=0; x < width; x++){
+			for(int y=0; y < height; y++){
 				// if border, wall
-				if(x==0||x==height-1||y==0||y==width-1){
-					map[x][y] = 1;
+				if(x==0||x==width-1||y==0||y==height-1){
+					map[y][x] = 1;
 					// random placement
 				} else if(rng.nextInt(100)<=randFillPercent){
-					map[x][y] = 1;
+					map[y][x] = 1;
 				}else{
-					map[x][y] = 0;
+					map[y][x] = 0;
 				}
 			}
 		}
@@ -126,9 +126,9 @@ public class Map {
 		int doorCount = 0;
 		do {
 			doorCount = 0;
-			for (int x = 0; x < height; x++) {
-				for (int y = 0; y < width; y++) {
-					map[x][y] = 1;
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					map[y][x] = 1;
 				}
 			}
 			rooms = new ArrayList<Room>();
@@ -140,20 +140,18 @@ public class Map {
 			int quadrant = rng.nextInt(3);
 			switch(quadrant){
 			case 0:
-				q.add(new PointDir(new Point(rng.nextInt(height/3), rng.nextInt(width-1)), 'D'));
+				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), 'D'));
 				break;
 			case 1:
-				q.add(new PointDir(new Point(rng.nextInt(height-1), width-rng.nextInt(width/3)-1), 'L'));
+				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), 'L'));
 				break;
 			case 2:
-				q.add(new PointDir(new Point(height-rng.nextInt(height/3)-1, rng.nextInt(width-1)), 'T'));
+				q.add(new PointDir(new Point(rng.nextInt(width-1), height-rng.nextInt(height/3)-1), 'T'));
 				break;
 			case 3:
-				q.add(new PointDir(new Point(rng.nextInt(height-1), rng.nextInt(width/3)), 'R'));
+				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), 'R'));
 				break;
 			}
-
-
 
 			boolean start = true;
 			while (!q.isEmpty()) {
@@ -178,13 +176,14 @@ public class Map {
 						}
 					}
 				}
+
 				if (attempts >= 50) {
-					map[p.point.x][p.point.y] = 0;
+					map[p.point.y][p.point.x] = 0;
 				} else if(!start){
 					workingDoors.add(p);
 				}
 				for (PointDir i : q) {
-					map[i.point.x][i.point.y] = 5;
+					map[i.point.y][i.point.x] = 5;
 				}
 				start = false;
 				// printMap();
@@ -196,15 +195,15 @@ public class Map {
 				PointDir newDoor = new PointDir(temp,p.dir);
 				// if door leads nowhere, fill it in
 				if(!isOpen(aheadTile(newDoor).x,aheadTile(newDoor).y)){
-					if(!(temp.x<0 || temp.y<0 || temp.x>height-1 || temp.y>width-1)) map[p.point.x][p.point.y] = 1;
+					if(!(temp.x<0 || temp.y<0 || temp.y>height-1 || temp.x>width-1)) map[p.point.y][p.point.x] = 1;
 
 					// if door is not between two walls, destroy it
 				}else if(isSandwich(temp.x,temp.y) ){
-					map[temp.x][temp.y] = 5;
+					map[temp.y][temp.x] = 5;
 					doorCount++;
-					map[p.point.x][p.point.y] = 0;
+					map[p.point.y][p.point.x] = 0;
 				}else{
-					map[p.point.x][p.point.y] = 1;
+					map[p.point.y][p.point.x] = 1;
 				}
 			}
 			// System.out.println(doorCount);
@@ -225,50 +224,50 @@ public class Map {
 		boolean obstructed = false;
 		while(!obstructed && length<=5 && (rng.nextInt(7)<=5 || length <=3)){
 			Point temp = aheadTile(end);
-			if(isOpen(temp.x,temp.y) || end.point.x <= 1 || end.point.x >= height-2 || end.point.y <= 1 || end.point.y >= width-2){
+			if(isOpen(temp.x,temp.y) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
 				obstructed = true;
 			}
 			if(!obstructed){
-				map[end.point.x][end.point.y] = 0;
+				map[end.point.y][end.point.x] = 0;
 				// doors on sides
 				if(rng.nextInt(8)>=5){
 					if (dir=='T' || dir=='D') {
 						if (rng.nextBoolean()) {
 							// left of path
-							if (!isOpen(end.point.x, end.point.y - 1) && end.point.y - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y - 1), 'L'));
+							if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1)  {
+								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'L'));
 
 								// right of path	
-							} else if (!isOpen(end.point.x, end.point.y + 1) && end.point.y + 1 < width-1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y + 1), 'R'));
+							} else if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < width-1) {
+								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'R'));
 							}
 						} else {
 							// right of path
-							if (!isOpen(end.point.x, end.point.y + 1) && end.point.y + 1 < width-1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y + 1), 'R'));
+							if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < width-1) {
+								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'R'));
 
 								// left of path
-							} else if (!isOpen(end.point.x, end.point.y - 1) && end.point.y - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y - 1), 'L'));
+							} else if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1) {
+								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'L'));
 							}
 						}
 					}else if(dir=='L' || dir=='R'){
 						if (rng.nextBoolean()) {
 							// up of path
-							if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'T'));
+							if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
+								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), 'T'));
 
 								// down of path	
-							} else if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < height-1) {
-								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'D'));
+							} else if (!isOpen(end.point.x, end.point.y+1) && end.point.y + 1 < height-1) {
+								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), 'D'));
 							}
 						} else {
 							// down of path
-							if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < height-1) {
-								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'D'));
+							if (!isOpen(end.point.x, end.point.y+1) && end.point.y + 1 < height-1) {
+								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), 'D'));
 								// up of path
-							}else if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'T'));
+							}else if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
+								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), 'T'));
 							}
 						}
 					}
@@ -292,7 +291,7 @@ public class Map {
 					end.dir = 'D';
 				}
 			}
-			map[end.point.x][end.point.y] = 0;
+			map[end.point.y][end.point.x] = 0;
 			end.point = aheadTile(end);
 		}
 		doors.add(end);
@@ -306,8 +305,8 @@ public class Map {
 	}
 
 	public boolean isSandwich(int x, int y){
-		if(!(x>0 && x<height-1 && y>0 && y<width-1)) return false;
-		if((map[x-1][y] == 1 && map[x+1][y] == 1) || (map[x][y-1] == 1 && map[x][y+1] == 1)) return true;
+		if(!(x>0 && x<width-1 && y>0 && y<height-1)) return false;
+		if((map[y][x-1] == 1 && map[y][x+1] == 1) || (map[y-1][x] == 1 && map[y+1][x] == 1)) return true;
 		return false;
 	}
 
@@ -329,13 +328,13 @@ public class Map {
 		Point point = p.point;
 		char dir = p.dir;
 		if(dir=='T'){
-			return new Point(point.x-1,point.y);
-		}else if(dir=='L'){
 			return new Point(point.x,point.y-1);
+		}else if(dir=='L'){
+			return new Point(point.x-1,point.y);
 		}else if(dir=='D'){
-			return new Point(point.x+1,point.y);
-		}else if(dir=='R'){
 			return new Point(point.x,point.y+1);
+		}else if(dir=='R'){
+			return new Point(point.x+1,point.y);
 		}
 		return null;
 	}
@@ -355,7 +354,7 @@ public class Map {
 		public PointDir door;
 		public int doors;
 		public PointDir[] doorPoints = new PointDir[4];
-		public PointDir[] localDoorPoints = new PointDir[4];
+		//		public PointDir[] localDoorPoints = new PointDir[4];
 		boolean[] opens = new boolean[4];
 		boolean works = true;
 		boolean valid = true;
@@ -385,18 +384,19 @@ public class Map {
 				works = true;
 				setBounds();
 
+				// TODO: check
 				if(dir=='T'){
-					x = door.point.x-h-1;
-					y = door.point.y;
+					y = door.point.y-h-1;
+					x = door.point.x;
 				}else if(dir=='D'){
-					x = door.point.x+1;
-					y = door.point.y;
-				}else if(dir=='L'){
-					x = door.point.x;
-					y = door.point.y-w-1;
-				}else if(dir=='R'){
-					x = door.point.x;
 					y = door.point.y+1;
+					x = door.point.x;
+				}else if(dir=='L'){
+					y = door.point.y;
+					x = door.point.x-w-1;
+				}else if(dir=='R'){
+					y = door.point.y;
+					x = door.point.x+1;
 				}
 				works = surroundCheck();
 				count++;
@@ -432,9 +432,9 @@ public class Map {
 		}
 
 		public boolean surroundCheck(){
-			for(int _x = x-1; _x <= x+h; _x++){
-				for(int _y = y-1; _y <= y+w; _y++){
-					if(_x>=height-1||_x<=0||_y>=width-1||_y<=0){
+			for(int _x = x-1; _x <= x+w; _x++){
+				for(int _y = y-1; _y <= y+h; _y++){
+					if(_x>=width-1||_x<=0||_y>=height-1||_y<=0){
 						return false;
 					}else if(isOpen(_x,_y)){
 						return false;
@@ -474,6 +474,7 @@ public class Map {
 			}
 		}
 
+		/** refactored **/
 		public void buildSewer(){
 
 			// TODO: add varying bridge placements and water h/w
@@ -508,7 +509,7 @@ public class Map {
 				for(int i = 0; i < w; i++){
 					if (noBridge || i!=bridge_w) {
 						for(int t = 0; t < waterWidth; t++){
-							map[x + river_h + t][y + i] = 6;
+							map[y + river_h + t][x + i] = 6;
 						}
 					}
 				}
@@ -535,14 +536,16 @@ public class Map {
 				for(int i = 0; i < h; i++){
 					if (noBridge || i!=bridge_h) {
 						for(int t = 0; t < waterWidth; t++){
-							map[x + i][y + river_w + t] = 6;
+							map[y + i][x + river_w + t] = 6;
 						}
 					}
 				}
 			}
 		}
 
+		/** refactored **/
 		public void pickDoors(){
+			// x=y && y=x
 			// (T) top = x,y -> x,y+w
 			// (L) left = x,y -> x+h,y
 			// (R) right = x,y+w -> x+h,y+w
@@ -570,24 +573,24 @@ public class Map {
 
 		public void placeDoors(){
 			if (opens[UP]) {
-				localDoorPoints[UP] = new PointDir(new Point(0, rng.nextInt(w-1)),'T');
+				//				localDoorPoints[UP] = new PointDir(new Point(0, rng.nextInt(w-1)),'T');
 
-				doorPoints[UP] = new PointDir(new Point(x, rng.nextInt(w-1) + y),'T');
+				doorPoints[UP] = new PointDir(new Point(rng.nextInt(w-1) + x, y),'T');
 			}
 			if (opens[RIGHT]) {
-				localDoorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1), w-1),'R');
+				//				localDoorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1), w-1),'R');
 
-				doorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1) + x, y + w-1),'R');
+				doorPoints[RIGHT] = new PointDir(new Point(x + w-1, rng.nextInt(h-1) + y),'R');
 			}
 			if (opens[DOWN]) {
-				localDoorPoints[DOWN] = new PointDir(new Point(h-1, rng.nextInt(w-1)),'D');
+				//				localDoorPoints[DOWN] = new PointDir(new Point(h-1, rng.nextInt(w-1)),'D');
 
-				doorPoints[DOWN] = new PointDir(new Point(x + h-1, rng.nextInt(w-1) + y),'D');
+				doorPoints[DOWN] = new PointDir(new Point(rng.nextInt(w-1) + x, y + h-1),'D');
 			}
 			if (opens[LEFT]) {
-				localDoorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1), 0),'L');
+				//				localDoorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1), 0),'L');
 
-				doorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1) + x, y),'L');
+				doorPoints[LEFT] = new PointDir(new Point(x, rng.nextInt(h-1) + y),'L');
 			}
 		}
 
@@ -599,17 +602,17 @@ public class Map {
 		}
 
 		public void cutOut(){
-			for(int _x = x; _x < x+h; _x++){
-				for(int _y = y; _y < y+w; _y++){
-					map[_x][_y] = 0;
+			for(int _x = x; _x < x+w; _x++){
+				for(int _y = y; _y < y+h; _y++){
+					map[_y][_x] = 0;
 				}
 			}
 		}
 
 		public void putIntoMap(int[][] room){
-			for(int _x = 0; _x < h; _x++){
-				for(int _y = 0; _y < w; _y++){
-					map[_x+x+1][_y+y+1] = room[_x][_y];
+			for(int _x = 0; _x < w; _x++){
+				for(int _y = 0; _y < h; _y++){
+					map[_y+y+1][x+x+1] = room[_y][_x];
 				}
 			}
 		}
@@ -619,12 +622,12 @@ public class Map {
 	// default 4
 	public int[][] smoothMap(int threshold){
 		int[][] temp = new int[height][width];
-		for(int x=0; x < height; x++){
-			for(int y=0; y < width; y++){
+		for(int x=0; x < width; x++){
+			for(int y=0; y < height; y++){
 				int adj = surroundingWallCount(x,y);
-				if(adj>threshold) temp[x][y] = 1;
-				if(adj<threshold) temp[x][y] = 0;
-				if(adj==threshold) temp[x][y] = map[x][y];
+				if(adj>threshold) temp[y][x] = 1;
+				if(adj<threshold) temp[y][x] = 0;
+				if(adj==threshold) temp[y][x] = map[y][x];
 			}
 		}
 		return temp;
@@ -634,9 +637,9 @@ public class Map {
 		int walls = 0;
 		for(int x = centerX-1; x <= centerX+1; x++){
 			for(int y = centerY-1; y <= centerY+1; y++){
-				if(x>=0&&y>=0 && x<height&&y<width){
+				if(x>=0&&y>=0 && x<width && y<height){
 					if(x!=centerX||y!=centerY){
-						walls+= map[x][y];
+						if(map[x][y] == 1) walls++;
 					}
 				}else{
 					walls++;
@@ -651,17 +654,17 @@ public class Map {
 		if(x1==x2&&y1==y2){
 			return true;
 		}
-		if(temp[x1][y1] == 1 || temp[x1][y1] == 4) return false;
+		if(temp[y1][x1] == 1 || temp[y1][x1] == 4) return false;
 
-		temp[x1][y1] = 4;
+		temp[y1][x1] = 4;
 		// down
-		if(connectedPoints(temp,x1+1,y1,x2,y2)) return true;
-		// right
 		if(connectedPoints(temp,x1,y1+1,x2,y2)) return true;
+		// right
+		if(connectedPoints(temp,x1+1,y1,x2,y2)) return true;
 		// up
-		if(connectedPoints(temp,x1-1,y1,x2,y2)) return true;
-		// left
 		if(connectedPoints(temp,x1,y1-1,x2,y2)) return true;
+		// left
+		if(connectedPoints(temp,x1-1,y1,x2,y2)) return true;
 
 		return false;
 	}
@@ -680,13 +683,13 @@ public class Map {
 		// generates binary numbers (8421=urdl)
 		int type = 0;
 		// up 
-		if(!(centerX<=0) && map[centerX][centerY]!=map[centerX-1][centerY]) type+=1;
+		if(!(centerY<=0) && map[centerY][centerX] != map[centerY-1][centerX]) type+=1;
 		// right
-		if(!(centerY>=width-1) && map[centerX][centerY]!=map[centerX][centerY+1]) type+=2;
+		if(!(centerX>=width-1) && map[centerY][centerX] != map[centerY][centerX+1]) type+=2;
 		// down
-		if(!(centerX>=height-1) && map[centerX][centerY]!=map[centerX+1][centerY]) type+=4;
+		if(!(centerY>=height-1) && map[centerY][centerX] != map[centerY+1][centerX]) type+=4;
 		// left
-		if(!(centerY<=0) && map[centerX][centerY]!=map[centerX][centerY-1]) type+=8;
+		if(!(centerX<=0) && map[centerY][centerX] != map[centerY][centerX-1]) type+=8;
 
 		return type;
 	}
@@ -696,16 +699,16 @@ public class Map {
 		int y;
 		do{
 			System.out.println("picking point...");
-			x = rng.nextInt(height-1);
-			y = rng.nextInt(width-1);
+			x = rng.nextInt(width-1);
+			y = rng.nextInt(height-1);
 		}while(!isFullOpen(x,y));
 		return (new Point(x,y));
 	}
 
 	public Point getPosition(int uniqueTile){
-		for(int x = 0; x < height; x++){
-			for(int y = 0; y < width; y++){
-				if(map[x][y]==uniqueTile){
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				if(map[y][x]==uniqueTile){
 					return (new Point(x,y));
 				}
 			}
@@ -714,7 +717,7 @@ public class Map {
 	}
 
 	public int valueAt(Point p){
-		return map[p.x][p.y];
+		return map[p.y][p.x];
 	}
 
 	public void placeExits(){
@@ -724,39 +727,47 @@ public class Map {
 		int y2=0;
 
 		int tries = 0;
-		Pathfinder.PointBFS p;
-		do{
+		Pathfinder.PointBFS p = null;
+		do {
 			do {
-				do {
-					x1 = rng.nextInt(height);
-					y1 = rng.nextInt(width);
-				} while (!isOpen(x1,y1));
-				do {
-					x2 = rng.nextInt(height);
-					y2 = rng.nextInt(width);
-				} while (!isOpen(x2,y2));
+				x1 = rng.nextInt(width-1);
+				y1 = rng.nextInt(height-1);
+			} while (!isOpen(x1,y1));
+			do {
+				x2 = rng.nextInt(width-1);
+				y2 = rng.nextInt(height-1);
+			} while (!isOpen(x2,y2));
+			tries++;
+		} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
+		
+		if(tries<=300){
+			tries = 0;
+			do{
+				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), copyMap(), true);
 				tries++;
-			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
-			if(tries>=300){
-				System.out.println("placing exits failed.");
-				if(undercity){
-					generateUndercity();
-				}else{
-					generateCaves();
-				}
-				placeExits();
-				return;
-			}
-			p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), copyMap(), true);
-		} while(p == null || p.getParent()==null);
-
-		while(p.getParent() != null){
-			// map[p.x][p.y] = 4;
-			p = p.getParent();
+			}while(tries<=300 && (p==null || p.getParent() == null));
+		}else{
+			System.out.println("placing exits failed.");
 		}
 
-		map[x1][y1] = 2;
-		map[x2][y2] = 3;
+		if(tries>300){
+			System.out.println("connecting exits failed.");
+			if(undercity){
+				generateUndercity();
+			}else{
+				generateCaves();
+			}
+			placeExits();
+			return;
+		}else{
+			while(p.getParent() != null){
+				// map[p.x][p.y] = 4;
+				p = p.getParent();
+			}
+
+			map[y1][x1] = 2;
+			map[y2][x2] = 3;
+		}
 	}
 
 	public boolean hasSouthFace(int x, int y){
@@ -777,7 +788,7 @@ public class Map {
 
 	public boolean isTransparent(int x, int y){
 		if(!isOnMap(x,y)) return false;
-		if(map[x][y] != 1) return true;
+		if(map[y][x] != 1) return true;
 		return false;
 	}
 
@@ -785,18 +796,18 @@ public class Map {
 		// this is where all janky map fixes go
 		// cleans up errors in map
 
-		for(int x = 0; x < height; x++){
-			for(int y = 0; y < width; y++){
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
 				// fixes bad water tiles
-				if(map[x][y] == 6){
+				if(map[y][x] == 6){
 					if(tileTypeAdj(x,y) == 11 || tileTypeAdj(x,y) == 14){
-						if(map[x][y+1] == 0){
-							map[x][y+1] = 6;
+						if(map[y+1][x] == 0){
+							map[y+1][x] = 6;
 						}else{
-							map[x][y-1] = 6;
+							map[y-1][x] = 6;
 						}
 					}else if(tileTypeAdj(x,y) == 10){
-						map[x][y] = 1;
+						map[y][x] = 1;
 					}
 				}
 			}
@@ -807,9 +818,9 @@ public class Map {
 	/**END OF GENERATION**/
 
 	public void buildTileMap(){
-		for(int x = 0; x < height; x++){
-			for(int y = 0; y < width; y++){
-				tileMap[x][y] = type.pickImage(map[x][y],tileTypeAdj(x,y));
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				tileMap[y][x] = type.pickImage(map[y][x],tileTypeAdj(x,y));
 			}
 		}
 	}
@@ -824,37 +835,37 @@ public class Map {
 
 	// prints map to console
 	public void printMap(){
-		for(int x=0; x < height; x++){
-			for(int y=0; y < width; y++){
-				System.out.print(type.tile_characters[map[x][y]]+" ");
+		for(int y=0; y < height; y++){
+			for(int x=0; x < width; x++){
+				System.out.print(type.tile_characters[map[y][x]]+" ");
 			}
 			System.out.println();
 		}
 	}
 
 	public BufferedImage renderMap() {
-		return renderArea(0,0,height-1,width-1); 
+		return renderArea(0,0,width-1,height-1); 
 	}
-	
+
 	public boolean[][] buildOpacityMap(){
 		boolean[][] temp = new boolean[height][width];
-		for(int x=0; x < height; x++){
-			for(int y=0; y < width; y++){
-				temp[x][y] = isTransparent(x,y);
+		for(int x=0; x < width; x++){
+			for(int y=0; y < height; y++){
+				temp[y][x] = isTransparent(x,y);
 			}
 		}
 		return temp;
 	}
 
-//	public boolean[][] skew(boolean[][] map){
-//		boolean[][] temp = new boolean[map[0].length][map.length];
-//		for(int x=0; x < map[0].length; x++){
-//			for(int y=0; y < map.length; y++){
-//				temp[x][y] = map[y][y];
-//			}
-//		}
-//		return temp;
-//	}
+	//	public boolean[][] skew(boolean[][] map){
+	//		boolean[][] temp = new boolean[map[0].length][map.length];
+	//		for(int x=0; x < map[0].length; x++){
+	//			for(int y=0; y < map.length; y++){
+	//				temp[y][x] = map[y][y];
+	//			}
+	//		}
+	//		return temp;
+	//	}
 
 	public BufferedImage renderArea(int x1, int y1, int x2, int y2){
 		int areaHeight = Math.abs(x2-x1)+1;
@@ -863,36 +874,39 @@ public class Map {
 		BufferedImage area = new BufferedImage(areaWidth*tileSize,areaHeight*tileSize,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) area.getGraphics();
 		BufferedImage dark;
-		
+
 		FOV fov = new FOV();
-		boolean[][] lightMap = fov.calculate(buildOpacityMap(), player.x, player.y);
+		boolean[][] lightMap = fov.calculate(buildOpacityMap(), player.x, player.y, Main.player.Luminosity);
 		// BufferedImage SouthWall;
 		try {
 			dark = ImageIO.read(new File(type.PATH+"dark.png"));
 			// SouthWall = ImageIO.read(new File(type.PATH+"Floor.png"));
 
 			// draw
-			for(int x=Math.min(x1,x2); x <= Math.max(x1,x2); x++){ // row #
-				for(int y=Math.min(y1,y2); y <= Math.max(y1,y2); y++){ // column #
+			for(int x=Math.min(x1,x2); x <= Math.max(x1,x2); x++){ // column #
+				for(int y=Math.min(y1,y2); y <= Math.max(y1,y2); y++){ // row #
 					BufferedImage tile;
 					int x_ofs = x - Math.min(x1,x2);
 					int y_ofs = y - Math.min(y1,y2);
-					if(x>= height || y>= width || x<0 || y<0 || (map[x][y] == 1 && !isTouchingVisible(x,y)) || /* !lightMap[x][y] */){
+					if(x>= width || y>= height || x<0 || y<0 || (map[y][x] == 1 && !isTouchingVisible(x,y)) ||  !lightMap[y][x]){
 						tile = dark;
 					}else{
-						tile = tileMap[x][y];
+						tile = tileMap[y][x];
 					}
 					if(!(tile==null)){
-						if(tile!=dark && map[x][y] == 5) g.drawImage(type.usedImages[1],y_ofs*tileSize, x_ofs*tileSize,null);
-						g.drawImage(tile,y_ofs*tileSize, x_ofs*tileSize,null);
+						if(tile!=dark && map[y][x] == 5) g.drawImage(type.usedImages[1],x_ofs*tileSize, y_ofs*tileSize,null);
+						g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
 					}
-					for(Entity e: entities.values()){
-						if(e.getX() == x && e.getY() == y){
-							g.drawImage(e.getImg(),y_ofs*tileSize,x_ofs*tileSize,null);
+					if (isOpen(x,y) && lightMap[y][x]) {
+						for (Entity e : entities.values()) {
+							if (e.getX() == x && e.getY() == y) {
+								g.drawImage(e.getImg(), x_ofs * tileSize, y_ofs * tileSize,
+										null);
+							}
 						}
 					}
 					if(player != null && player.getX() == x && player.getY() == y){
-						g.drawImage(player.getImg(),y_ofs*tileSize,x_ofs*tileSize,null);
+						g.drawImage(player.getImg(),x_ofs*tileSize,y_ofs*tileSize,null);
 					}
 				}
 			}

@@ -209,6 +209,7 @@ public class Main {
 		JFrame_HEIGHT = img.getHeight()+42;
 		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1800);
 		frame.setIconImage(Creature.PLAYER.SPRITE);
+		
 		frame.setTitle("Roguelike");
 		panel.setBackground(new Color(0,0,0));
 		// panel.add(textArea);
