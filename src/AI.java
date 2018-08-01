@@ -20,7 +20,7 @@ public class AI {
 			return false;
 		}
 		
-		if(e.creature.equals(Creature.RAT)){
+		if(true /*e.creature.equals(Creature.RAT)*/){
 			rat();
 		}
 		

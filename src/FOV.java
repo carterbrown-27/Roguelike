@@ -2,7 +2,6 @@
 public class FOV {
 
 	/*** @SquidLib interpretation ***/
-	// TODO: FIX!!!
 
 	public enum DIAGONAL {
 		UP_LEFT		(-1,-1),

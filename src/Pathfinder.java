@@ -33,12 +33,19 @@ public class Pathfinder {
 		return false;
 	}
 	
+	public Entity e;
+	
+	public void setEntity(Entity e){
+		this.e = e;
+	}
+	
 	private Queue<PointBFS> q;
 	public PointBFS pathfindBFS(Point start, Point end, int[][] temp, boolean diagonals){
 		q = new LinkedList<PointBFS>();
 		q.add(new PointBFS(start.x,start.y,null));
 		
-		while (!q.isEmpty()) {
+		int checkedTiles = 0;
+		while (!q.isEmpty() && checkedTiles < temp.length*temp[0].length/2) {
 			PointBFS p = q.remove();
 			if (p.x == end.x && p.y == end.y) {
 				return p;
@@ -112,7 +119,7 @@ public class Pathfinder {
 			}
 		}
 		if(_x<0 || _y<0 || _y>=_map.length || _x>=_map[_y].length) return false;
-		if(_map[_y][_x] != 1 && _map[_y][_x] != 6) return true;
+		if(_map[_y][_x] != 1 && (_map[_y][_x] != 6 || (e!=null && (e.creature.isFlying || e.creature.isAmphibious)))) return true;
 		return false;
 	}
 	

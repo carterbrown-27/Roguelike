@@ -9,25 +9,25 @@ import javax.imageio.ImageIO;
 
 public class MapTypes {
 	public final String PATH = "imgs/";
-	public char[] tile_characters = {' ','#','Z',':','+','D','~'};
-	public File[] tileFiles = {// new File("Floor.png"), #0
-																new File(PATH+"floorReducedDark.png"),
-																// new File("RedWall.png"), #1
-																new File(PATH+"darkWall2.png"),
-																new File(PATH+"ropefloor.png"),
-																new File(PATH+"hole_floor.png"),
-																new File(PATH+"floorStepsDark.png"),
-																new File(PATH+"RedWall.png")
-																// new File("Floor.png") #4
-																};
+	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
+//	public File[] tileFiles = {// new File("Floor.png"), #0
+//																new File(PATH+"floorReducedDark.png"),
+//																// new File("RedWall.png"), #1
+//																new File(PATH+"darkWall2.png"),
+//																new File(PATH+"ropefloor.png"),
+//																new File(PATH+"hole_floor.png"),
+//																new File(PATH+"floorStepsDark.png"),
+//																new File(PATH+"RedWall.png")
+//																// new File("Floor.png") #4
+//																};
 	
 	public char[] foreground_characters = {' ','@','R'};
-	public File[] foregrounds = {null, // 0
-																			new File(PATH+"@.png"), // 1...
-																			new File(PATH+"rat.png")
-																			};
+//	public File[] foregrounds = {null, // 0
+//																			new File(PATH+"@.png"), // 1...
+//																			new File(PATH+"rat.png")
+//																			};
 	
-	public BufferedImage[] tiles = new BufferedImage[tileFiles.length];
+//	public BufferedImage[] tiles = new BufferedImage[tileFiles.length];
 	public Tile[] usedTiles = new Tile[tile_characters.length];
 	public BufferedImage[] usedImages = new BufferedImage[usedTiles.length];
 	
@@ -53,7 +53,6 @@ public class MapTypes {
 				tilemap = ImageIO.read(new File(PATH+"sourcedTileset.png"));
 				itemmap = ImageIO.read(new File(PATH+"sourcedItems.png"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -75,7 +74,7 @@ public class MapTypes {
 			// usedTiles[0] = temp;
 			variations.put(0, tilesArray[0]);
 			variationPercentages.put(0, 70);
-			usedImages[0] = tilesArray[0][1];
+			usedImages[0] = tilesArray[0][3];
 			
 			// walls
 			// usedTiles[1] = new Tile(1,tilesArray[1][4],false);
@@ -85,7 +84,7 @@ public class MapTypes {
 			usedImages[1] = tilesArray[1][1];
 			
 			// rope stairs
-			usedTiles[2] = new Tile(2,tilesArray[1][8],true);
+			// usedTiles[2] = new Tile(2,tilesArray[1][8],true);
 			usedImages[2] = tilesArray[1][8];
 			
 			// hole stairs
@@ -97,7 +96,7 @@ public class MapTypes {
 			// usedTiles[4] = usedTiles[0];
 			usedImages[4] = usedImages[0];
 			// usedTiles[5] = usedTiles[0];
-			usedImages[5] = itemmap.getSubimage(1*tileSize+1, 0*tileSize, tileSize, tileSize);
+			usedImages[5] = itemmap.getSubimage(0*tileSize+0, 0*tileSize, tileSize, tileSize);
 			
 			BufferedImage[] temp6 = {
 					tilesArray[3][5], // 0
@@ -110,15 +109,18 @@ public class MapTypes {
 					tilesArray[3][9],
 					tilesArray[3][4], // 8
 					tilesArray[4][0],
-					null, // 10
-					null, // 11
+					tilesArray[3][4], // 10 E
+					tilesArray[3][4], // 11 E
 					tilesArray[4][4], // 12
 					tilesArray[3][7],
-					null, // 14
+					tilesArray[3][4], // 14 E
 					tilesArray[4][3]
 			};
 			
 			directionals.put(6,temp6);
+			
+			// open door
+			usedImages[7] = itemmap.getSubimage(2*tileSize+2, 0*tileSize, tileSize, tileSize);
 		}
 	}
 	
@@ -129,9 +131,5 @@ public class MapTypes {
 			return directionals.get(type)[adj];
 		}
 		return usedImages[type];
-	}
-	
-	public Tile getTile(int type){
-		return new Tile(type,usedTiles[type].image,usedTiles[type].isOpen());
 	}
 }

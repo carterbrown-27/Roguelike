@@ -15,6 +15,7 @@ public class ActionLibrary {
 		e = _e;
 		map = e.map;
 		player = map.player;
+		pf.setEntity(e);
 		// System.out.println("updating path...");
 		// updatePath();
 		// System.out.println("done.");
@@ -55,13 +56,13 @@ public class ActionLibrary {
 		return false;
 	}
 
-	public boolean melee(double modifier){
+	public boolean melee(double damage_modifier){
 		int dir = e.getDir(player.getPos());
 		if(dir!=-1){
 			// TODO: attack script
 			// System.out.println("ATTACK!");
 			// hits for random between 1/2 strength and 1 & 1/2 strength
-			player.HP -= Math.round((e.STRENGTH/2 + (rng.nextDouble()*e.STRENGTH) * modifier));
+			player.HP -= round(e.STRENGTH/2 + (rng.nextDouble()*e.STRENGTH) * damage_modifier - (Main.player.getDefense()/2 + (rng.nextDouble()*Main.player.getDefense())), 1);
 		}
 		return true;
 	}
@@ -70,5 +71,17 @@ public class ActionLibrary {
 		e.SP -= 3;
 		// System.out.println("Lunge:");
 		return (move() && melee(0.5));
+	}
+	
+	
+	// 102.456
+	// 102.456 * 10 = 1024.56
+	// 1024.56 -> 1025
+	// 1025 / 10
+	// 102.5
+	
+	public static double round(double n, int decimals){
+		double m = Math.pow(10, decimals);
+		return Math.round(n*m)/m;
 	}
 }

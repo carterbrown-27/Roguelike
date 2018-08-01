@@ -1,6 +1,9 @@
+/** @author hillstylelife **/
+
 import java.io.*;
 import javax.imageio.*;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -24,6 +27,11 @@ public class Main {
 
 	public static double lastPress = System.currentTimeMillis();
 	public static double interval = 100;
+	public static boolean itemSelection = false;
+	public static boolean inventoryScreen = false;
+	public static boolean itemScreen = false;
+
+	public static Item selectedItem;
 
 	public static ArrayList<Map> floors = new ArrayList<Map>();
 	public static Map gen;
@@ -31,15 +39,18 @@ public class Main {
 	public static int currentFloor;
 	public static Point ropePoint;
 
-	public static final int map_h = 52;
+	public static final int map_h = 60;
 	public static final int map_w = 90;
 	public static final int map_fill = 49;
+
+	public static HashMap<Item.Items,String> randomNames = new HashMap<Item.Items,String>();
 
 	public static void main(String[] args){
 
 		// Map.Room r = new Map.Room(8,8);
 		// 52,90,46
 		int seed = rng.nextInt(Integer.MAX_VALUE);
+		// seed = 2119737813;
 		rng = new Random(seed);
 		startGame();
 		System.out.println(seed);
@@ -60,9 +71,86 @@ public class Main {
 			@Override
 			public void keyPressed(KeyEvent e){
 				if(running){
+					txt.clear(); /** TEMP **/
+					refreshText();
 					if (System.currentTimeMillis()-lastPress>=interval) {
 						lastPress = System.currentTimeMillis();
-						if (e.getKeyCode() == KeyEvent.VK_K || e.getKeyCode() == KeyEvent.VK_UP) {
+						if(itemSelection){
+							for (char c = 'a'; c <= 'z'; c++) {
+								if (e.getKeyChar() == c && floors.get(currentFloor).tileMap[player.e.y][player.e.x].inventory.inv.containsKey(c)) {
+									player.pickUp(c);
+								}
+							}
+							itemSelection = false;
+						}else if(inventoryScreen){
+							boolean selected = false;
+							for (char c = 'a'; c <= 'z'; c++) {
+								if (e.getKeyChar() == c && player.inv.inv.containsKey(c)) {
+									selected = true;
+									// TODO: open item menu
+									/** temporary **/
+									Item i = player.inv.inv.get(c);
+
+									if(randomNames.containsKey(i.type)){
+										appendText(randomNames.get(i.type)+" selected.");
+									}else{
+										appendText(i.name+" selected.");										
+									}
+									appendText("Do what with this item?");
+
+									if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
+										if(!i.weilded){
+											appendText("(w)ield");
+										}else{
+											appendText("(u)nweild");
+										}
+									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){
+										if(!i.worn){
+											appendText("(p)ut on");
+										}else{
+											appendText("(t)ake off");
+										}
+									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.SCROLL)){
+										appendText("(r)ead");
+									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.FOOD)){
+										appendText("(e)at");
+									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
+										appendText("(q)uaff");
+									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
+										appendText("(q)uiver");
+									}
+									appendText("(d)rop\n(r)eassign\n(ESC) exit");
+									selectedItem = i;
+								}
+							}
+							if(selected) itemScreen = true;
+							inventoryScreen = false;
+						}else if(itemScreen){
+							Item i = selectedItem;
+							if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
+								if(!i.weilded && e.getKeyChar() == 'w'){
+									player.weild(i);
+								}else if(i.weilded && e.getKeyChar() == 'u'){
+									player.unweild(i);
+								}
+							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){
+								if(!i.worn && e.getKeyChar() == 'p'){
+									player.putOn(i);
+								}else if(i.worn && e.getKeyChar() == 't'){
+									player.takeOff(i);
+								}
+							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.SCROLL)){
+								if(e.getKeyChar() == 'r'){
+
+								}
+							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
+								if(e.getKeyChar() == 'q'){
+
+								}								
+							}
+							itemScreen = false;
+
+						}else if (e.getKeyCode() == KeyEvent.VK_K || e.getKeyCode() == KeyEvent.VK_UP) {
 							player.act_adj(0);
 						} else if (e.getKeyCode() == KeyEvent.VK_H || e.getKeyCode() == KeyEvent.VK_LEFT) {
 							if(e.isControlDown()){
@@ -91,7 +179,7 @@ public class Main {
 						}else if(e.getKeyCode() == KeyEvent.VK_N){
 							player.act_adj(5);
 						}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
-							System.out.println(currentFloor);
+							appendText("Current Floor"+currentFloor);
 							if(floors.get(currentFloor).valueAt(player.e.getPos()) == 3){
 								if(floors.size()<=currentFloor+1){
 									newFloor();
@@ -108,15 +196,34 @@ public class Main {
 
 						} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
 							// open attack selections
-
+							// area.append("space.\n");
 							// if already open attack
-						} else {
+						} else if(e.getKeyCode() == KeyEvent.VK_G){
+							// get
+							Inventory tileInv = floors.get(currentFloor).tileMap[player.e.y][player.e.x].inventory;
+							if(tileInv.isOneItem()){
+								player.pickUp('a');
+							}else if(!tileInv.isEmpty()){
+								itemSelection = true;
+								System.out.println("Pick up what?");
+							}
+
+						}else if(e.getKeyCode() == KeyEvent.VK_I){
+							appendText("(Your Inventory):");
+							player.inv.printContents();
+
+							if(!player.inv.isEmpty()) inventoryScreen = true;
+							// TODO: inventory screen
+						}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
+							txt.clear();
+							refreshText();
+						}else{
 							for(Player.Ability a: Player.Ability.values()){
 								if(e.getKeyCode() == a.k){
 									if(player.e.SP >= a.s){
 										player.select(a);
 									}else{
-										System.out.println("Not enough stamina (stamina!).");
+										appendText("Not enough stamina (stamina!).");
 										player.deselect();
 									}
 									break;
@@ -141,17 +248,28 @@ public class Main {
 
 		floors.add(new Map(map_h,map_w,map_fill,rng));
 		ropePoint = floors.get(currentFloor).getPosition(2);
-		// if(ropePoint==null) ropePoint = new Point(floors.get(currentFloor).randomOpenSpace());
-		player = new Player(ropePoint.x,ropePoint.y,floors.get(currentFloor));
-		// System.out.println(player.e.HP);
 
-		// temporary
+		player = new Player(ropePoint.x,ropePoint.y,floors.get(currentFloor));
+
+		for(Item.Items i: Item.Items.scrolls){
+			randomNames.put(i, "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
+		}
+
+		/** temporary **/
 		int mobs = rng.nextInt(6)+8;
 		for (int i = 0; i < mobs; i++) {
 			Point t = floors.get(currentFloor).randomOpenSpace();
 			System.out.println("point picked");
-			new Entity(Creature.RAT, t.x, t.y, floors.get(currentFloor));
+			new Entity(Creature.randomType(), t.x, t.y, floors.get(currentFloor));
 			System.out.println("Entity Added.");
+		}
+
+		int items = rng.nextInt(6)+28; // 6+8
+		for(int i = 0; i < items; i++){
+			Point t = floors.get(currentFloor).randomOpenSpace();
+			Item.Items ty = Item.Items.randomItemType(currentFloor);
+			System.out.println("adding "+ty);
+			floors.get(currentFloor).tileMap[t.y][t.x].inventory.addItem(new Item(ty,1));
 		}
 
 
@@ -179,22 +297,31 @@ public class Main {
 
 	public static void changeFloor(int floor, boolean down, boolean isNew){
 		player.e.HP = player.e.creature.HP_MAX;
-		floors.get(currentFloor).entities.remove(player.e.name);
 		currentFloor = floor;
 
 		Point startPoint= floors.get(currentFloor).getPosition(2);
 		if(!down) startPoint= floors.get(currentFloor).getPosition(3);
+		player.map = floors.get(currentFloor);
 		floors.get(currentFloor).player = player.e;
 		player.e.x = startPoint.x;
 		player.e.y = startPoint.y;
 		player.e.map = floors.get(currentFloor);
-		floors.get(currentFloor).player = player.e;
+		// floors.get(currentFloor).player = player.e;
 
 		if(isNew){
+
+			/** TEMPORARY **/
 			int mobs = rng.nextInt(6)+8;
 			for (int i = 0; i < mobs; i++) {
 				Point t = floors.get(currentFloor).randomOpenSpace();
 				new Entity(Creature.RAT, t.x, t.y, floors.get(currentFloor));
+			}
+
+			int items = rng.nextInt(6)+8;
+			for(int i = 0; i < items; i++){
+				Point t = floors.get(currentFloor).randomOpenSpace();
+				System.out.println("adding item #"+i);
+				floors.get(currentFloor).tileMap[t.y][t.x].inventory.addItem(new Item(Item.Items.randomItemType(currentFloor),1));
 			}
 		}
 
@@ -205,26 +332,41 @@ public class Main {
 	public static int JFrame_HEIGHT = 1000;
 
 	private static JFrame buildFrame(BufferedImage img) {
+		//		GUI gui = new GUI();
+		//		gui.run();
+
 		JFrame frame = new JFrame();
 		JFrame_HEIGHT = img.getHeight()+42;
-		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1800);
+		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1600);
 		frame.setIconImage(Creature.PLAYER.SPRITE);
 		
+		panel.setLayout(new BorderLayout());
+		area.setBackground(new Color(0,0,0));
+		area.setFont(f);
+		area.setForeground(Color.white);
+		appendText("@");
+		refreshText();
 		frame.setTitle("Roguelike");
 		panel.setBackground(new Color(0,0,0));
-		// panel.add(textArea);
+		panel.add(area,BorderLayout.EAST);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setSize(JFrame_WIDTH, JFrame_HEIGHT);
 		frame.setVisible(true);
 		return frame;
 	}
 
+	public static Font f = new Font("Serif",Font.BOLD,20);
+	public static JTextArea area = new JTextArea();
+	public static ArrayList<String> txt = new ArrayList<String>();
+ 
 	public static void refreshFrame(BufferedImage render) {
 		panel.removeAll();
 		JLabel picLabel = new JLabel(new ImageIcon(render));
-		panel.add(picLabel);
+		panel.add(picLabel,BorderLayout.WEST);
 		panel.setSize(picLabel.getWidth(), picLabel.getHeight());
 		// panel.setLocation(new Point(panel.getX(),panel.getY()+25));
+
+		panel.add(area);
 		frame.add(panel);
 		frame.setFocusable(true);
 		frame.requestFocusInWindow();
@@ -233,7 +375,24 @@ public class Main {
 	}
 
 	public static void appendText(String text){
-		textArea.append(text+"\n");
+		String[] strArray = text.split("\\r?\\n");
+		for(String str: strArray){
+			txt.add(str);
+		}
+		refreshText();
+	}
+	
+	public static final int rows = 15;
+	public static void refreshText(){
+		area.setText("");
+		while (txt.size()>rows){
+			txt.remove(0);
+		}
+		for(int i = 0; i < txt.size()-1; i++){
+			area.append(txt.get(i)+"\n"+"\n");
+		}
+		
+		if(txt.size()>=1) area.append(txt.get(txt.size()-1));
 	}
 
 	public static void blackOverlay(){
@@ -263,7 +422,12 @@ public class Main {
 	}
 
 	public static void takeTurn(){
-		int playerHP = player.e.HP;
+		Inventory floorInv = floors.get(currentFloor).tileMap[player.e.y][player.e.x].inventory;
+		if(!floorInv.isEmpty()){
+			floorInv.printContents();
+		}
+
+		double playerHP = player.e.HP;
 		player.e.SP += Creature.PLAYER.SP_REGEN;
 		ArrayList<Entity> dead = new ArrayList<Entity>();
 		for(Entity e: floors.get(currentFloor).entities.values()){
@@ -280,9 +444,9 @@ public class Main {
 		}
 
 		Point pos = player.e.getPos();
-		if(player.e.HP != playerHP) System.out.println("Player HP = " + player.e.HP);
-		if(player.e.HP <= 0){
-			System.out.println("tough luck kiddo. you dead");
+		if(player.e.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.e.HP,2));
+		if(player.e.HP < 0.1){
+			appendText("tough luck kiddo. you dead");
 			running = false;
 		}
 		refreshFrame(render(pos.x,pos.y));
@@ -292,5 +456,46 @@ public class Main {
 		BufferedImage img = floors.get(currentFloor).render_vig(x, y, player.ViewDistance, player.Luminosity);
 		img = resize(img,img.getWidth()*3,img.getHeight()*3);
 		return img;
+	}
+
+	public static String randomName(){
+
+		// start with vowel or vtc
+		// consonant or ctv
+
+		// start with consonant or ctv
+		// vowel
+		// vtc or consonant
+
+		int length = rng.nextInt(4)+5;
+		// char[] vtc = {'s','t'}; // 1l2
+		char[] vowels = {'a','e','i','o','u','y'}; // 0l6
+
+		char[] ctv = {'r','h','w','l'}; // 3l4
+		char[] consonants = {'b','c','d','f','g','j','k',
+				'm','p','v','z','s','t','n'}; // 2l12
+
+		// String[] pairs = {"ld","st","pr","qu","sh"};
+
+		String name = "";
+		int prev = -1;
+
+		while(name.length() < length){
+			if(prev == 3 || (prev == 2 && rng.nextBoolean()) || (prev == 0 && rng.nextBoolean() && rng.nextBoolean()) || (prev==-1 && rng.nextBoolean())){
+				name+=vowels[rng.nextInt(vowels.length)];
+				prev = 0;
+			}else{
+				if(prev==2 || (prev==-1 && rng.nextBoolean())){
+					name+=ctv[rng.nextInt(ctv.length)];
+
+					prev = 3;
+				}else{
+					name+=consonants[rng.nextInt(consonants.length)];
+
+					prev = 2;
+				}
+			}
+		}
+		return name;
 	}
 }

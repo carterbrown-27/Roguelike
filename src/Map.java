@@ -12,11 +12,11 @@ public class Map {
 	public static int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
 
-	public int[][] map = new int[height][width];
-	public BufferedImage[][] tileMap = new BufferedImage[height][width];
-	public int[][] foreground = new int[height][width];
-	public static int smooths = 4;
+	public int[][] map;
+	public Tile[][] tileMap;
+	public int[][] foreground;
 
+	public static int smooths = 4;
 	public int entityNumber = 0;
 	// public static Entity[][] entity_map = new Entity[height][width];
 	public HashMap<String,Entity> entities = new HashMap<String,Entity>();
@@ -40,7 +40,6 @@ public class Map {
 	public final int DOWN = 2;
 	public final int LEFT = 3;
 
-
 	Map(int _height, int _width, int _randFillPercent, Random _rng){
 		this(_height,_width,_randFillPercent,smooths,_rng);
 	}
@@ -54,7 +53,9 @@ public class Map {
 
 		map = new int[height][width];
 		foreground = new int[height][width];
-		tileMap = new BufferedImage[height][width];
+		
+		// kill
+		tileMap = new Tile[height][width];
 
 		if(undercity){
 			generateUndercity();
@@ -98,7 +99,6 @@ public class Map {
 		return isOpen(x,y);
 	}
 
-
 	public void generateCaves(){
 		for(int x=0; x < width; x++){
 			for(int y=0; y < height; y++){
@@ -118,7 +118,6 @@ public class Map {
 		}
 		map = smoothMap(4);
 	}
-
 
 	public void generateUndercity(){
 		ArrayList<Room> rooms;
@@ -384,7 +383,6 @@ public class Map {
 				works = true;
 				setBounds();
 
-				// TODO: check
 				if(dir=='T'){
 					y = door.point.y-h-1;
 					x = door.point.x;
@@ -474,7 +472,6 @@ public class Map {
 			}
 		}
 
-		/** refactored **/
 		public void buildSewer(){
 
 			// TODO: add varying bridge placements and water h/w
@@ -542,8 +539,6 @@ public class Map {
 				}
 			}
 		}
-
-		/** refactored **/
 		public void pickDoors(){
 			// x=y && y=x
 			// (T) top = x,y -> x,y+w
@@ -701,7 +696,7 @@ public class Map {
 			System.out.println("picking point...");
 			x = rng.nextInt(width-1);
 			y = rng.nextInt(height-1);
-		}while(!isFullOpen(x,y));
+		}while(!isFullOpen(x,y) || map[y][x] == 5);
 		return (new Point(x,y));
 	}
 
@@ -727,29 +722,32 @@ public class Map {
 		int y2=0;
 
 		int tries = 0;
+		int bigtries=0;
 		Pathfinder.PointBFS p = null;
 		do {
 			do {
-				x1 = rng.nextInt(width-1);
-				y1 = rng.nextInt(height-1);
-			} while (!isOpen(x1,y1));
-			do {
-				x2 = rng.nextInt(width-1);
-				y2 = rng.nextInt(height-1);
-			} while (!isOpen(x2,y2));
-			tries++;
-		} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
-		
-		if(tries<=300){
-			tries = 0;
-			do{
-				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), copyMap(), true);
+				do {
+					x1 = rng.nextInt(width-1);
+					y1 = rng.nextInt(height-1);
+				} while (!isOpen(x1,y1));
+				do {
+					x2 = rng.nextInt(width-1);
+					y2 = rng.nextInt(height-1);
+				} while (!isOpen(x2,y2));
 				tries++;
-			}while(tries<=300 && (p==null || p.getParent() == null));
-		}else{
-			System.out.println("placing exits failed.");
-		}
-
+			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
+			System.out.println("placed exits");
+			if(tries<=300){
+				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), copyMap(), true);
+				if(p==null || p.getParent() == null){
+					System.out.println("connecting exits failed.");
+				}
+			}else{
+				break;
+			}
+			bigtries++;
+		} while (p==null || p.getParent() == null && bigtries < 10);
+		
 		if(tries>300){
 			System.out.println("connecting exits failed.");
 			if(undercity){
@@ -788,7 +786,7 @@ public class Map {
 
 	public boolean isTransparent(int x, int y){
 		if(!isOnMap(x,y)) return false;
-		if(map[y][x] != 1) return true;
+		if(map[y][x] != 1 && map[y][x] != 5) return true;
 		return false;
 	}
 
@@ -820,7 +818,7 @@ public class Map {
 	public void buildTileMap(){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
-				tileMap[y][x] = type.pickImage(map[y][x],tileTypeAdj(x,y));
+				tileMap[y][x] = new Tile(map[y][x],type,tileTypeAdj(x,y));
 			}
 		}
 	}
@@ -844,7 +842,7 @@ public class Map {
 	}
 
 	public BufferedImage renderMap() {
-		return renderArea(0,0,width-1,height-1); 
+		return renderArea(0,0,width-1,height-1,true); 
 	}
 
 	public boolean[][] buildOpacityMap(){
@@ -867,16 +865,33 @@ public class Map {
 	//		return temp;
 	//	}
 
-	public BufferedImage renderArea(int x1, int y1, int x2, int y2){
-		int areaHeight = Math.abs(x2-x1)+1;
-		int areaWidth = Math.abs(y2-y1)+1;
+
+	public boolean[][] lightMap;
+	private FOV fov = new FOV();
+
+	public void updateFOV(){
+		lightMap = fov.calculate(buildOpacityMap(), player.x, player.y, Main.player.Luminosity);
+		//		updateViewed();
+	}
+
+	//	public void updateViewed(){
+	//		for(int x = 0; x < width; x++){
+	//			for(int y = 0; y < height; y++){
+	//				if(!visitedTiles[y][x] && lightMap[y][x]) visitedTiles[y][x] = true; 
+	//			}
+	//		}
+	//	}
+
+	public BufferedImage renderArea(int x1, int y1, int x2, int y2, boolean noLighting){
+		int areaHeight = Math.abs(y2-y1)+1;
+		int areaWidth = Math.abs(x2-x1)+1;
 
 		BufferedImage area = new BufferedImage(areaWidth*tileSize,areaHeight*tileSize,BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) area.getGraphics();
 		BufferedImage dark;
 
-		FOV fov = new FOV();
-		boolean[][] lightMap = fov.calculate(buildOpacityMap(), player.x, player.y, Main.player.Luminosity);
+		updateFOV();
+
 		// BufferedImage SouthWall;
 		try {
 			dark = ImageIO.read(new File(type.PATH+"dark.png"));
@@ -888,26 +903,60 @@ public class Map {
 					BufferedImage tile;
 					int x_ofs = x - Math.min(x1,x2);
 					int y_ofs = y - Math.min(y1,y2);
-					if(x>= width || y>= height || x<0 || y<0 || (map[y][x] == 1 && !isTouchingVisible(x,y)) ||  !lightMap[y][x]){
+					if(x>= width || y>= height || x<0 || y<0 || (map[y][x] == 1 && !isTouchingVisible(x,y))){
 						tile = dark;
 					}else{
-						tile = tileMap[y][x];
+						tile = tileMap[y][x].image;
 					}
-					if(!(tile==null)){
-						if(tile!=dark && map[y][x] == 5) g.drawImage(type.usedImages[1],x_ofs*tileSize, y_ofs*tileSize,null);
-						g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
+
+					if(tile==null) tile = dark;
+
+					if(tile!=dark && !noLighting){
+						if(!lightMap[y][x]){
+							if (tileMap[y][x].visited) {
+								BufferedImage image = new BufferedImage(tileSize, tileSize,
+										BufferedImage.TYPE_BYTE_GRAY);
+								Graphics tileG = image.getGraphics();
+								tileG.drawImage(tileMap[y][x].image, 0, 0, null);
+								tileG.drawImage(tileMap[y][x].inventory.drawPile(), 0, 0, null); /** TEMP **/
+								tileG.dispose();
+								tile = image;
+							}else{
+								tile = dark;
+							}
+						}else{
+							tileMap[y][x].view(tile);
+						}
 					}
-					if (isOpen(x,y) && lightMap[y][x]) {
+//					BufferedImage fullImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
+//					Graphics2D fg = (Graphics2D) fullImg.getGraphics();
+					
+//					fg.drawImage(tile, 0, 0, null);
+					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
+					if (isOnMap(x,y) && lightMap[y][x]) {
+						// draw items
+						Inventory inv = tileMap[y][x].inventory;
+						if(!inv.isEmpty()){
+							g.drawImage(inv.drawPile(),x_ofs * tileSize, y_ofs * tileSize, null);
+						}
+						
+						
+						// draw entities
 						for (Entity e : entities.values()) {
 							if (e.getX() == x && e.getY() == y) {
-								g.drawImage(e.getImg(), x_ofs * tileSize, y_ofs * tileSize,
-										null);
+								g.drawImage(e.getImg(), x_ofs * tileSize, y_ofs * tileSize,null);
+//								fg.drawImage(e.getImg(), 0, 0, null);
 							}
 						}
+						
 					}
 					if(player != null && player.getX() == x && player.getY() == y){
 						g.drawImage(player.getImg(),x_ofs*tileSize,y_ofs*tileSize,null);
+//						fg.drawImage(player.getImg(), 0, 0, null);
 					}
+					
+//					g.drawImage(fullImg,x_ofs*tileSize,y_ofs*tileSize,null);
+					
 				}
 			}
 
@@ -918,7 +967,7 @@ public class Map {
 	}
 
 	public BufferedImage renderRadius(int x, int y, int r){
-		BufferedImage area = renderArea(x-r,y-r,x+r,y+r);
+		BufferedImage area = renderArea(x-r,y-r,x+r,y+r,false);
 		// circle shading
 		return area;
 	}
@@ -943,7 +992,4 @@ public class Map {
 		// image = addCenterVignette(image,vr);
 		return image;
 	}
-
-	// TODO: FOV
-
 }

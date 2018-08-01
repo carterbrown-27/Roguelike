@@ -19,9 +19,21 @@ public class Entity {
 	public AI ai;
 	
 	
-	public int HP;
-	public int SP;
+	public double HP;
+	public double SP;
 	public double STRENGTH;
+	
+	public Item weapon;
+	public Item quivered;
+	public Item helmet;
+	public Item boots;
+	public Item chestplate;
+	public Item greaves;
+	public Item gloves;
+	public Item ring_left;
+	public Item ring_right;
+	public Item[] armour = {weapon,quivered,helmet,boots,chestplate,greaves,gloves};
+	public Item amulet;
 	
 	public boolean awake = false;
 	
@@ -62,13 +74,14 @@ public class Entity {
 	}
 	
 	public boolean takeTurn(){
-		if (HP<=0) {
-			System.out.println("You defeated the " + creature.NAME + ".");
+		if(ai == null) return true; // not a creature
+		if (HP<0.1) {
+			Main.appendText("You defeated the " + creature.NAME + ".");
 			return false; // dead
 		}
 		if(awakeCheck()){
 			if(!ai.takeTurn()){
-				System.out.println("You defeated the "+creature.NAME+".");
+				Main.appendText("You defeated the "+creature.NAME+".");
 				return false; // dead
 			}
 		}
@@ -86,13 +99,13 @@ public class Entity {
 	// ur: 4,rd: 5, dl: 6, lu: 7
 	public boolean move(int dir){
 		boolean sxs = true;
-		if(dir == 0 && map.isFullOpen(x,y-1)){
+		if(dir == 0 && isFullOpen(x,y-1)){
 			y--;
-		} else if(dir == 1 && map.isFullOpen(x+1,y)){
+		} else if(dir == 1 && isFullOpen(x+1,y)){
 			x++;
-		} else if(dir == 2 && map.isFullOpen(x,y+1)){
+		} else if(dir == 2 && isFullOpen(x,y+1)){
 			y++;
-		} else if(dir == 3 && map.isFullOpen(x-1,y)){
+		} else if(dir == 3 && isFullOpen(x-1,y)){
 			x--;
 		} else if(dir == 4 && diagonalCheck(4)){
 			y--;
@@ -109,28 +122,47 @@ public class Entity {
 		}else{
 			sxs = false;
 		}
+		if(map.map[y][x] == 5){
+			map.map[y][x] = 7;
+			map.tileMap[y][x].setValue(7);
+			
+			Main.appendText("The door creaks open.");
+		}
 		return sxs;
+	}
+	
+	public boolean isOpen(int x, int y){
+		if(!map.isOnMap(x,y)) return false;
+		if(map.map[y][x]!=1 && (map.map[y][x]!=6 || creature.isAmphibious || creature.isFlying)) return true;
+		return false;
+	}
+
+	public boolean isFullOpen(int x, int y){
+		for(Entity e: map.entities.values()){
+			if(e.x==x && e.y==y) return false;
+		}
+		if(map.player.x == x && map.player.y == y) return false;
+		return isOpen(x,y);
 	}
 	
 	public boolean diagonalCheck(int dir){
 		int blocks = 0;
-		if((dir == 4 || dir == 5)&& !map.isFullOpen(x+1,y)) blocks++;
-		if((dir == 5 || dir == 6)&& !map.isFullOpen(x, y+1)) blocks++;
-		if((dir == 6 || dir == 7)&& !map.isFullOpen(x-1, y)) blocks++;
-		if((dir == 7 || dir == 4)&& !map.isFullOpen(x, y-1)) blocks++;
+		if((dir == 4 || dir == 5)&& !isFullOpen(x+1,y)) blocks++;
+		if((dir == 5 || dir == 6)&& !isFullOpen(x, y+1)) blocks++;
+		if((dir == 6 || dir == 7)&& !isFullOpen(x-1, y)) blocks++;
+		if((dir == 7 || dir == 4)&& !isFullOpen(x, y-1)) blocks++;
 		
 		if(blocks>=2) return false;
 		
-		if(dir == 4 && !map.isFullOpen(x+1,y-1)) return false;
-		if(dir == 5 && !map.isFullOpen(x+1,y+1)) return false;
-		if(dir == 6 && !map.isFullOpen(x-1,y+1)) return false;
-		if(dir == 7 && !map.isFullOpen(x-1,y-1)) return false;
+		if(dir == 4 && !isFullOpen(x+1,y-1)) return false;
+		if(dir == 5 && !isFullOpen(x+1,y+1)) return false;
+		if(dir == 6 && !isFullOpen(x-1,y+1)) return false;
+		if(dir == 7 && !isFullOpen(x-1,y-1)) return false;
 		
 		return true;
 	}
 	
 	public boolean isAdjacentTo(Point p){
-		// TODO: do
 		for(int cx = x-1; cx<=x+1; cx++){
 			for(int cy = y-1; cy<=y+1; cy++){
 				if(cx == x && cy == y) continue;
