@@ -25,7 +25,7 @@ public class Map {
 
 	public int tileSize = 24;
 
-	private Random rng = new Random();
+	public  static Random rng = new Random();
 	private Pathfinder pf = new Pathfinder();
 
 	public String maptype = "sourcedCave";
@@ -53,7 +53,7 @@ public class Map {
 
 		map = new int[height][width];
 		foreground = new int[height][width];
-		
+
 		// kill
 		tileMap = new Tile[height][width];
 
@@ -93,6 +93,14 @@ public class Map {
 
 	public boolean isFullOpen(int x, int y){
 		for(Entity e: entities.values()){
+			if(e.isPassable == false && e.x==x && e.y==y) return false;
+		}
+		if(player.x == x && player.y == y) return false;
+		return isOpen(x,y);
+	}
+
+	public boolean isEmpty(int x, int y){
+		for(Entity e: entities.values()){
 			if(e.x==x && e.y==y) return false;
 		}
 		if(player.x == x && player.y == y) return false;
@@ -120,7 +128,6 @@ public class Map {
 	}
 
 	public void generateUndercity(){
-		ArrayList<Room> rooms;
 		ArrayList<PointDir> workingDoors;
 		int doorCount = 0;
 		do {
@@ -128,69 +135,109 @@ public class Map {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					map[y][x] = 1;
+					foreground[y][x] = 0;
 				}
 			}
-			rooms = new ArrayList<Room>();
 			workingDoors = new ArrayList<PointDir>();
-			Queue<PointDir> q = new LinkedList<PointDir>();
+			Queue<Room> q = new LinkedList<Room>();
+
+			int start_x = rng.nextInt(width*2/3) + width/6 - 1;
+			int start_y = rng.nextInt(height*2/3) + height/6 - 1;
+
+			q.add(new Room(new PointDir(new Point(start_x,start_y),'R'),true,RoomType.REGULAR));
+
 
 			// starting point
 			// Top = 0, Right = 1, Bottom = 2, Left = 3
-			int quadrant = rng.nextInt(3);
-			switch(quadrant){
-			case 0:
-				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), 'D'));
-				break;
-			case 1:
-				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), 'L'));
-				break;
-			case 2:
-				q.add(new PointDir(new Point(rng.nextInt(width-1), height-rng.nextInt(height/3)-1), 'T'));
-				break;
-			case 3:
-				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), 'R'));
-				break;
-			}
 
-			boolean start = true;
+			//			int quadrant = rng.nextInt(3);
+			//			switch(quadrant){
+			//			case 0:
+			//				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), 'D'));
+			//				break;
+			//			case 1:
+			//				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), 'L'));
+			//				break;
+			//			case 2:
+			//				q.add(new PointDir(new Point(rng.nextInt(width-1), height-rng.nextInt(height/3)-1), 'T'));
+			//				break;
+			//			case 3:
+			//				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), 'R'));
+			//				break;
+			//			}
+
 			while (!q.isEmpty()) {
-				PointDir p = q.remove();
-				Room r;
-				int attempts = 0;
+				Room R = q.remove();
+
 				// room vs corridor
-				if (rng.nextInt(10)>=3 || start) {
-					do {
-						r = new Room(p, start, RoomType.RANDOM);
-						if (r.valid) {
-							rooms.add(r);
-							q = r.addDoorsToQueue(q);
-						}
-						attempts++;
-					} while (!r.valid && attempts < 50);
-				}else{
-					ArrayList<PointDir> doors = buildCorridor(p);
-					if (doors!=null) {
-						for (PointDir i : doors) {
-							q.add(i);
+				for(int t = 0; t < R.doors; t++){
+					
+					Room r;
+					if (rng.nextInt(10)>=4) {
+						int attempts = 0;
+						do {
+							PointDir p = R.randomDoor();
+							Point ahead = aheadTile(p);
+							if(isOpen(ahead.x,ahead.y) && rng.nextInt(4)==4){
+								workingDoors.add(p);
+								break;
+							}
+							r = new Room(p, false, RoomType.RANDOM);
+							// printMap();
+							if (r.valid) {
+								q.add(r);
+								workingDoors.add(p);
+								break;
+							}else{
+								attempts++;
+							}
+						} while (attempts<3);
+					}else{
+						PointDir p = R.randomDoor();
+
+						ArrayList<PointDir> doors = buildCorridor(p,false);
+						// printMap();
+						if (doors!=null) {
+							workingDoors.add(p);
+							for (PointDir i : doors) {
+								if(rng.nextInt(10)>=5){
+									r = new Room(i, false, RoomType.RANDOM);
+									workingDoors.add(i);
+									if(r.valid){
+										q.add(r);
+									}
+								}else{
+									doors = buildCorridor(i,true);
+									if (doors!=null) {
+										workingDoors.add(i);
+										for (PointDir i2 : doors) {
+											r = new Room(i2, false, RoomType.RANDOM);
+											workingDoors.add(i2);
+											if(r.valid){
+												q.add(r);
+											}
+										}
+									}
+								}
+							}
 						}
 					}
-				}
 
-				if (attempts >= 50) {
-					map[p.point.y][p.point.x] = 0;
-				} else if(!start){
-					workingDoors.add(p);
+					//				if (attempts >= 50) {
+					//					map[p.point.y][p.point.x] = 0;
+					//				} else if(!start){
+					//					workingDoors.add(p);
+					//				}
+					for (PointDir i : workingDoors) {
+						map[i.point.y][i.point.x] = 5;
+					}
+					// printMap();
+					// System.out.println("$$$");
 				}
-				for (PointDir i : q) {
-					map[i.point.y][i.point.x] = 5;
-				}
-				start = false;
-				// printMap();
-				// System.out.println("$$$");
 			}
 
 			for(PointDir p: workingDoors){
-				Point temp = aheadTile(p);
+				Point temp = p.point;
 				PointDir newDoor = new PointDir(temp,p.dir);
 				// if door leads nowhere, fill it in
 				if(!isOpen(aheadTile(newDoor).x,aheadTile(newDoor).y)){
@@ -198,22 +245,27 @@ public class Map {
 
 					// if door is not between two walls, destroy it
 				}else if(isSandwich(temp.x,temp.y) ){
-					map[temp.y][temp.x] = 5;
 					doorCount++;
-					map[p.point.y][p.point.x] = 0;
+					if(true || rng.nextInt(7)>=1){
+						map[temp.y][temp.x] = 5;
+					}else{
+						map[temp.y][temp.x] = 7;
+					}
+					// doorCount++;
+					// map[p.point.y][p.point.x] = 0;
 				}else{
 					map[p.point.y][p.point.x] = 1;
 				}
 			}
 			// System.out.println(doorCount);
-		}while(doorCount<28);
+		}while(doorCount<32);
 
 		doctorMap();
 		printMap();
 		System.out.println("F:");
 	}
 
-	public ArrayList<PointDir> buildCorridor(PointDir door){
+	public ArrayList<PointDir> buildCorridor(PointDir door, boolean fromOtherC){
 		System.out.println("building corridor...");
 		ArrayList<PointDir> doors = new ArrayList<PointDir>();
 
@@ -223,13 +275,18 @@ public class Map {
 		boolean obstructed = false;
 		while(!obstructed && length<=5 && (rng.nextInt(7)<=5 || length <=3)){
 			Point temp = aheadTile(end);
-			if(isOpen(temp.x,temp.y) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
+			if((!isOnMap(temp.x,temp.y) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
+				if(isOnMap(temp.x,temp.y)){
+					doors.add(end);
+				}
 				obstructed = true;
 			}
 			if(!obstructed){
-				map[end.point.y][end.point.x] = 0;
+				if(true || length!=0 || fromOtherC){
+					map[end.point.y][end.point.x] = 0;
+				}
 				// doors on sides
-				if(rng.nextInt(8)>=5){
+				if(rng.nextInt(8)>=6){
 					if (dir=='T' || dir=='D') {
 						if (rng.nextBoolean()) {
 							// left of path
@@ -348,8 +405,12 @@ public class Map {
 
 		public int x;
 		public int y;
+
 		public int w;
 		public int h;
+		public int tw;
+		public int th;
+
 		public PointDir door;
 		public int doors;
 		public PointDir[] doorPoints = new PointDir[4];
@@ -367,12 +428,20 @@ public class Map {
 			int count = 0;
 			start = _start;
 			door = _door;
-			dir = door.dir;
+			if(!start) dir = door.dir;
 			type = _type;
+
+			if(start){
+				x = door.point.x;
+				y = door.point.y;
+				setBounds();
+				buildNormal();
+				return;
+			}
 
 			if(type.equals(RoomType.RANDOM)){
 				// TODO: pick random
-				if(rng.nextInt(10)>=6){
+				if(rng.nextInt(10)>=5){
 					type = RoomType.SEWER;
 				}else{
 					type = RoomType.REGULAR;
@@ -383,18 +452,25 @@ public class Map {
 				works = true;
 				setBounds();
 
+				int offset = 0;
+				if(dir=='T'||dir=='D'){
+					offset = rng.nextInt(w-1)+1; // TODO
+				}else{
+					offset = rng.nextInt(h-1)+1;
+				}
+
 				if(dir=='T'){
-					y = door.point.y-h-1;
-					x = door.point.x;
+					x = door.point.x-offset;
+					y = door.point.y-th+1;
 				}else if(dir=='D'){
-					y = door.point.y+1;
-					x = door.point.x;
+					x = door.point.x-offset;
+					y = door.point.y;
 				}else if(dir=='L'){
-					y = door.point.y;
-					x = door.point.x-w-1;
+					y = door.point.y-offset;
+					x = door.point.x-tw+1;
 				}else if(dir=='R'){
-					y = door.point.y;
-					x = door.point.x+1;
+					y = door.point.y-offset;
+					x = door.point.x;
 				}
 				works = surroundCheck();
 				count++;
@@ -414,25 +490,29 @@ public class Map {
 				w = rng.nextInt(5) + min;
 				h = rng.nextInt(5) + min;
 			}else if (type.equals(RoomType.SEWER)){
-				final int l_min = 7;
-				final int l_var = 5;
+				final int l_min = 8;
+				final int l_var = 6;
 
 				if(dir=='T' || dir=='D'){
 					// wide
 					w = rng.nextInt(l_var)+l_min;
-					h = rng.nextInt(3)+4;
+					h = rng.nextInt(3)+3;
 				}else{
 					// tall
 					h = rng.nextInt(l_var)+l_min;
-					w = rng.nextInt(3)+4;
+					w = rng.nextInt(3)+3;
 				}
 			}
+
+			tw = w+2;
+			th = h+2;
 		}
 
 		public boolean surroundCheck(){
-			for(int _x = x-1; _x <= x+w; _x++){
-				for(int _y = y-1; _y <= y+h; _y++){
-					if(_x>=width-1||_x<=0||_y>=height-1||_y<=0){
+			for(int _x = x; _x <= x+tw-1; _x++){
+				for(int _y = y; _y <= y+th-1; _y++){
+					if(_x == door.point.x && _y == door.point.y) continue;
+					if(!isOnMap(_x,_y)){
 						return false;
 					}else if(isOpen(_x,_y)){
 						return false;
@@ -442,45 +522,79 @@ public class Map {
 			return true;
 		}
 
+		public PointDir randomDoor(){
+			int tries = 0;
+			while(tries < 15){
+				int d = rng.nextInt(3);
+				PointDir p = null;
+				// TODO: check if accesible in room
+				if(d==0 && (start || door.dir!='T')){
+					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y),'T');
+				}else if(d==1 && (start || door.dir!='R')){
+					p = new PointDir(new Point(x + tw-1, rng.nextInt(h-1)+1 + y),'R');					
+				}else if(d==2 && (start || door.dir!='D')){
+					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y + th-1),'D');					
+				}else if(start || door.dir!='L'){
+					p = new PointDir(new Point(x, rng.nextInt(h-1)+1 + y),'L');
+				}
+				if(p == null){
+					tries++;
+					continue;
+				}
+				for(int cx = p.point.x-1; cx <= p.point.x+1; cx++){
+					for(int cy = p.point.y-1; cy <= p.point.y+1; cy++){
+						if(cx<x || cy<y || cx>=x+tw || cy>=y+th) continue;
+						if(isOpen(cx,cy)){
+							return p;
+						}
+					}
+				}
+
+				tries++;					
+			}
+			return null;
+		}
+
+
 		public void buildNormal(){
 			if(type.equals(RoomType.REGULAR)){
 				System.out.println("building regular...");
 				pickDoors();
-				placeDoors();
+				//				placeDoors();
 				cutOut();
 			}else if(type.equals(RoomType.SEWER)){
 				System.out.println("building sewer...");
-				if(dir=='T'){
-					opens[UP] = true;
-				}else if(dir=='D'){
-					opens[DOWN] = true;
-				}else if(dir=='L'){
-					opens[LEFT] = true;
-				}else if(dir=='R'){
-					opens[RIGHT] = true;
-				}
-				placeDoors();
+				//				if(dir=='T'){
+				//					opens[UP] = true;
+				//				}else if(dir=='D'){
+				//					opens[DOWN] = true;
+				//				}else if(dir=='L'){
+				//					opens[LEFT] = true;
+				//				}else if(dir=='R'){
+				//					opens[RIGHT] = true;
+				//				}
+				//				placeDoors();
 				cutOut();
 				buildSewer();
 			}
 		}
 
-		public void customize(){
-			cutOut();
-			if(RoomType.SEWER.equals(this.type)){
-				buildSewer();
-			}
-		}
+		//		public void customize(){
+		//			cutOut();
+		//			if(RoomType.SEWER.equals(this.type)){
+		//				buildSewer();
+		//			}
+		//		}
 
+		@SuppressWarnings("unused")
 		public void buildSewer(){
 
-			// TODO: add varying bridge placements and water h/w
 			// TODO: add precons
 
 			if(h<=3 || w<=3) return;
 			int waterWidth = 2;
 			boolean noBridge = false; // (doors==0 && rng.nextInt(10)<=7);
-			if(doorPoints[1] == null && doorPoints[3] == null && w>4){
+			if((door.dir == 'T' || door.dir == 'D') && w>4){
 				// horizontal
 				int river_h;
 				if(h<=4){
@@ -495,23 +609,32 @@ public class Map {
 				if(h-2-river_h+1 == 2){
 					waterWidth = 2;
 				}else{
-					if(rng.nextBoolean()){
+					if(false){
 						waterWidth = rng.nextInt(h-2-river_h+1-2)+2;
 					}else{
-						waterWidth = river_h-2;
+						waterWidth = h-2;
 					}
 				}
 
-				int bridge_w = w/2;
-				for(int i = 0; i < w; i++){
-					if (noBridge || i!=bridge_w) {
-						for(int t = 0; t < waterWidth; t++){
+				// width || x x x || = 7 = 3 possible = [0,1,2] + 2) -> 7-5 = [2,3,4]
+				int bridge_x;
+				if(waterWidth>=6){
+					bridge_x = rng.nextInt(h-5)+2;
+				}else{
+					bridge_x = h/2;
+				}
+				for(int i = 1; i <= w; i++){
+					for(int t = 1; t <= waterWidth; t++){
+						if (noBridge || i!=bridge_x) {
 							map[y + river_h + t][x + i] = 6;
+						}else{
+							map[y + river_h + t][x + i] = 6;
+							foreground[y + river_h + t][x + i] = 1;
 						}
 					}
 				}
-			}else if(doorPoints[0] == null && doorPoints[2] == null && h>4){
-				// width
+			}else if((door.dir == 'L' || door.dir == 'R') && h>4){
+				// vertical
 				int river_w;
 				if(w<=4){
 					river_w = 1;
@@ -522,71 +645,85 @@ public class Map {
 				if(w-2-river_w+1 == 2){
 					waterWidth = 2;
 				}else{
-					if(rng.nextBoolean()){
+					if(false){
 						waterWidth = rng.nextInt(w-2-river_w+1-2)+2;
 					}else{
-						waterWidth = river_w-2;
+						waterWidth = w-2;
 					}
 				}
 
-				int bridge_h = rng.nextInt(h-2)+1;
-				for(int i = 0; i < h; i++){
-					if (noBridge || i!=bridge_h) {
-						for(int t = 0; t < waterWidth; t++){
+				int bridge_y = rng.nextInt(h-3)+2;
+				for(int i = 1; i <= h; i++){
+					for(int t = 1; t <= waterWidth; t++){
+						if (noBridge || i!=bridge_y) {
 							map[y + i][x + river_w + t] = 6;
+						}else{
+							map[y + i][x + river_w + t] = 6;
+							foreground[y + i][x + river_w + t] = 1;
 						}
 					}
 				}
 			}
 		}
+
 		public void pickDoors(){
 			// x=y && y=x
 			// (T) top = x,y -> x,y+w
 			// (L) left = x,y -> x+h,y
 			// (R) right = x,y+w -> x+h,y+w
 			// (D) bottom = x+h,y -> x+h,y+w
-			int[][] chart = {{ 0,5 },{ 1, 30 }, { 2, 40 }, { 3, 25 }};
+			int[][] chart = {{ 0,10 },{ 1, 25 }, { 2, 40 }, { 3, 25 }};
 			RandomChart rnd = new RandomChart(chart);
 			doors = rnd.pick();
 			if(start) doors = 3;
-			if(dir=='T') opens[UP] = false;
-			if(dir=='L') opens[LEFT] = false;
-			if(dir=='D') opens[DOWN] = false;
-			if(dir=='R') opens[RIGHT] = false;
 
-			for(int i = 0; i < doors; i++) {
-				boolean flag = false;
-				do {
-					int temp = rng.nextInt(3);
-					if (!opens[temp]) {
-						flag = true;
-						opens[temp] = true;
-					}
-				} while (!flag);
-			}
+			//			if(dir=='T') opens[UP] = false;
+			//			if(dir=='L') opens[LEFT] = false;
+			//			if(dir=='D') opens[DOWN] = false;
+			//			if(dir=='R') opens[RIGHT] = false;
+			//
+			//			for(int i = 0; i < doors; i++) {
+			//				boolean flag = false;
+			//				do {
+			//					int temp = rng.nextInt(3);
+			//					if (!opens[temp]) {
+			//						flag = true;
+			//						opens[temp] = true;
+			//					}
+			//				} while (!flag);
+			//			}
 		}
 
-		public void placeDoors(){
-			if (opens[UP]) {
-				//				localDoorPoints[UP] = new PointDir(new Point(0, rng.nextInt(w-1)),'T');
+		//		public void placeDoors(){
+		//			if (opens[UP]) {
+		//				//				localDoorPoints[UP] = new PointDir(new Point(0, rng.nextInt(w-1)),'T');
+		//
+		//				doorPoints[UP] = new PointDir(new Point(rng.nextInt(w-1) + x, y),'T');
+		//			}
+		//			if (opens[RIGHT]) {
+		//				//				localDoorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1), w-1),'R');
+		//
+		//				doorPoints[RIGHT] = new PointDir(new Point(x + w-1, rng.nextInt(h-1) + y),'R');
+		//			}
+		//			if (opens[DOWN]) {
+		//				//				localDoorPoints[DOWN] = new PointDir(new Point(h-1, rng.nextInt(w-1)),'D');
+		//
+		//				doorPoints[DOWN] = new PointDir(new Point(rng.nextInt(w-1) + x, y + h-1),'D');
+		//			}
+		//			if (opens[LEFT]) {
+		//				//				localDoorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1), 0),'L');
+		//
+		//				doorPoints[LEFT] = new PointDir(new Point(x, rng.nextInt(h-1) + y),'L');
+		//			}
+		//	}	
 
-				doorPoints[UP] = new PointDir(new Point(rng.nextInt(w-1) + x, y),'T');
+		public PointDir[] getDoors(){
+			PointDir[] l = new PointDir[doors];
+			for(int i = 0; i < doors; i++){
+				PointDir d = randomDoor();
+				if(d!=null) l[i] = d;
 			}
-			if (opens[RIGHT]) {
-				//				localDoorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1), w-1),'R');
-
-				doorPoints[RIGHT] = new PointDir(new Point(x + w-1, rng.nextInt(h-1) + y),'R');
-			}
-			if (opens[DOWN]) {
-				//				localDoorPoints[DOWN] = new PointDir(new Point(h-1, rng.nextInt(w-1)),'D');
-
-				doorPoints[DOWN] = new PointDir(new Point(rng.nextInt(w-1) + x, y + h-1),'D');
-			}
-			if (opens[LEFT]) {
-				//				localDoorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1), 0),'L');
-
-				doorPoints[LEFT] = new PointDir(new Point(x, rng.nextInt(h-1) + y),'L');
-			}
+			return l;
 		}
 
 		public Queue<PointDir> addDoorsToQueue(Queue<PointDir> q){
@@ -594,20 +731,22 @@ public class Map {
 				if(doorPoints[i]!=null) q.add(doorPoints[i]);
 			}
 			return q;
+
 		}
 
 		public void cutOut(){
-			for(int _x = x; _x < x+w; _x++){
-				for(int _y = y; _y < y+h; _y++){
-					map[_y][_x] = 0;
+			for(int cx = x+1; cx < x+tw-1; cx++){
+				for(int cy = y+1; cy < y+th-1; cy++){
+					map[cy][cx] = 0;
 				}
 			}
 		}
 
 		public void putIntoMap(int[][] room){
-			for(int _x = 0; _x < w; _x++){
-				for(int _y = 0; _y < h; _y++){
-					map[_y+y+1][x+x+1] = room[_y][_x];
+			for(int cx = 0; cx < tw; cx++){
+				for(int cy = 0; cy < th; cy++){
+					// map[_y+y+1][_x+x+1] = room[_y][_x];
+					map[cy+y][cx+x] = room[cy][cx];
 				}
 			}
 		}
@@ -644,26 +783,6 @@ public class Map {
 		return walls;
 	}
 
-
-	public boolean connectedPoints(int[][] temp, int x1, int y1, int x2, int y2){
-		if(x1==x2&&y1==y2){
-			return true;
-		}
-		if(temp[y1][x1] == 1 || temp[y1][x1] == 4) return false;
-
-		temp[y1][x1] = 4;
-		// down
-		if(connectedPoints(temp,x1,y1+1,x2,y2)) return true;
-		// right
-		if(connectedPoints(temp,x1+1,y1,x2,y2)) return true;
-		// up
-		if(connectedPoints(temp,x1,y1-1,x2,y2)) return true;
-		// left
-		if(connectedPoints(temp,x1-1,y1,x2,y2)) return true;
-
-		return false;
-	}
-
 	public int[][] copyMap(){
 		int[][] temp = new int[height][width];
 		for(int y = 0; y < height; y++){
@@ -689,11 +808,40 @@ public class Map {
 		return type;
 	}
 
+	public int fgTypeAdj(int centerX, int centerY){
+		// generates binary numbers (8421=urdl)
+		int type = 0;
+		// up 
+		int f = foreground[centerY][centerX];
+
+		if(!(centerY<=0) && f != foreground[centerY-1][centerX]) type+=1;
+		// right
+		if(!(centerX>=width-1) && f != foreground[centerY][centerX+1]) type+=2;
+		// down
+		if(!(centerY>=height-1) && f != foreground[centerY+1][centerX]) type+=4;
+		// left
+		if(!(centerX<=0) && f!= foreground[centerY][centerX-1]) type+=8;
+
+		System.out.println(type);
+		return type;
+	}
+
+	public Point randomEmptySpace(){
+		int x;
+		int y;
+		do{
+			// System.out.println("picking point...");
+			x = rng.nextInt(width-1);
+			y = rng.nextInt(height-1);
+		}while(!isEmpty(x,y) || map[y][x] == 5);
+		return (new Point(x,y));
+	}
+
 	public Point randomOpenSpace(){
 		int x;
 		int y;
 		do{
-			System.out.println("picking point...");
+			// System.out.println("picking point...");
 			x = rng.nextInt(width-1);
 			y = rng.nextInt(height-1);
 		}while(!isFullOpen(x,y) || map[y][x] == 5);
@@ -738,7 +886,7 @@ public class Map {
 			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
 			System.out.println("placed exits");
 			if(tries<=300){
-				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), copyMap(), true);
+				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), buildOpenMap(), entities, true, true);
 				if(p==null || p.getParent() == null){
 					System.out.println("connecting exits failed.");
 				}
@@ -747,7 +895,7 @@ public class Map {
 			}
 			bigtries++;
 		} while (p==null || p.getParent() == null && bigtries < 10);
-		
+
 		if(tries>300){
 			System.out.println("connecting exits failed.");
 			if(undercity){
@@ -806,7 +954,10 @@ public class Map {
 						}
 					}else if(tileTypeAdj(x,y) == 10){
 						map[y][x] = 1;
+						foreground[y][x] = 0;
 					}
+				}else if(foreground[y][x] == 1){
+					foreground[y][x] = 0;
 				}
 			}
 		}
@@ -815,10 +966,38 @@ public class Map {
 
 	/**END OF GENERATION**/
 
+
+	// 0 = open
+	// 1 = closed
+	// 2 = amph/fly open
+	// 3 = fly open
+	public int[][] buildOpenMap(){
+		int[][] openMap = new int[height][width];
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				if(map[y][x] == 1){
+					openMap[y][x] = 1;
+				}else if(map[y][x] == 6){
+					if(foreground[y][x] == 1){
+						openMap[y][x] = 0;
+					}else{
+						openMap[y][x] = 2;
+					}
+				}else{
+					openMap[y][x] = 0;
+				}
+			}
+		}
+		return openMap;
+	}
+
 	public void buildTileMap(){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
 				tileMap[y][x] = new Tile(map[y][x],type,tileTypeAdj(x,y));
+				int f = foreground[y][x];
+				if(f==1 && tileMap[y][x].value != 6) f = 0;
+				if(f!=0) tileMap[y][x].setForeground(f,fgTypeAdj(x,y));
 			}
 		}
 	}
@@ -835,7 +1014,11 @@ public class Map {
 	public void printMap(){
 		for(int y=0; y < height; y++){
 			for(int x=0; x < width; x++){
-				System.out.print(type.tile_characters[map[y][x]]+" ");
+				if(foreground[y][x] != 0){
+					System.out.print(type.foreground_characters[foreground[y][x]]+" ");
+				}else{
+					System.out.print(type.tile_characters[map[y][x]]+" ");
+				}
 			}
 			System.out.println();
 		}
@@ -865,12 +1048,22 @@ public class Map {
 	//		return temp;
 	//	}
 
-
 	public boolean[][] lightMap;
 	private FOV fov = new FOV();
 
 	public void updateFOV(){
 		lightMap = fov.calculate(buildOpacityMap(), player.x, player.y, Main.player.Luminosity);
+
+		for(Entity e: entities.values()){
+			if(e.ai == null) continue;
+			if(e.inPlayerView){
+				e.inPlayerView = lightMap[e.y][e.x];
+				if(!e.inPlayerView) Main.appendText("The "+e.creature.NAME+" is no longer in view.");
+			}else{
+				e.inPlayerView = lightMap[e.y][e.x];
+				if(e.inPlayerView) Main.appendText("A "+e.creature.NAME+" moves into view.");
+			}
+		}
 		//		updateViewed();
 	}
 
@@ -917,49 +1110,71 @@ public class Map {
 								BufferedImage image = new BufferedImage(tileSize, tileSize,
 										BufferedImage.TYPE_BYTE_GRAY);
 								Graphics tileG = image.getGraphics();
-								tileG.drawImage(tileMap[y][x].image, 0, 0, null);
-								tileG.drawImage(tileMap[y][x].inventory.drawPile(), 0, 0, null); /** TEMP **/
+								tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
+								Entity LEH = tileMap[y][x].lastEntityHere;
+								if(LEH!=null && isOnMap(LEH.x,LEH.y) && !lightMap[LEH.y][LEH.x]){
+									tileG.drawImage(LEH.getImg(), 0, 0, null);
+								}
 								tileG.dispose();
 								tile = image;
 							}else{
 								tile = dark;
 							}
 						}else{
-							tileMap[y][x].view(tile);
+
 						}
 					}
-//					BufferedImage fullImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
-//					Graphics2D fg = (Graphics2D) fullImg.getGraphics();
-					
-//					fg.drawImage(tile, 0, 0, null);
 					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
-					if (isOnMap(x,y) && lightMap[y][x]) {
+
+					BufferedImage fullImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
+					Graphics fg = fullImg.getGraphics();
+					fg.drawImage(tile, 0, 0, null);
+
+					Entity lastEntity = null;
+					if (isOnMap(x,y) && (noLighting || lightMap[y][x])) {
+
+						// draw foreground
+						if(tileMap[y][x].getFgImage()!=null){
+							fg.drawImage(tileMap[y][x].getFgImage(),0,0,null);
+						}
+
 						// draw items
 						Inventory inv = tileMap[y][x].inventory;
 						if(!inv.isEmpty()){
-							g.drawImage(inv.drawPile(),x_ofs * tileSize, y_ofs * tileSize, null);
+							fg.drawImage(inv.drawPile(),0,0,null);
 						}
-						
-						
-						// draw entities
+					}
+
+
+					// get Entity image
+
+					if (isOnMap(x,y) && (noLighting || lightMap[y][x])) {
 						for (Entity e : entities.values()) {
 							if (e.getX() == x && e.getY() == y) {
-								g.drawImage(e.getImg(), x_ofs * tileSize, y_ofs * tileSize,null);
-//								fg.drawImage(e.getImg(), 0, 0, null);
+								lastEntity = e;
+								break;
 							}
 						}
-						
 					}
+
+					// draw tile. items. fg.
+					fg.dispose();
+					g.drawImage(fullImg, x_ofs * tileSize, y_ofs * tileSize, null);
+
+					// update tile memory
+					if(!noLighting && isOnMap(x,y) && lightMap[y][x]) tileMap[y][x].view(fullImg,lastEntity);
+
+					// finally, draw entities
+					if(lastEntity!=null) g.drawImage(lastEntity.getImg(), x_ofs*tileSize, y_ofs*tileSize, null);
+
+					// and draw player
 					if(player != null && player.getX() == x && player.getY() == y){
 						g.drawImage(player.getImg(),x_ofs*tileSize,y_ofs*tileSize,null);
-//						fg.drawImage(player.getImg(), 0, 0, null);
+						//					fg.drawImage(player.getImg(),0,0,null);
 					}
-					
-//					g.drawImage(fullImg,x_ofs*tileSize,y_ofs*tileSize,null);
-					
 				}
 			}
-
+			g.dispose();
 		} catch (Exception e) {
 			e.printStackTrace();
 		};
@@ -975,8 +1190,6 @@ public class Map {
 	public BufferedImage addVignette(BufferedImage image, int x, int y, int r){
 		int d = r*2*tileSize;
 		Graphics g = (Graphics2D) image.getGraphics();
-		//g.setColor(new Color(18,28,38,50));
-		//g.fillRect(0,0,image.getWidth(), image.getHeight());
 		g.setColor(new Color(225,185,85,45));
 		g.fillOval(x,y,d,d);
 		return image;
@@ -992,4 +1205,22 @@ public class Map {
 		// image = addCenterVignette(image,vr);
 		return image;
 	}
+
+	//	public int[] getEntityPriority(){
+	//		int[] order = new int[entities.size()];
+	//		for (int x = 0; x < order.length; x++) {
+	//			int min_distance = Integer.MAX_VALUE;
+	//			int min_pos = -1;
+	//			for (int i = 0; i < entities.size(); i++) {
+	//				entities.get(i).ai.lib.updatePath();
+	//				int distance = entities.get(i).ai.lib.distance;
+	//				if(distance < min_distance){
+	//					min_distance = distance;
+	//					min_pos = i;
+	//				}
+	//			}
+	//			order[x] = min_pos;
+	//		}
+	//		return order;
+	//	}
 }

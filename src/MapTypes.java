@@ -2,8 +2,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Random;
-
 import javax.imageio.ImageIO;
 
 
@@ -21,7 +19,9 @@ public class MapTypes {
 //																// new File("Floor.png") #4
 //																};
 	
-	public char[] foreground_characters = {' ','@','R'};
+	public char[] foreground_characters = {' ','H'};
+	public BufferedImage[] foregroundImages = new BufferedImage[foreground_characters.length];
+	
 //	public File[] foregrounds = {null, // 0
 //																			new File(PATH+"@.png"), // 1...
 //																			new File(PATH+"rat.png")
@@ -35,9 +35,7 @@ public class MapTypes {
 	public HashMap<Integer,BufferedImage[]> directionals = new HashMap<Integer,BufferedImage[]>();
 	public BufferedImage[][] tilesArray = null;
 	public HashMap<Integer,Integer> variationPercentages = new HashMap<Integer,Integer>();
-	
-	
-	private static Random rng = new Random();
+
 	
 	// TEMPORARY
 	
@@ -98,7 +96,7 @@ public class MapTypes {
 			// usedTiles[5] = usedTiles[0];
 			usedImages[5] = itemmap.getSubimage(0*tileSize+0, 0*tileSize, tileSize, tileSize);
 			
-			BufferedImage[] temp6 = {
+			BufferedImage[] tempDir = {
 					tilesArray[3][5], // 0
 					tilesArray[4][1], // 1
 					tilesArray[3][6], // 2
@@ -117,16 +115,48 @@ public class MapTypes {
 					tilesArray[4][3]
 			};
 			
-			directionals.put(6,temp6);
+			directionals.put(6,tempDir);
 			
 			// open door
 			usedImages[7] = itemmap.getSubimage(2*tileSize+2, 0*tileSize, tileSize, tileSize);
+			
+			// bridge
+			BufferedImage vertB = itemmap.getSubimage(1*tileSize+1, 9*tileSize+9, tileSize, tileSize);
+			BufferedImage horiB = itemmap.getSubimage(2*tileSize+2, 9*tileSize+9, tileSize, tileSize);
+			foregroundImages[1] = vertB;
+			
+			
+			tempDir = new BufferedImage[16];	
+			tempDir[15-1] = vertB;
+			tempDir[15-4] = vertB;
+			tempDir[15-2] = horiB;
+			tempDir[15-8] = horiB;
+			tempDir[15-5] = vertB;
+			tempDir[15-10] = horiB;
+			directionals.put(100+1, tempDir);
+ 		}
+	}
+	
+	// TODO: implement more stuff here
+	public BufferedImage pickFGImage(int type, int fgAdj, int adj){
+		int real = type+100;
+		if(directionals.containsKey(real)){
+			if(fgAdj!=0){
+				if(directionals.get(real)[fgAdj]!=null){
+					return directionals.get(real)[fgAdj];
+				}else{
+					return foregroundImages[type];
+				}
+			}else{
+				return directionals.get(real)[adj];
+			}
 		}
+		return foregroundImages[type];
 	}
 	
 	public BufferedImage pickImage(int type, int adj){
-		if(variations.containsKey(type) && rng.nextInt(100)<variationPercentages.get(type)){
-			return variations.get(type)[rng.nextInt(variations.get(type).length-1)];
+		if(variations.containsKey(type) && Main.rng.nextInt(100)<variationPercentages.get(type)){
+			return variations.get(type)[Main.rng.nextInt(variations.get(type).length-1)];
 		}else if(directionals.containsKey(type)){
 			return directionals.get(type)[adj];
 		}

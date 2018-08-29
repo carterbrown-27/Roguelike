@@ -1,7 +1,5 @@
-import java.util.Random;
 public class RandomChart {
 	int[][] chart;
-	Random rng = new Random();
 	
 	RandomChart(int[][] _chart){
 		chart = _chart;
@@ -20,7 +18,7 @@ public class RandomChart {
 	}
 	
 	public int pick(){
-		int rnd = rng.nextInt(100);
+		int rnd = Main.rng.nextInt(100);
 		for(int[] i: chart){
 			if(rnd < i[1]){
 				return i[0];

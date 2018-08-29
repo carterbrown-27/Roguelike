@@ -4,7 +4,6 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 public class Player extends KeyAdapter {
 	public Entity e;
@@ -16,61 +15,53 @@ public class Player extends KeyAdapter {
 	
 	public Ability ability = Ability.BASIC;
 	public int step = 0;
+
+	public ActionLibrary lib;
 	
-	public Random rng = new Random();
-	
-	public Entity ghost;
-	
-	public Inventory inv = new Inventory();
+	public boolean resting = false;
 	
 	// String = item name (ie blue potion) <> Item.Items = item real name (ie potion of flight)
-	public HashMap<String,Item.Items> identifiedItems = new HashMap<String,Item.Items>();
+	public HashMap<Item.Items,String> identifiedItems = new HashMap<Item.Items,String>();
 	
 	Player(int x, int y, Map _map){
 		map = _map;
 		this.e = new Entity(Creature.PLAYER,x,y,map);
 		map.entities.remove(this.e);
 		map.player = this.e;
+		lib = new ActionLibrary(e);
 	}
 	
 	public enum Ability{
 		BASIC (0),
 		SLASH (1),
 		LUNGE (2);
-		
+		/* TODO: PARRY: if you would be hit by a non-magic attack instead take no damage
+		 * and hit back for slash damage (guarantee hit) only works if the attack is under
+		 * "x" damage. projectiles means no hit-back only block.
+		 * neat combat like piratey stuff
+		*/
 		
 		public int k;
 		public int s;
+		public String name;
 		
 		Ability (int e){
 			if(e == 0){
 				k = KeyEvent.VK_ESCAPE;
 				s = 0;
+				name = "basic";
 			}else if(e == 1){
 				k = KeyEvent.VK_1;
-				s = 2;
+				s = 3;
+				name = "slash";
 			}else if(e == 2){
 				k = KeyEvent.VK_2;
-				s = 4;
+				s = 3;
+				name = "lunge";
 			}
 		}
 	}
 	
-	public double getAttackDamage(){
-		double baseDamage = e.STRENGTH;
-		if(e.weapon!=null) baseDamage += e.weapon.type.baseDamage;
-		return baseDamage/2 + (rng.nextDouble()*baseDamage);
-	}
-	
-	public double getDefense(){
-		double defense = 0;
-		for(Item i: e.armour){
-			if(i!=null){
-				defense += i.type.baseDefense;
-			}
-		}
-		return defense;
-	}
 	
 	public void deselect(){
 		select(Ability.BASIC);
@@ -115,16 +106,53 @@ public class Player extends KeyAdapter {
 		}
 	}
 	
-	@SuppressWarnings("unused")
 	public void basic(int dir){
 		if(!e.move(dir)){
 			if(melee(dir,1)){
 				Main.takeTurn();
-			}else if(false /* TODO: interact */){
-				
+			}else{
+
 			}
 		}else{
 			Main.takeTurn();
+		}
+	}
+	
+	public boolean enemiesNearby(){
+		for(Entity e: map.entities.values()){
+			if(e.awakeCheck()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void rest(){
+		while(!enemiesNearby() && e.HP < e.creature.HP_MAX){
+			e.HP = Math.min(e.HP+1, e.creature.HP_MAX);
+			Main.takeTurn();
+		}
+		resting = false;
+		Main.appendText("You feel better - HP: "+e.HP);
+		Main.refreshText();
+	}
+	
+	public void startRest(){
+		if (e.HP < e.creature.HP_MAX) {
+			if (!enemiesNearby()) {
+				if (!resting) {
+					Main.appendText("You start resting.");
+					resting = true;
+					rest();
+				} else {
+					Main.appendText("You stop resting.");
+					resting = false;
+				}
+			} else {
+				Main.appendText("You cannot rest now, there are enemies nearby.");
+			}
+		}else{
+			Main.appendText("You aren't tired.");			
 		}
 	}
 	
@@ -133,10 +161,16 @@ public class Player extends KeyAdapter {
 	}
 	
 	public boolean melee(int dir, double modifier){
-		Entity target = targetAdjacent(dir);
-		if(target!=null){
-			target.HP -= ActionLibrary.round(getAttackDamage() * modifier, 1);
-			Main.appendText(target.name+" 's HP: "+ ActionLibrary.round(target.HP,1));
+		Entity target =  targetAdjacent(dir);
+		if(target!=null && target.SE==null){
+			// System.out.println("player swing");
+			boolean hit = lib.melee(target, modifier);
+			if(hit){
+				Main.appendText("You hit the "+target.creature.NAME);								
+				Main.appendText(target.creature.NAME+" 's HP: "+ ActionLibrary.round(target.HP,1));				
+			}else{
+				Main.appendText("You miss the "+target.creature.NAME);				
+			}
 			return true;
 		}
 		return false;
@@ -152,9 +186,9 @@ public class Player extends KeyAdapter {
 	}
 	
 	
-	public void pickUp(char c){
-		Main.appendText("You pick up the " + map.tileMap[e.y][e.x].inventory.inv.get(c).getDisplayName());
-		map.tileMap[e.y][e.x].inventory.pickUp(c, inv);
+	public void pickUp(char c, Inventory origInv){
+		Main.appendText("You pick up the " + origInv.inv.get(c).getDisplayName());
+		origInv.pickUp(c,e);
 		Main.takeTurn();
 	}
 	
@@ -172,8 +206,23 @@ public class Player extends KeyAdapter {
 	}
 	
 	public void takeOff(Item i){
-		if(i!=null) i.worn = false;
-		//TODO: remove armour
+		if(i==null) return;
+		i.worn = false;
+		if(e.helmet.equals(i)){
+			e.helmet = null;
+		}else if(e.chestplate.equals(i)){
+			e.chestplate = null;
+		}else if(e.greaves.equals(i)){
+			e.greaves = null;
+		}else if(e.boots.equals(i)){
+			e.boots = null;
+		}else if(e.gloves.equals(i)){
+			e.gloves = null;
+		}else if(e.ring_left.equals(i)){
+			e.ring_left = null;
+		}else if(e.ring_right.equals(i)){
+			e.ring_right = null;
+		}
 		Main.appendText("You take off your "+i.name+".");
 	}
 	

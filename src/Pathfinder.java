@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -39,13 +40,21 @@ public class Pathfinder {
 		this.e = e;
 	}
 	
+	private HashMap<String,Entity> entities = new HashMap<String,Entity>();
+	private boolean entityCol = false;
+
 	private Queue<PointBFS> q;
-	public PointBFS pathfindBFS(Point start, Point end, int[][] temp, boolean diagonals){
+	Point end;
+	public PointBFS pathfindBFS(Point start, Point end, int[][] temp, HashMap<String,Entity> entities, boolean diagonals, boolean entityCol){
+		this.entities = entities;
+		this.entityCol = entityCol;
+		this.end = end;
 		q = new LinkedList<PointBFS>();
 		q.add(new PointBFS(start.x,start.y,null));
 		
 		int checkedTiles = 0;
-		while (!q.isEmpty() && checkedTiles < temp.length*temp[0].length/2) {
+		while (!q.isEmpty() && checkedTiles < temp.length*temp[0].length) {
+			checkedTiles++;
 			PointBFS p = q.remove();
 			if (p.x == end.x && p.y == end.y) {
 				return p;
@@ -119,20 +128,31 @@ public class Pathfinder {
 			}
 		}
 		if(_x<0 || _y<0 || _y>=_map.length || _x>=_map[_y].length) return false;
-		if(_map[_y][_x] != 1 && (_map[_y][_x] != 6 || (e!=null && (e.creature.isFlying || e.creature.isAmphibious)))) return true;
+		if (entityCol) {
+			for (Entity e : entities.values()) {
+				if (!e.equals(this.e) && !e.isPassable && e.x == _x && e.y == _y){
+					return false;
+				}
+			}
+		}
+//		if(Main.player != null && !end.equals(Main.player.e.getPos()) && Main.player.e.getPos().equals(new Point(_x,_y))){
+//			return false;
+//		}
+		if(_map[_y][_x] != 1 && (_map[_y][_x] != 2 || (e!=null && (e.isFlying || e.isAmphibious))) &&
+				(_map[_y][_x] != 3 || (e!=null && e.creature.isFlying))) return true;
 		return false;
 	}
 	
 	private boolean diagonalCheck(int dir, PointBFS p, Queue<PointBFS> q, int[][] temp){
 		int x = p.x;
 		int y = p.y;
-		int blocks = 0;
-		if((dir == 4 || dir == 5)&& !isOpen(p,null,x+1, y,temp)) blocks++;
-		if((dir == 5 || dir == 6)&& !isOpen(p,null,x, y+1,temp)) blocks++;
-		if((dir == 6 || dir == 7)&& !isOpen(p,null,x-1, y,temp)) blocks++;
-		if((dir == 7 || dir == 4)&& !isOpen(p,null,x, y-1 ,temp)) blocks++;
-		
-		if(blocks>=2) return false;
+//		int blocks = 0;
+//		if((dir == 4 || dir == 5)&& !isOpen(p,null,x+1, y,temp)) blocks++;
+//		if((dir == 5 || dir == 6)&& !isOpen(p,null,x, y+1,temp)) blocks++;
+//		if((dir == 6 || dir == 7)&& !isOpen(p,null,x-1, y,temp)) blocks++;
+//		if((dir == 7 || dir == 4)&& !isOpen(p,null,x, y-1 ,temp)) blocks++;
+//		
+//		if(blocks>=2) return false;
 		
 		if(dir == 4 && !isOpen(p,q,x+1,y-1,temp)) return false;
 		if(dir == 5 && !isOpen(p,q,x+1,y+1,temp)) return false;
