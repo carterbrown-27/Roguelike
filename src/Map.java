@@ -28,8 +28,7 @@ public class Map {
 	public  static Random rng = new Random();
 	private Pathfinder pf = new Pathfinder();
 
-	public String maptype = "sourcedCave";
-	private MapTypes type = new MapTypes(maptype);
+	private MapTypes type = MapTypes.UNDERCITY;
 
 	public static final boolean undercity = true;
 
@@ -39,6 +38,8 @@ public class Map {
 	public final int RIGHT = 1;
 	public final int DOWN = 2;
 	public final int LEFT = 3;
+
+	public final char[] dirs = {'T','R','D','L'};
 
 	Map(int _height, int _width, int _randFillPercent, Random _rng){
 		this(_height,_width,_randFillPercent,smooths,_rng);
@@ -144,8 +145,7 @@ public class Map {
 			int start_x = rng.nextInt(width*2/3) + width/6 - 1;
 			int start_y = rng.nextInt(height*2/3) + height/6 - 1;
 
-			q.add(new Room(new PointDir(new Point(start_x,start_y),'R'),true,RoomType.REGULAR));
-
+			q.add(new Room(new PointDir(new Point(start_x,start_y),dirs[RIGHT]),true,RoomType.REGULAR));
 
 			// starting point
 			// Top = 0, Right = 1, Bottom = 2, Left = 3
@@ -153,48 +153,55 @@ public class Map {
 			//			int quadrant = rng.nextInt(3);
 			//			switch(quadrant){
 			//			case 0:
-			//				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), 'D'));
+			//				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), dirs[DOWN]));
 			//				break;
 			//			case 1:
-			//				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), 'L'));
+			//				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), dirs[LEFT]));
 			//				break;
 			//			case 2:
 			//				q.add(new PointDir(new Point(rng.nextInt(width-1), height-rng.nextInt(height/3)-1), 'T'));
 			//				break;
 			//			case 3:
-			//				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), 'R'));
+			//				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), dirs[RIGHT]));
 			//				break;
 			//			}
 
 			while (!q.isEmpty()) {
 				Room R = q.remove();
-
+				System.out.println("building OFF OF..."+R.roomType.name());
 				// room vs corridor
 				for(int t = 0; t < R.doors; t++){
-					
+
 					Room r;
 					if (rng.nextInt(10)>=4) {
 						int attempts = 0;
+						RoomType prev = null;
 						do {
-							PointDir p = R.randomDoor();
+							PointDir p = R.getRandomDoor();
+							if(p==null) break;
 							Point ahead = aheadTile(p);
 							if(isOpen(ahead.x,ahead.y) && rng.nextInt(4)==4){
 								workingDoors.add(p);
 								break;
 							}
-							r = new Room(p, false, RoomType.RANDOM);
+							RoomType type = RoomType.RANDOM;
+							if(prev!=null && attempts<=2){
+								type = prev;
+							}
+							r = new Room(p, false, type);
 							// printMap();
 							if (r.valid) {
 								q.add(r);
 								workingDoors.add(p);
 								break;
 							}else{
+								prev = r.roomType;
 								attempts++;
 							}
-						} while (attempts<3);
+						} while (attempts<=3);
 					}else{
-						PointDir p = R.randomDoor();
-
+						PointDir p = R.getRandomDoor();
+						if(p==null) break;
 						ArrayList<PointDir> doors = buildCorridor(p,false);
 						// printMap();
 						if (doors!=null) {
@@ -242,7 +249,7 @@ public class Map {
 				// if door leads nowhere, fill it in
 				if(!isOpen(aheadTile(newDoor).x,aheadTile(newDoor).y)){
 					if(!(temp.x<0 || temp.y<0 || temp.y>height-1 || temp.x>width-1)) map[p.point.y][p.point.x] = 1;
-
+					
 					// if door is not between two walls, destroy it
 				}else if(isSandwich(temp.x,temp.y) ){
 					doorCount++;
@@ -287,43 +294,43 @@ public class Map {
 				}
 				// doors on sides
 				if(rng.nextInt(8)>=6){
-					if (dir=='T' || dir=='D') {
+					if (dir==dirs[UP] || dir==dirs[DOWN]) {
 						if (rng.nextBoolean()) {
 							// left of path
 							if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1)  {
-								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'L'));
+								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), dirs[LEFT]));
 
 								// right of path	
 							} else if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < width-1) {
-								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'R'));
+								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), dirs[RIGHT]));
 							}
 						} else {
 							// right of path
 							if (!isOpen(end.point.x+1, end.point.y) && end.point.x + 1 < width-1) {
-								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), 'R'));
+								doors.add(new PointDir(new Point(end.point.x+1, end.point.y), dirs[RIGHT]));
 
 								// left of path
 							} else if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'L'));
+								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), dirs[LEFT]));
 							}
 						}
-					}else if(dir=='L' || dir=='R'){
+					}else if(dir==dirs[LEFT] || dir==dirs[RIGHT]){
 						if (rng.nextBoolean()) {
 							// up of path
 							if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), 'T'));
+								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), dirs[UP]));
 
 								// down of path	
 							} else if (!isOpen(end.point.x, end.point.y+1) && end.point.y + 1 < height-1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), 'D'));
+								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), dirs[DOWN]));
 							}
 						} else {
 							// down of path
 							if (!isOpen(end.point.x, end.point.y+1) && end.point.y + 1 < height-1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), 'D'));
+								doors.add(new PointDir(new Point(end.point.x, end.point.y+1), dirs[DOWN]));
 								// up of path
 							}else if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
-								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), 'T'));
+								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), dirs[UP]));
 							}
 						}
 					}
@@ -334,17 +341,17 @@ public class Map {
 		}
 		// map[door.point.x][door.point.y] = 5;
 		if(rng.nextInt(10)>=7){
-			if(end.dir=='T' || end.dir=='D'){
+			if(end.dir==dirs[UP] || end.dir==dirs[DOWN]){
 				if(rng.nextBoolean()){
-					end.dir = 'L';
+					end.dir = dirs[LEFT];
 				}else{
-					end.dir = 'R';
+					end.dir = dirs[RIGHT];
 				}
 			}else{
 				if(rng.nextBoolean()){
-					end.dir = 'T';
+					end.dir = dirs[UP];
 				}else{
-					end.dir = 'D';
+					end.dir = dirs[DOWN];
 				}
 			}
 			map[end.point.y][end.point.x] = 0;
@@ -383,13 +390,13 @@ public class Map {
 	public Point aheadTile(PointDir p){
 		Point point = p.point;
 		char dir = p.dir;
-		if(dir=='T'){
+		if(dir==dirs[UP]){
 			return new Point(point.x,point.y-1);
-		}else if(dir=='L'){
+		}else if(dir==dirs[LEFT]){
 			return new Point(point.x-1,point.y);
-		}else if(dir=='D'){
+		}else if(dir==dirs[DOWN]){
 			return new Point(point.x,point.y+1);
-		}else if(dir=='R'){
+		}else if(dir==dirs[RIGHT]){
 			return new Point(point.x+1,point.y);
 		}
 		return null;
@@ -398,7 +405,8 @@ public class Map {
 	public enum RoomType{
 		RANDOM,
 		REGULAR,
-		SEWER;
+		SEWER,
+		PRECON;
 	}
 
 	public class Room {
@@ -413,14 +421,16 @@ public class Map {
 
 		public PointDir door;
 		public int doors;
-		public PointDir[] doorPoints = new PointDir[4];
+		public ArrayList<PointDir> doorPoints = new ArrayList<PointDir>();
 		//		public PointDir[] localDoorPoints = new PointDir[4];
 		boolean[] opens = new boolean[4];
 		boolean works = true;
 		boolean valid = true;
 		boolean start = false; 
 		char dir;
-		RoomType type;
+		RoomType roomType;
+
+		int precon_id;
 
 
 		Room(PointDir _door, boolean _start, RoomType _type){
@@ -429,22 +439,27 @@ public class Map {
 			start = _start;
 			door = _door;
 			if(!start) dir = door.dir;
-			type = _type;
+			roomType = _type;
 
 			if(start){
 				x = door.point.x;
 				y = door.point.y;
+				roomType = RoomType.REGULAR;
 				setBounds();
 				buildNormal();
 				return;
 			}
 
-			if(type.equals(RoomType.RANDOM)){
+			if(roomType.equals(RoomType.RANDOM)){
 				// TODO: pick random
-				if(rng.nextInt(10)>=5){
-					type = RoomType.SEWER;
+				System.out.println("picking type.");
+				int a = rng.nextInt(10);
+				if(a>=7){
+					roomType = RoomType.SEWER;
+				}else if(a>=4){
+					roomType = RoomType.PRECON;
 				}else{
-					type = RoomType.REGULAR;
+					roomType = RoomType.REGULAR;
 				}
 			}
 
@@ -453,22 +468,24 @@ public class Map {
 				setBounds();
 
 				int offset = 0;
-				if(dir=='T'||dir=='D'){
+				if(dir==dirs[UP] || dir==dirs[DOWN]){
+					// System.out.println(w);
 					offset = rng.nextInt(w-1)+1; // TODO
 				}else{
+					// System.out.println(h);
 					offset = rng.nextInt(h-1)+1;
 				}
 
-				if(dir=='T'){
+				if(dir==dirs[UP]){
 					x = door.point.x-offset;
 					y = door.point.y-th+1;
-				}else if(dir=='D'){
+				}else if(dir==dirs[DOWN]){
 					x = door.point.x-offset;
 					y = door.point.y;
-				}else if(dir=='L'){
+				}else if(dir==dirs[LEFT]){
 					y = door.point.y-offset;
 					x = door.point.x-tw+1;
-				}else if(dir=='R'){
+				}else if(dir==dirs[RIGHT]){
 					y = door.point.y-offset;
 					x = door.point.x;
 				}
@@ -483,17 +500,42 @@ public class Map {
 				valid = false;
 			}
 		}
+		
+		public PointDir getRandomDoor(){
+			if(!doorPoints.isEmpty()){
+				System.out.println(doorPoints.size());
+				for(PointDir d: doorPoints){
+					System.out.println(d.point);
+				}
+				int rand;
+				if(doorPoints.size()>1){
+					rand = rng.nextInt(doorPoints.size()-1);
+				}else{
+					rand = 0;
+				}
+				PointDir p = doorPoints.get(rand);
+				doorPoints.remove(rand);
+				return p;
+			}else{
+				System.out.println("picking random door");
+				PointDir p = randomDoor();
+				if(p==null){
+					System.out.println("no more doors possible");
+				}
+				return p;
+			}
+		}
 
 		public void setBounds(){
-			if (type.equals(RoomType.REGULAR)) {
+			if (roomType.equals(RoomType.REGULAR)) {
 				int min = rng.nextInt(1)+3;
 				w = rng.nextInt(5) + min;
 				h = rng.nextInt(5) + min;
-			}else if (type.equals(RoomType.SEWER)){
+			}else if (roomType.equals(RoomType.SEWER)){
 				final int l_min = 8;
 				final int l_var = 6;
 
-				if(dir=='T' || dir=='D'){
+				if(dir==dirs[UP] || dir==dirs[DOWN]){
 					// wide
 					w = rng.nextInt(l_var)+l_min;
 					h = rng.nextInt(3)+3;
@@ -502,6 +544,10 @@ public class Map {
 					h = rng.nextInt(l_var)+l_min;
 					w = rng.nextInt(3)+3;
 				}
+			}else if(roomType.equals(RoomType.PRECON)){
+				precon_id = rng.nextInt(type.precons.size()-1);
+				h = type.precons.get(precon_id).length - 2;
+				w = type.precons.get(precon_id)[0].length - 2;
 			}
 
 			tw = w+2;
@@ -527,17 +573,16 @@ public class Map {
 			while(tries < 15){
 				int d = rng.nextInt(3);
 				PointDir p = null;
-				// TODO: check if accesible in room
-				if(d==0 && (start || door.dir!='T')){
-					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y),'T');
-				}else if(d==1 && (start || door.dir!='R')){
-					p = new PointDir(new Point(x + tw-1, rng.nextInt(h-1)+1 + y),'R');					
-				}else if(d==2 && (start || door.dir!='D')){
-					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y + th-1),'D');					
-				}else if(start || door.dir!='L'){
-					p = new PointDir(new Point(x, rng.nextInt(h-1)+1 + y),'L');
+				if(d==0 && (start || door.dir!=dirs[UP])){
+					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y),dirs[UP]);
+				}else if(d==1 && (start || door.dir!=dirs[RIGHT])){
+					p = new PointDir(new Point(x + tw-1, rng.nextInt(h-1)+1 + y),dirs[RIGHT]);					
+				}else if(d==2 && (start || door.dir!=dirs[DOWN])){
+					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y + th-1),dirs[DOWN]);					
+				}else if(start || door.dir!=dirs[LEFT]){
+					p = new PointDir(new Point(x, rng.nextInt(h-1)+1 + y),dirs[LEFT]);
 				}
-				if(p == null){
+				if(p == null || (room != null && room[p.point.y-y][p.point.x-x] == 'X')){
 					tries++;
 					continue;
 				}
@@ -557,25 +602,31 @@ public class Map {
 
 
 		public void buildNormal(){
-			if(type.equals(RoomType.REGULAR)){
+			if(roomType.equals(RoomType.REGULAR)){
 				System.out.println("building regular...");
 				pickDoors();
 				//				placeDoors();
 				cutOut();
-			}else if(type.equals(RoomType.SEWER)){
+			}else if(roomType.equals(RoomType.SEWER)){
 				System.out.println("building sewer...");
-				//				if(dir=='T'){
+				pickDoors();
+
+				//				if(dir==dirs[UP]){
 				//					opens[UP] = true;
-				//				}else if(dir=='D'){
+				//				}else if(dir==dirs[DOWN]){
 				//					opens[DOWN] = true;
-				//				}else if(dir=='L'){
+				//				}else if(dir==dirs[LEFT]){
 				//					opens[LEFT] = true;
-				//				}else if(dir=='R'){
+				//				}else if(dir==dirs[RIGHT]){
 				//					opens[RIGHT] = true;
 				//				}
 				//				placeDoors();
 				cutOut();
 				buildSewer();
+			}else if(roomType.equals(RoomType.PRECON)){
+				System.out.println("building precon...");
+				pickDoors();
+				buildPrecon();
 			}
 		}
 
@@ -586,15 +637,126 @@ public class Map {
 		//			}
 		//		}
 
+		char[][] room;
+		public void buildPrecon(){
+			
+			/** TODO: fix bug where precons are placed where they shouldn't be
+			* ie, rivers block original doors.
+			* fix doors so that they delete properly.
+			* allow for rotation.
+			**/
+			room = new char[th][tw];
+			for(int cy = 0; cy < th; cy++){
+				for(int cx = 0; cx < tw; cx++){
+					char c = type.precons.get(precon_id)[cy][cx];
+					room[cy][cx] = c;
+				}
+			}
+
+			ArrayList<PointDir> possibleDoors = new ArrayList<PointDir>();
+			boolean hitD = false;
+			int temp = 0;
+			for(int cy = 0; cy < th; cy++){
+				for(int cx = 0; cx < tw; cx++){
+					char c = room[cy][cx];
+					Point p = new Point(cx,cy);
+					// TODO: add non-edge doors
+					if(room[cy][cx]== 'D'){
+//						System.out.println("issa door");
+						if(!hitD){
+							hitD = true;
+							doors = 0;
+						}
+						doors++;
+						doorPoints.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));
+					}else if(room[cy][cx] =='d'){
+						if(hitD){
+							temp = doors;
+							pickDoors();
+							doors+=temp;
+						}
+						possibleDoors.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));
+					}
+				}
+			}
+
+			int doorCount = doors-temp;
+			while(doorCount > 0 && possibleDoors.size()>1){
+				int r = rng.nextInt(possibleDoors.size()-1);
+				
+				doorPoints.add(possibleDoors.get(r));
+				possibleDoors.remove(r);
+				doorCount--;
+			}
+
+			if(doorCount > 0 && possibleDoors.size()==1){
+				doorPoints.add(possibleDoors.get(0));
+				possibleDoors.remove(0);
+			}
+			
+			for(PointDir d: possibleDoors){
+				room[d.point.y-y][d.point.x-x] = '#';
+			}
+
+//			if(doorPoints.isEmpty()){
+//				for(int i = doors; i > 0; i--){
+//					doorPoints.add(randomDoor());
+//				}
+//			}
+
+			// TODO: place doors, chests, keys etc
+			for(int cy = 0; cy < th; cy++){
+				for(int cx = 0; cx < tw; cx++){
+					char cc = room[cy][cx];
+					int t = -1;
+					if(cc=='X'){
+						cc='#';
+					}else if(cc == '.'){
+						cc = ' ';
+					}
+					for(int i = 0; i < type.tile_characters.length; i++){
+						char c = type.tile_characters[i];
+						if(c == cc){
+							t = i;
+							break;
+						}
+					}
+					if(t!=-1){
+						map[y+cy][x+cx] = t;
+					}else{
+						map[y+cy][x+cx] = 1;
+					}
+				}
+			}
+			if(type.precons_fg.containsKey(precon_id)){
+				for(String s: type.precons_fg.get(precon_id)){
+					String[] str = s.split(",");
+					Point p = new Point(Character.valueOf(str[1].charAt(1)),Character.valueOf(str[1].charAt(3)));
+					foreground[p.y][p.x] = str[0].charAt(0);
+					// TODO: directions
+				}
+			}
+		}
+
+		public char getDoorDir(Point p){
+			if(p.x == 0){
+				return dirs[LEFT];
+			}else if(p.y == 0){
+				return dirs[UP];
+			}else if(p.x == tw-1){
+				return dirs[RIGHT];
+			}else if(p.y == th-1){
+				return dirs[DOWN];
+			}
+			return '!';
+		}
+
 		@SuppressWarnings("unused")
 		public void buildSewer(){
-
-			// TODO: add precons
-
 			if(h<=3 || w<=3) return;
 			int waterWidth = 2;
 			boolean noBridge = false; // (doors==0 && rng.nextInt(10)<=7);
-			if((door.dir == 'T' || door.dir == 'D') && w>4){
+			if((door.dir == dirs[UP] || door.dir == dirs[DOWN]) && w>4){
 				// horizontal
 				int river_h;
 				if(h<=4){
@@ -633,7 +795,7 @@ public class Map {
 						}
 					}
 				}
-			}else if((door.dir == 'L' || door.dir == 'R') && h>4){
+			}else if((door.dir == dirs[LEFT] || door.dir == dirs[RIGHT]) && h>4){
 				// vertical
 				int river_w;
 				if(w<=4){
@@ -676,49 +838,15 @@ public class Map {
 			RandomChart rnd = new RandomChart(chart);
 			doors = rnd.pick();
 			if(start) doors = 3;
-
-			//			if(dir=='T') opens[UP] = false;
-			//			if(dir=='L') opens[LEFT] = false;
-			//			if(dir=='D') opens[DOWN] = false;
-			//			if(dir=='R') opens[RIGHT] = false;
-			//
-			//			for(int i = 0; i < doors; i++) {
-			//				boolean flag = false;
-			//				do {
-			//					int temp = rng.nextInt(3);
-			//					if (!opens[temp]) {
-			//						flag = true;
-			//						opens[temp] = true;
-			//					}
-			//				} while (!flag);
-			//			}
 		}
-
-		//		public void placeDoors(){
-		//			if (opens[UP]) {
-		//				//				localDoorPoints[UP] = new PointDir(new Point(0, rng.nextInt(w-1)),'T');
-		//
-		//				doorPoints[UP] = new PointDir(new Point(rng.nextInt(w-1) + x, y),'T');
-		//			}
-		//			if (opens[RIGHT]) {
-		//				//				localDoorPoints[RIGHT] = new PointDir(new Point(rng.nextInt(h-1), w-1),'R');
-		//
-		//				doorPoints[RIGHT] = new PointDir(new Point(x + w-1, rng.nextInt(h-1) + y),'R');
-		//			}
-		//			if (opens[DOWN]) {
-		//				//				localDoorPoints[DOWN] = new PointDir(new Point(h-1, rng.nextInt(w-1)),'D');
-		//
-		//				doorPoints[DOWN] = new PointDir(new Point(rng.nextInt(w-1) + x, y + h-1),'D');
-		//			}
-		//			if (opens[LEFT]) {
-		//				//				localDoorPoints[LEFT] = new PointDir(new Point(rng.nextInt(h-1), 0),'L');
-		//
-		//				doorPoints[LEFT] = new PointDir(new Point(x, rng.nextInt(h-1) + y),'L');
-		//			}
-		//	}	
 
 		public PointDir[] getDoors(){
 			PointDir[] l = new PointDir[doors];
+			if(doorPoints!=null && !doorPoints.isEmpty()){
+				for(int i = 0; i < doors; i++){
+					l[i] = doorPoints.get(i);
+				}
+			}
 			for(int i = 0; i < doors; i++){
 				PointDir d = randomDoor();
 				if(d!=null) l[i] = d;
@@ -727,8 +855,8 @@ public class Map {
 		}
 
 		public Queue<PointDir> addDoorsToQueue(Queue<PointDir> q){
-			for(int i = 0; i < doorPoints.length; i++){
-				if(doorPoints[i]!=null) q.add(doorPoints[i]);
+			for(PointDir d: q){
+				q.add(d);
 			}
 			return q;
 

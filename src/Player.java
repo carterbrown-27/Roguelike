@@ -37,7 +37,8 @@ public class Player extends KeyAdapter {
 		LUNGE (2);
 		/* TODO: PARRY: if you would be hit by a non-magic attack instead take no damage
 		 * and hit back for slash damage (guarantee hit) only works if the attack is under
-		 * "x" damage. projectiles means no hit-back only block.
+		 * "x" damage. projectiles means no hit-back only block
+		 * else: ?
 		 * neat combat like piratey stuff
 		*/
 		

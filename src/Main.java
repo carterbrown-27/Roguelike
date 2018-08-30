@@ -112,7 +112,7 @@ public class Main {
 							for (char c = 'a'; c <= 'z'; c++) {
 								if (e.getKeyChar() == c && player.e.inv.inv.containsKey(c)) {
 									selected = true;
-									// TODO: open item menu
+									// open item menu
 									/** temporary **/
 									Item i = player.e.inv.inv.get(c);
 

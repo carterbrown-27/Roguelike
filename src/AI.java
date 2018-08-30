@@ -1,5 +1,3 @@
-import java.awt.Point;
-
 public class AI {
 	public Pathfinder p = new Pathfinder();
 	public Entity e;

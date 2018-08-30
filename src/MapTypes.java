@@ -1,33 +1,21 @@
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 
-
-public class MapTypes {
+public enum MapTypes {
+	UNDERCITY ("undercity");
+	
 	public final String PATH = "imgs/";
 	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
-//	public File[] tileFiles = {// new File("Floor.png"), #0
-//																new File(PATH+"floorReducedDark.png"),
-//																// new File("RedWall.png"), #1
-//																new File(PATH+"darkWall2.png"),
-//																new File(PATH+"ropefloor.png"),
-//																new File(PATH+"hole_floor.png"),
-//																new File(PATH+"floorStepsDark.png"),
-//																new File(PATH+"RedWall.png")
-//																// new File("Floor.png") #4
-//																};
 	
 	public char[] foreground_characters = {' ','H'};
 	public BufferedImage[] foregroundImages = new BufferedImage[foreground_characters.length];
-	
-//	public File[] foregrounds = {null, // 0
-//																			new File(PATH+"@.png"), // 1...
-//																			new File(PATH+"rat.png")
-//																			};
-	
-//	public BufferedImage[] tiles = new BufferedImage[tileFiles.length];
+
 	public Tile[] usedTiles = new Tile[tile_characters.length];
 	public BufferedImage[] usedImages = new BufferedImage[usedTiles.length];
 	
@@ -35,16 +23,89 @@ public class MapTypes {
 	public HashMap<Integer,BufferedImage[]> directionals = new HashMap<Integer,BufferedImage[]>();
 	public BufferedImage[][] tilesArray = null;
 	public HashMap<Integer,Integer> variationPercentages = new HashMap<Integer,Integer>();
+	
+	public HashMap<Integer,char[][]> precons = new HashMap<Integer,char[][]>();
+	public HashMap<Integer,ArrayList<String>> precons_fg = new HashMap<Integer,ArrayList<String>>();
+	
+//	public Tile[][] tileMapFromFile(ArrayList<String> rows){
+//		int max = 0;
+//		for(String s: rows){
+//			if(s.length() > max) max = s.length();
+//		}
+//		Tile[][] room = new Tile[rows.size()][max];
+//		
+//		for(int y = 0; y < rows.size(); y++){
+//			for(int x = 0; x < max; x++){
+//			}
+//		}
+//		
+//		return room;
+//	}
+	
+	public char[][] charGridFromStrings(ArrayList<String> rows){
+		int max = 0;
+		for(String s: rows){
+			if(s.length() > max) max = s.length();
+		}
+		
+		
+		
+		char[][] room = new char[rows.size()][max];
+		
+		for(int y = 0; y < rows.size(); y++){
+			for(int x = 0; x < max; x++){
+				room[y][x] = rows.get(y).charAt(x);
+			}
+		}
+		
+		return room;
+	}
 
-	
-	// TEMPORARY
-	
-//	public static final int defaultFloorPos = 18;
-//	public static final int defaultWallPos = 25;
-	
 	MapTypes(String type){
 		
-		if(type.equals("sourcedCave")){
+		if(type.equals("undercity")){
+			BufferedReader br;
+			try{
+				br = new BufferedReader(new FileReader("precons.txt"));
+				ArrayList<String> rows = new ArrayList<String>();
+				
+				char[][] room;
+				int count = 0;
+				
+				String line = br.readLine();
+				while(line!=null){
+					if(line.equals("---")){
+						room = charGridFromStrings(rows);
+						precons.put(count,room);
+						count++;
+						rows.clear();
+						
+					}else if(line.equals("+++")){
+						 room = charGridFromStrings(rows);
+						 line = br.readLine();
+						 ArrayList<String> fg = new ArrayList<String>();
+						 while(!line.equals("---")){
+							 // foreground
+							 fg.add(line);
+							 line = br.readLine();
+						 }
+						 precons_fg.put(count, fg);
+						 count++;
+						 rows.clear();
+						 
+					}else{
+						rows.add(line.trim());
+					}
+					
+					line = br.readLine();
+				}
+				
+				
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+			
+			
 			BufferedImage tilemap = null;
 			BufferedImage itemmap = null;
 			try {
@@ -137,7 +198,6 @@ public class MapTypes {
  		}
 	}
 	
-	// TODO: implement more stuff here
 	public BufferedImage pickFGImage(int type, int fgAdj, int adj){
 		int real = type+100;
 		if(directionals.containsKey(real)){
