@@ -82,6 +82,7 @@ public enum MapTypes {
 						
 					}else if(line.equals("+++")){
 						 room = charGridFromStrings(rows);
+						 precons.put(count, room);
 						 line = br.readLine();
 						 ArrayList<String> fg = new ArrayList<String>();
 						 while(!line.equals("---")){
@@ -201,14 +202,14 @@ public enum MapTypes {
 	public BufferedImage pickFGImage(int type, int fgAdj, int adj){
 		int real = type+100;
 		if(directionals.containsKey(real)){
-			if(fgAdj!=0){
+			if(fgAdj<15){
 				if(directionals.get(real)[fgAdj]!=null){
 					return directionals.get(real)[fgAdj];
 				}else{
 					return foregroundImages[type];
 				}
 			}else{
-				return directionals.get(real)[adj];
+				return directionals.get(real)[15-adj];
 			}
 		}
 		return foregroundImages[type];

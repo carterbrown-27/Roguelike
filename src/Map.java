@@ -71,6 +71,14 @@ public class Map {
 		System.out.println("building tile map...");
 		buildTileMap();
 
+		for(char[][] r: type.precons.values()){
+			for(int cy = 0; cy < r.length; cy++){
+				for(int cx = 0; cx < r[0].length; cx++){
+					System.out.print(r[cy][cx]);
+				}
+				System.out.println();
+			}
+		}
 		System.out.println("done.");
 		if(debugFlag) System.out.println("debug flag raised");
 	}
@@ -176,6 +184,7 @@ public class Map {
 					if (rng.nextInt(10)>=4) {
 						int attempts = 0;
 						RoomType prev = null;
+						final int ROOM_ATTEMPTS = 4;
 						do {
 							PointDir p = R.getRandomDoor();
 							if(p==null) break;
@@ -197,8 +206,11 @@ public class Map {
 							}else{
 								prev = r.roomType;
 								attempts++;
+								if(attempts >= ROOM_ATTEMPTS){
+									map[p.point.y][p.point.x] = 1;
+								}
 							}
-						} while (attempts<=3);
+						} while (attempts < ROOM_ATTEMPTS);
 					}else{
 						PointDir p = R.getRandomDoor();
 						if(p==null) break;
@@ -248,8 +260,8 @@ public class Map {
 				PointDir newDoor = new PointDir(temp,p.dir);
 				// if door leads nowhere, fill it in
 				if(!isOpen(aheadTile(newDoor).x,aheadTile(newDoor).y)){
-					if(!(temp.x<0 || temp.y<0 || temp.y>height-1 || temp.x>width-1)) map[p.point.y][p.point.x] = 1;
-					
+					if(isOnMap(temp.x,temp.y)) map[p.point.y][p.point.x] = 1;
+
 					// if door is not between two walls, destroy it
 				}else if(isSandwich(temp.x,temp.y) ){
 					doorCount++;
@@ -419,6 +431,8 @@ public class Map {
 		public int tw;
 		public int th;
 
+		public int offset;
+
 		public PointDir door;
 		public int doors;
 		public ArrayList<PointDir> doorPoints = new ArrayList<PointDir>();
@@ -456,26 +470,45 @@ public class Map {
 				int a = rng.nextInt(10);
 				if(a>=7){
 					roomType = RoomType.SEWER;
-				}else if(a>=4){
+				}else if(a>=3){
 					roomType = RoomType.PRECON;
 				}else{
 					roomType = RoomType.REGULAR;
 				}
 			}
 
+			final int ATTEMPTS = 50;
 			do{
 				works = true;
 				setBounds();
 
-				int offset = 0;
-				if(dir==dirs[UP] || dir==dirs[DOWN]){
-					// System.out.println(w);
-					offset = rng.nextInt(w-1)+1; // TODO
-				}else{
-					// System.out.println(h);
-					offset = rng.nextInt(h-1)+1;
-				}
+				// TODO: rework system so that room is generated first, then offsets are found, and doors are placed etc
+				if(roomType.equals(RoomType.PRECON)){
+					boolean offsetWorks = false;
+					int OFFSET_ATTEMPTS = 15;
+					int offsetCount = 0;
+					do{
+						if(dir==dirs[UP] || dir==dirs[DOWN]){
+							offset = rng.nextInt(w-1)+1; // from 1 -> w
+						}else{
+							offset = rng.nextInt(h-1)+1;
+						}
 
+						Point p = precon_getDoorstep();
+						Point dp = precon_getDoorPos();
+						char[][] r = type.precons.get(precon_id);
+						if((precon_containsDoors() && (r[dp.y][dp.x] == 'D' || r[dp.y][dp.x] == 'd')) ||
+							(!precon_containsDoors() && r[p.y][p.x] == '.')){
+							offsetWorks = true;
+						}
+						offsetCount++;
+					}while(!offsetWorks && offsetCount < OFFSET_ATTEMPTS);
+					if(!offsetWorks){
+						works = false;
+						break;
+					}
+				}
+				
 				if(dir==dirs[UP]){
 					x = door.point.x-offset;
 					y = door.point.y-th+1;
@@ -491,16 +524,16 @@ public class Map {
 				}
 				works = surroundCheck();
 				count++;
-			} while(!works && count < 100);
+			} while(!works && count < ATTEMPTS);
 
 
-			if (count<100) {
+			if (works) {
 				buildNormal();
 			}else{
 				valid = false;
 			}
 		}
-		
+
 		public PointDir getRandomDoor(){
 			if(!doorPoints.isEmpty()){
 				System.out.println(doorPoints.size());
@@ -538,20 +571,29 @@ public class Map {
 				if(dir==dirs[UP] || dir==dirs[DOWN]){
 					// wide
 					w = rng.nextInt(l_var)+l_min;
-					h = rng.nextInt(3)+3;
+					h = rng.nextInt(2)+4;
 				}else{
 					// tall
 					h = rng.nextInt(l_var)+l_min;
-					w = rng.nextInt(3)+3;
+					w = rng.nextInt(2)+4;
 				}
 			}else if(roomType.equals(RoomType.PRECON)){
-				precon_id = rng.nextInt(type.precons.size()-1);
+				precon_id = rng.nextInt(type.precons.size());
 				h = type.precons.get(precon_id).length - 2;
 				w = type.precons.get(precon_id)[0].length - 2;
 			}
 
 			tw = w+2;
 			th = h+2;
+			if(!roomType.equals(RoomType.PRECON)){
+				if(dir==dirs[UP] || dir==dirs[DOWN]){
+					// System.out.println(w);
+					offset = rng.nextInt(w-1)+1; // from 1 -> w
+				}else{
+					// System.out.println(h);
+					offset = rng.nextInt(h-1)+1;
+				}
+			}
 		}
 
 		public boolean surroundCheck(){
@@ -588,7 +630,7 @@ public class Map {
 				}
 				for(int cx = p.point.x-1; cx <= p.point.x+1; cx++){
 					for(int cy = p.point.y-1; cy <= p.point.y+1; cy++){
-						if(cx<x || cy<y || cx>=x+tw || cy>=y+th) continue;
+						if(cx<x || cy<y || cx>=x+tw || cy>=y+th || (cx!=p.point.x && cy!=p.point.y)) continue;
 						if(isOpen(cx,cy)){
 							return p;
 						}
@@ -600,6 +642,44 @@ public class Map {
 			return null;
 		}
 
+
+		public boolean precon_containsDoors(){
+			char[][] r = type.precons.get(precon_id);
+			for(int cy = 0; cy < r.length; cy++){
+				for(int cx = 0; cx < r[0].length; cx++){
+					if(r[cy][cx] == 'D' || r[cy][cx] == 'd'){
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public Point precon_getDoorstep(){
+			if(door.dir == dirs[UP]){
+				return new Point(offset,th-2);
+			}else if(door.dir == dirs[DOWN]){
+				return new Point(offset,1);
+			}else if(door.dir == dirs[LEFT]){
+				return new Point(tw-2,offset);
+			}else if (door.dir == dirs[RIGHT]){
+				return new Point(1,offset);
+			}
+			return null;
+		}
+
+		public Point precon_getDoorPos(){
+			if(door.dir == dirs[UP]){
+				return new Point(offset,th-1);
+			}else if(door.dir == dirs[DOWN]){
+				return new Point(offset,0);
+			}else if(door.dir == dirs[LEFT]){
+				return new Point(tw-1,offset);
+			}else if (door.dir == dirs[RIGHT]){
+				return new Point(0,offset);
+			}
+			return null;
+		}
 
 		public void buildNormal(){
 			if(roomType.equals(RoomType.REGULAR)){
@@ -624,7 +704,7 @@ public class Map {
 				cutOut();
 				buildSewer();
 			}else if(roomType.equals(RoomType.PRECON)){
-				System.out.println("building precon...");
+				System.out.println("building precon #"+precon_id);
 				pickDoors();
 				buildPrecon();
 			}
@@ -639,12 +719,10 @@ public class Map {
 
 		char[][] room;
 		public void buildPrecon(){
-			
-			/** TODO: fix bug where precons are placed where they shouldn't be
-			* ie, rivers block original doors.
-			* fix doors so that they delete properly.
-			* allow for rotation.
-			**/
+
+			// TODO: allow for rotation.
+			// TODO: add chests, keys, item spawns / monster spawns
+			// TODO: add extra info for rooms; rarity, ool gen level etc
 			room = new char[th][tw];
 			for(int cy = 0; cy < th; cy++){
 				for(int cx = 0; cx < tw; cx++){
@@ -657,33 +735,33 @@ public class Map {
 			boolean hitD = false;
 			int temp = 0;
 			for(int cy = 0; cy < th; cy++){
-				for(int cx = 0; cx < tw; cx++){
-					char c = room[cy][cx];
-					Point p = new Point(cx,cy);
-					// TODO: add non-edge doors
-					if(room[cy][cx]== 'D'){
-//						System.out.println("issa door");
-						if(!hitD){
-							hitD = true;
-							doors = 0;
-						}
-						doors++;
-						doorPoints.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));
-					}else if(room[cy][cx] =='d'){
-						if(hitD){
-							temp = doors;
-							pickDoors();
-							doors+=temp;
-						}
-						possibleDoors.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));
+				for(int cx = 0; cx < tw; cx++){;
+				Point p = new Point(cx,cy);
+				// TODO: add non-edge doors
+				if(room[cy][cx]== 'D'){
+					if(!hitD){
+						hitD = true;
+						doors = 0;
 					}
+					if(cy != door.point.y-y && cx != door.point.x-x){
+						doors++;
+						doorPoints.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));							
+					}
+				}else if(room[cy][cx] =='d' && (cy != door.point.y-y && cx != door.point.x-x)){
+					if(hitD){
+						temp = doors;
+						pickDoors();
+						doors+=temp;
+					}
+					possibleDoors.add(new PointDir(new Point(p.x+x,p.y+y),getDoorDir(p)));
+				}
 				}
 			}
 
 			int doorCount = doors-temp;
 			while(doorCount > 0 && possibleDoors.size()>1){
 				int r = rng.nextInt(possibleDoors.size()-1);
-				
+
 				doorPoints.add(possibleDoors.get(r));
 				possibleDoors.remove(r);
 				doorCount--;
@@ -693,16 +771,16 @@ public class Map {
 				doorPoints.add(possibleDoors.get(0));
 				possibleDoors.remove(0);
 			}
-			
+
 			for(PointDir d: possibleDoors){
 				room[d.point.y-y][d.point.x-x] = '#';
 			}
 
-//			if(doorPoints.isEmpty()){
-//				for(int i = doors; i > 0; i--){
-//					doorPoints.add(randomDoor());
-//				}
-//			}
+			//			if(doorPoints.isEmpty()){
+			//				for(int i = doors; i > 0; i--){
+			//					doorPoints.add(randomDoor());
+			//				}
+			//			}
 
 			// TODO: place doors, chests, keys etc
 			for(int cy = 0; cy < th; cy++){
@@ -713,6 +791,8 @@ public class Map {
 						cc='#';
 					}else if(cc == '.'){
 						cc = ' ';
+					}else if(cc == '5'){
+						cc = 'D';
 					}
 					for(int i = 0; i < type.tile_characters.length; i++){
 						char c = type.tile_characters[i];
@@ -731,8 +811,16 @@ public class Map {
 			if(type.precons_fg.containsKey(precon_id)){
 				for(String s: type.precons_fg.get(precon_id)){
 					String[] str = s.split(",");
-					Point p = new Point(Character.valueOf(str[1].charAt(1)),Character.valueOf(str[1].charAt(3)));
-					foreground[p.y][p.x] = str[0].charAt(0);
+					Point p = new Point(Character.getNumericValue(str[1].charAt(1)),Character.getNumericValue(str[1].charAt(3)));
+					char c = str[0].charAt(0);
+					int t = 0;
+					for(int i = 1; i < type.foreground_characters.length; i++){
+						if(type.foreground_characters[i] == c){
+							t = i;
+						}
+					}
+					
+					foreground[y+p.y][x+p.x] = t;
 					// TODO: directions
 				}
 			}
@@ -870,6 +958,16 @@ public class Map {
 			}
 		}
 
+		public void reset(){
+			doorPoints.clear();
+			for(int cx = x+1; cx < x+tw-1; cx++){
+				for(int cy = y+1; cy < y+th-1; cy++){
+					map[cy][cx] = 1;
+					foreground[cy][cx] = 0;
+				}
+			}
+		}
+
 		public void putIntoMap(int[][] room){
 			for(int cx = 0; cx < tw; cx++){
 				for(int cy = 0; cy < th; cy++){
@@ -939,9 +1037,9 @@ public class Map {
 	public int fgTypeAdj(int centerX, int centerY){
 		// generates binary numbers (8421=urdl)
 		int type = 0;
-		// up 
 		int f = foreground[centerY][centerX];
 
+		// up 
 		if(!(centerY<=0) && f != foreground[centerY-1][centerX]) type+=1;
 		// right
 		if(!(centerX>=width-1) && f != foreground[centerY][centerX+1]) type+=2;
@@ -1081,8 +1179,8 @@ public class Map {
 							map[y-1][x] = 6;
 						}
 					}else if(tileTypeAdj(x,y) == 10){
-						map[y][x] = 1;
-						foreground[y][x] = 0;
+//						map[y][x] = 1;
+//						foreground[y][x] = 0;
 					}
 				}else if(foreground[y][x] == 1){
 					foreground[y][x] = 0;
@@ -1124,7 +1222,7 @@ public class Map {
 			for(int y = 0; y < height; y++){
 				tileMap[y][x] = new Tile(map[y][x],type,tileTypeAdj(x,y));
 				int f = foreground[y][x];
-				if(f==1 && tileMap[y][x].value != 6) f = 0;
+				// if(f==1 && tileMap[y][x].value != 6) f = 0;
 				if(f!=0) tileMap[y][x].setForeground(f,fgTypeAdj(x,y));
 			}
 		}
