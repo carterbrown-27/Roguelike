@@ -334,6 +334,11 @@ public class Main {
 		ropePoint = floors.get(cF).getPosition(2);
 
 		player = new Player(ropePoint.x,ropePoint.y,floors.get(cF));
+		
+		/** TEMP **/
+		Item dagger = new Item(Item.Items.DAGGER,1,0);
+		player.e.inv.addItem(dagger);
+		player.weild(player.e.inv.inv.get(player.e.inv.getFirstItem()));
 
 		for(Item.Items i: Item.Items.scrolls){
 			randomNames.put(i, "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
@@ -343,7 +348,7 @@ public class Main {
 		}
 
 		/** temporary **/
-		int mobs = rng.nextInt(6)+10;
+		int mobs = rng.nextInt(8)+16;
 		for (int i = 0; i < mobs; i++) {
 			Point t;
 			do{
@@ -354,7 +359,7 @@ public class Main {
 			System.out.println("Entity Added.");
 		}
 
-		int items = rng.nextInt(4)+12; // 6+8, 6+28
+		int items = rng.nextInt(6)+14; // 6+8, 6+28
 		for(int i = 0; i < items; i++){
 			Point t = floors.get(cF).randomOpenSpace();
 			Item.Items ty = Item.Items.randomItemType(cF);
@@ -374,7 +379,7 @@ public class Main {
 
 
 		try{
-			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+".png");
+			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+"-t"+System.currentTimeMillis()+".png");
 			ImageIO.write(floors.get(cF).renderMap(), "png", output);
 		}catch(Exception e){};
 
@@ -392,13 +397,14 @@ public class Main {
 		blackOverlay();
 		// floors.replace(currentFloor, new Map(map_h,map_w,map_fill,rng));
 		System.out.println(floors.size()+" total");
+		floors.put(cF+1, new Map(map_h, map_w, map_fill, rng));
 		changeFloor(cF+1,true,true);
 	}
 
 	public static void changeFloor(int floor, boolean down, boolean isNew){
 		cF = floor;
-
 		Point startPoint= floors.get(cF).getPosition(2);
+		// TODO: update for multiple stairs
 		if(!down) startPoint= floors.get(cF).getPosition(3);
 		player.map = floors.get(cF);
 		floors.get(cF).player = player.e;
@@ -439,7 +445,7 @@ public class Main {
 			
 		}
 		try{
-			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+".png");
+			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+"-t"+System.currentTimeMillis()+".png");
 			ImageIO.write(floors.get(cF).renderMap(), "png", output);
 		}catch(Exception e){};
 		refreshFrame(render(startPoint.x,startPoint.y));
@@ -522,6 +528,11 @@ public class Main {
 		stats.append("  HP: "+player.e.HP+"\n");
 		stats.append("  SP: "+player.e.SP+"\n");
 		stats.append("  STR: "+player.e.STRENGTH+"\n");
+		if(player.e.weapon != null){			
+			stats.append(" Weapon: "+player.e.weapon.name);
+		}else{
+			stats.append(" Weapon: none");
+		}
 		String line = "  ";
 		for(Entity.Status s: player.e.statuses.keySet()){
 			line+=s.name();
@@ -605,13 +616,13 @@ public class Main {
 			// TODO: add mob sleep/detection stuff
 			// Entity e = floors.get(currentFloor).entities.get(i);
 			Entity.turnEnding ending = e.takeTurn();
-			System.out.println(e.name+"takes a turn.");
+			System.out.println(e.name+" takes a turn.");
 			if(ending.equals(Entity.turnEnding.DEAD)){
 				e.x = -1;
 				e.y = -1;
 				dead.add(e);
 			}else if(ending.equals(Entity.turnEnding.WAITING)){
-				System.out.println(e.name+"is waiting.");
+				System.out.println(e.name+" is waiting.");
 				if(!allWaiting(q)){
 					q.add(e);
 				}else{

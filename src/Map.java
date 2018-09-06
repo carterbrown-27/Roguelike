@@ -255,13 +255,14 @@ public class Map {
 				}
 			}
 
-			for(PointDir p: workingDoors){
+			for(int i = 0; i < workingDoors.size(); i++){
+				PointDir p = workingDoors.get(i);
 				Point temp = p.point;
-				PointDir newDoor = new PointDir(temp,p.dir);
 				// if door leads nowhere, fill it in
-				if(!isOpen(aheadTile(newDoor).x,aheadTile(newDoor).y)){
+				if(!isOpen(aheadTile(p).x,aheadTile(p).y) || !isSandwich(temp.x,temp.y)){
 					if(isOnMap(temp.x,temp.y)) map[p.point.y][p.point.x] = 1;
-
+					workingDoors.remove(i);
+					i--;
 					// if door is not between two walls, destroy it
 				}else if(isSandwich(temp.x,temp.y) ){
 					doorCount++;
@@ -274,12 +275,14 @@ public class Map {
 					// map[p.point.y][p.point.x] = 0;
 				}else{
 					map[p.point.y][p.point.x] = 1;
+					workingDoors.remove(i);
+					i--;
 				}
 			}
 			// System.out.println(doorCount);
 		}while(doorCount<32);
 
-		doctorMap();
+		// doctorMap();
 		printMap();
 		System.out.println("F:");
 	}
@@ -293,6 +296,7 @@ public class Map {
 		PointDir end = door;
 		boolean obstructed = false;
 		while(!obstructed && length<=5 && (rng.nextInt(7)<=5 || length <=3)){
+			// TODO: fix obstruction detection.
 			Point temp = aheadTile(end);
 			if((!isOnMap(temp.x,temp.y) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
 				if(isOnMap(temp.x,temp.y)){
@@ -432,7 +436,8 @@ public class Map {
 		public int th;
 
 		public int offset;
-
+		public int rotationNinety = 0; // int rN * 90 = degrees to rotate
+		
 		public PointDir door;
 		public int doors;
 		public ArrayList<PointDir> doorPoints = new ArrayList<PointDir>();
@@ -444,6 +449,7 @@ public class Map {
 		char dir;
 		RoomType roomType;
 
+		boolean preconPicked = false;
 		int precon_id;
 
 
@@ -470,14 +476,14 @@ public class Map {
 				int a = rng.nextInt(10);
 				if(a>=7){
 					roomType = RoomType.SEWER;
-				}else if(a>=3){
+				}else if(a>=4){
 					roomType = RoomType.PRECON;
 				}else{
 					roomType = RoomType.REGULAR;
 				}
 			}
 
-			final int ATTEMPTS = 50;
+			final int ATTEMPTS = 40;
 			do{
 				works = true;
 				setBounds();
@@ -485,7 +491,7 @@ public class Map {
 				// TODO: rework system so that room is generated first, then offsets are found, and doors are placed etc
 				if(roomType.equals(RoomType.PRECON)){
 					boolean offsetWorks = false;
-					int OFFSET_ATTEMPTS = 15;
+					int OFFSET_ATTEMPTS = 20;
 					int offsetCount = 0;
 					do{
 						if(dir==dirs[UP] || dir==dirs[DOWN]){
@@ -497,8 +503,16 @@ public class Map {
 						Point p = precon_getDoorstep();
 						Point dp = precon_getDoorPos();
 						char[][] r = type.precons.get(precon_id);
-						if((precon_containsDoors() && (r[dp.y][dp.x] == 'D' || r[dp.y][dp.x] == 'd')) ||
-							(!precon_containsDoors() && r[p.y][p.x] == '.')){
+						for(int i = 0; i < rotationNinety; i++){
+							r = rotateNinety(r);
+						}
+//						if(rotationNinety == 1 || rotationNinety == 3){
+//							p = new Point(p.y,p.x);
+//							dp = new Point(dp.y,dp.x);
+//						}
+						if((precon_containsDoors() 
+								&& (r[dp.y][dp.x] == 'D' || r[dp.y][dp.x] == 'd')) 
+								|| (!precon_containsDoors() && r[p.y][p.x] == '.')){
 							offsetWorks = true;
 						}
 						offsetCount++;
@@ -508,7 +522,7 @@ public class Map {
 						break;
 					}
 				}
-				
+
 				if(dir==dirs[UP]){
 					x = door.point.x-offset;
 					y = door.point.y-th+1;
@@ -578,9 +592,21 @@ public class Map {
 					w = rng.nextInt(2)+4;
 				}
 			}else if(roomType.equals(RoomType.PRECON)){
-				precon_id = rng.nextInt(type.precons.size());
-				h = type.precons.get(precon_id).length - 2;
-				w = type.precons.get(precon_id)[0].length - 2;
+				if(!preconPicked){
+					precon_id = rng.nextInt(type.precons.size());
+					// TODO: rotation
+					rotationNinety = rng.nextInt(3);
+					
+					h = type.precons.get(precon_id).length - 2;
+					w = type.precons.get(precon_id)[0].length - 2;
+					if(rotationNinety == 1 || rotationNinety == 3){
+						int temp = h;
+						h = w;
+						w = temp;
+					}
+					preconPicked = true;
+
+				}
 			}
 
 			tw = w+2;
@@ -645,6 +671,7 @@ public class Map {
 
 		public boolean precon_containsDoors(){
 			char[][] r = type.precons.get(precon_id);
+			
 			for(int cy = 0; cy < r.length; cy++){
 				for(int cx = 0; cx < r[0].length; cx++){
 					if(r[cy][cx] == 'D' || r[cy][cx] == 'd'){
@@ -723,12 +750,18 @@ public class Map {
 			// TODO: allow for rotation.
 			// TODO: add chests, keys, item spawns / monster spawns
 			// TODO: add extra info for rooms; rarity, ool gen level etc
-			room = new char[th][tw];
-			for(int cy = 0; cy < th; cy++){
-				for(int cx = 0; cx < tw; cx++){
+			int ow = type.precons.get(precon_id)[0].length;
+			int oh = type.precons.get(precon_id).length;
+			room = new char[oh][ow];
+			for(int cy = 0; cy < oh; cy++){
+				for(int cx = 0; cx < ow; cx++){
 					char c = type.precons.get(precon_id)[cy][cx];
 					room[cy][cx] = c;
 				}
+			}
+			
+			for(int i = 0; i < rotationNinety; i++){
+				room = rotateNinety(room);
 			}
 
 			ArrayList<PointDir> possibleDoors = new ArrayList<PointDir>();
@@ -811,7 +844,14 @@ public class Map {
 			if(type.precons_fg.containsKey(precon_id)){
 				for(String s: type.precons_fg.get(precon_id)){
 					String[] str = s.split(",");
-					Point p = new Point(Character.getNumericValue(str[1].charAt(1)),Character.getNumericValue(str[1].charAt(3)));
+					int fg_x = Character.getNumericValue(str[1].charAt(1));
+					int fg_y = Character.getNumericValue(str[1].charAt(3));
+					Point p;
+					if(rotationNinety == 1 || rotationNinety == 3){
+						p = new Point(fg_x, fg_y);
+					}else{
+						p = new Point(fg_y,fg_x);
+					}
 					char c = str[0].charAt(0);
 					int t = 0;
 					for(int i = 1; i < type.foreground_characters.length; i++){
@@ -819,7 +859,7 @@ public class Map {
 							t = i;
 						}
 					}
-					
+
 					foreground[y+p.y][x+p.x] = t;
 					// TODO: directions
 				}
@@ -867,12 +907,7 @@ public class Map {
 				}
 
 				// width || x x x || = 7 = 3 possible = [0,1,2] + 2) -> 7-5 = [2,3,4]
-				int bridge_x;
-				if(waterWidth>=6){
-					bridge_x = rng.nextInt(h-5)+2;
-				}else{
-					bridge_x = h/2;
-				}
+				int bridge_x = rng.nextInt(w-3)+2;
 				for(int i = 1; i <= w; i++){
 					for(int t = 1; t <= waterWidth; t++){
 						if (noBridge || i!=bridge_x) {
@@ -914,6 +949,30 @@ public class Map {
 					}
 				}
 			}
+		}
+
+		public boolean compareMaps(char[][] map, char[][] t_map){
+			for(int x=0; x<map.length; x++){
+				for(int y=0; y<map[x].length; y++){
+					if(map[x][y] != t_map[x][y]){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		public char[][] rotateNinety(char[][] map){
+
+			int width = map[0].length;
+			int height = map.length;
+			char[][] newmap = new char[width][height];
+			for(int y=0; y<width; y++){
+				for(int x=0; x<height; x++){
+					newmap[y][x] = map[x][width-1-y];					
+				}
+			}
+			return newmap;
 		}
 
 		public void pickDoors(){
@@ -976,7 +1035,6 @@ public class Map {
 				}
 			}
 		}
-
 	}
 
 	// default 4
@@ -1179,8 +1237,8 @@ public class Map {
 							map[y-1][x] = 6;
 						}
 					}else if(tileTypeAdj(x,y) == 10){
-//						map[y][x] = 1;
-//						foreground[y][x] = 0;
+						//						map[y][x] = 1;
+						//						foreground[y][x] = 0;
 					}
 				}else if(foreground[y][x] == 1){
 					foreground[y][x] = 0;
