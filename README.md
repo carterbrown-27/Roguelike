@@ -3,7 +3,7 @@
 working on a rl from scratch in java as a hobby.
 
 Artwork based on tilesets from [Arachne](https://forums.tigsource.com/index.php?topic=14166.0)
-([CC non-commercial liscence](https://creativecommons.org/licenses/by-nc-sa/4.0/))
+([CC non-commercial licence](https://creativecommons.org/licenses/by-nc-sa/4.0/))
 
 FOV Algorithm is an **interpretation** from [SquidLib](https://github.com/SquidPony/SquidLib)
-([Liscence here](https://github.com/SquidPony/SquidLib/blob/master/LICENSE.txt))
+([Licence here](https://github.com/SquidPony/SquidLib/blob/master/LICENSE.txt))
