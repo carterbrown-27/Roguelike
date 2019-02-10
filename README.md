@@ -7,3 +7,5 @@ Artwork based on tilesets from [Arachne](https://forums.tigsource.com/index.php?
 
 FOV Algorithm is an **interpretation** from [SquidLib](https://github.com/SquidPony/SquidLib)
 ([License here](https://github.com/SquidPony/SquidLib/blob/master/LICENSE.txt))
+
+Project not dead! Just working on school stuff as of recent. I'm gonna get back into it on my spare.
