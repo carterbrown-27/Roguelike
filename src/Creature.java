@@ -67,8 +67,8 @@ public enum Creature {
 		NAME = "player";
 		SPRITE = subImage(2,6);
 		
-		STRENGTH = 3;
-		HP_MAX = 20;
+		STRENGTH = 2.5;
+		HP_MAX = 15;
 		SP_MAX = 4;
 		
 		EVASIVENESS = 1.0;
@@ -96,10 +96,10 @@ public enum Creature {
 		SPRITE = subImage(3,8);
 		
 		STRENGTH = 2;
-		HP_MAX = 5;
-		SP_MAX = 2;
+		HP_MAX = 4;
+		SP_MAX = 3;
 		SPEED = 0.8;
-		EVASIVENESS = 1.4;
+		EVASIVENESS = 1.5;
 		
 		isFlying = true;
 	}
@@ -122,9 +122,9 @@ public enum Creature {
 		STRENGTH = 3;
 		HP_MAX = 10;
 		SP_MAX = 2;
-		SPEED = 1.4;
+		SPEED = 1.2;
 		
-		EVASIVENESS = 0.8;
+		EVASIVENESS = 0.9;
 		
 		isAmphibious = true; // TODO: invis while swimming
 	}

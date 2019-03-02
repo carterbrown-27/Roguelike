@@ -13,6 +13,9 @@ public enum MapTypes {
 	public final String PATH = "imgs/";
 	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
 	
+	public final String TILEMAP = "sourcedTileset_bluer.png";
+	public final String ITEMS = "sourcedItems.png";
+	
 	public char[] foreground_characters = {' ','H'};
 	public BufferedImage[] foregroundImages = new BufferedImage[foreground_characters.length];
 
@@ -73,7 +76,7 @@ public enum MapTypes {
 				int count = 0;
 				
 				String line = br.readLine();
-				while(line!=null){
+				while(line!=null && !line.equals("***")){
 					if(line.equals("---")){
 						room = charGridFromStrings(rows);
 						precons.put(count,room);
@@ -110,8 +113,8 @@ public enum MapTypes {
 			BufferedImage tilemap = null;
 			BufferedImage itemmap = null;
 			try {
-				tilemap = ImageIO.read(new File(PATH+"sourcedTileset.png"));
-				itemmap = ImageIO.read(new File(PATH+"sourcedItems.png"));
+				tilemap = ImageIO.read(new File(PATH+TILEMAP));
+				itemmap = ImageIO.read(new File(PATH+ITEMS));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

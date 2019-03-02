@@ -97,7 +97,13 @@ public class Map {
 	public boolean isOpen(int x, int y){
 		if(!isOnMap(x,y)) return false;
 		if(map[y][x]!=1 && map[y][x]!=6) return true;
+		
 		return false;
+	}
+	
+	// overload
+	public boolean isOpen(Point p){
+		return isOpen(p.x,p.y);
 	}
 
 	public boolean isFullOpen(int x, int y){
@@ -138,6 +144,7 @@ public class Map {
 
 	public void generateUndercity(){
 		ArrayList<PointDir> workingDoors;
+		ArrayList<PointDir> invalidDoors;
 		int doorCount = 0;
 		do {
 			doorCount = 0;
@@ -148,6 +155,7 @@ public class Map {
 				}
 			}
 			workingDoors = new ArrayList<PointDir>();
+			invalidDoors = new ArrayList<PointDir>();
 			Queue<Room> q = new LinkedList<Room>();
 
 			int start_x = rng.nextInt(width*2/3) + width/6 - 1;
@@ -189,7 +197,7 @@ public class Map {
 							PointDir p = R.getRandomDoor();
 							if(p==null) break;
 							Point ahead = aheadTile(p);
-							if(isOpen(ahead.x,ahead.y) && rng.nextInt(4)==4){
+							if(isOpen(ahead) && rng.nextInt(4)==4){
 								workingDoors.add(p);
 								break;
 							}
@@ -204,6 +212,7 @@ public class Map {
 								workingDoors.add(p);
 								break;
 							}else{
+								invalidDoors.add(p);
 								prev = r.roomType;
 								attempts++;
 								if(attempts >= ROOM_ATTEMPTS){
@@ -226,6 +235,8 @@ public class Map {
 										q.add(r);
 									}
 								}else{
+									// corridor
+									
 									doors = buildCorridor(i,true);
 									if (doors!=null) {
 										workingDoors.add(i);
@@ -257,31 +268,34 @@ public class Map {
 
 			for(int i = 0; i < workingDoors.size(); i++){
 				PointDir p = workingDoors.get(i);
-				Point temp = p.point;
 				// if door leads nowhere, fill it in
-				if(!isOpen(aheadTile(p).x,aheadTile(p).y) || !isSandwich(temp.x,temp.y)){
-					if(isOnMap(temp.x,temp.y)) map[p.point.y][p.point.x] = 1;
+				if(!isOpen(aheadTile(p))){
+					if(isOnMap(p.point.x,p.point.y)) map[p.point.y][p.point.x] = 1;
+					invalidDoors.add(workingDoors.get(i));
 					workingDoors.remove(i);
 					i--;
-					// if door is not between two walls, destroy it
-				}else if(isSandwich(temp.x,temp.y) ){
+				}else if(isSandwich(p.point.x,p.point.y) ){
 					doorCount++;
 					if(true || rng.nextInt(7)>=1){
-						map[temp.y][temp.x] = 5;
+						map[p.point.y][p.point.x] = 5;
 					}else{
-						map[temp.y][temp.x] = 7;
+						map[p.point.y][p.point.x] = 7;
 					}
-					// doorCount++;
-					// map[p.point.y][p.point.x] = 0;
 				}else{
-					map[p.point.y][p.point.x] = 1;
+					// if door is not between two walls, destroy it
+					if(isOnMap(p.point.x,p.point.y)) map[p.point.y][p.point.x] = 1;
+					invalidDoors.add(workingDoors.get(i));
 					workingDoors.remove(i);
 					i--;
 				}
 			}
+			
+			for(PointDir d: invalidDoors){
+				if(isOpen(aheadTile(d)));
+			}
 			// System.out.println(doorCount);
 		}while(doorCount<32);
-
+		
 		// doctorMap();
 		printMap();
 		System.out.println("F:");
@@ -594,7 +608,6 @@ public class Map {
 			}else if(roomType.equals(RoomType.PRECON)){
 				if(!preconPicked){
 					precon_id = rng.nextInt(type.precons.size());
-					// TODO: rotation
 					rotationNinety = rng.nextInt(3);
 					
 					h = type.precons.get(precon_id).length - 2;
@@ -883,7 +896,7 @@ public class Map {
 		public void buildSewer(){
 			if(h<=3 || w<=3) return;
 			int waterWidth = 2;
-			boolean noBridge = false; // (doors==0 && rng.nextInt(10)<=7);
+			boolean noBridge = (doors==0 && rng.nextInt(10)<=7);
 			if((door.dir == dirs[UP] || door.dir == dirs[DOWN]) && w>4){
 				// horizontal
 				int river_h;

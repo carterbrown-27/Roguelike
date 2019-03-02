@@ -63,8 +63,9 @@ public class Inventory {
 			String line = "";
 			line+= c+" - "+quantity+" "+i.getDisplayName();
 			
-			if(i.weilded) line+=(" (weilded)");
-			if(i.worn) line+=(" (worn)");
+			if(i.weilded) line+= " (weilded)";
+			if(i.quivered) line+= " (quivered)";
+			if(i.worn) line+= " (worn)" ;
 			Main.appendText(line);
 
 		}
@@ -90,9 +91,9 @@ public class Inventory {
 		return null;
 	}
 	
-	public char getItemTypeChar(Item.Items i){
+	public char getItemTypeChar(Item.Items t){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(inv.get(c).type.equals(i)){
+			if(inv.containsKey(c) && inv.get(c).type.equals(t)){
 				return c;
 			}
 		}

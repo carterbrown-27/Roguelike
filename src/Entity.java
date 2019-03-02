@@ -24,12 +24,15 @@ public class Entity {
 	public double STRENGTH;
 	public double EV;
 	
+	public double SAT = 10; // TEMP
+	
 	public boolean waiting = false;
 	
 	public boolean isFlying = false;
 	public boolean isAmphibious = false;
 
 	public boolean inPlayerView = false;
+	
 
 	public HashMap<Status,Integer> statuses = new HashMap<Status,Integer>();
 
@@ -107,14 +110,16 @@ public class Entity {
 	}
 
 	public void upkeep(){
+		SAT = Math.max(SAT-0.01,0);
 		for(Status s: statuses.keySet()){
 			if(s.upkeep){
 				// TODO: do tier effect
 				if(s.t == 0){
-					HP++;
+					HP+=0.5;
 				}else if(s.t == 2){
 					HP--;
 				}
+				// TODO: add static regen
 			}
 			statuses.replace(s, statuses.get(s)-1);
 			if(statuses.get(s) <= 0){
@@ -198,7 +203,7 @@ public class Entity {
 		public boolean[] upkeeps = {true,false,true,false};
 
 		public int baseDuration;
-		public int[] baseDurations = {25,30,12,30};
+		public int[] baseDurations = {25,45,12,45};
 
 		public int t;
 		Status(int _t){

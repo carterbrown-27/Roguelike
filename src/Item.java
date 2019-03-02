@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 public class Item{
 
 	/* fields */
+	/**TODO turn this into json**/
 	/* An item refers to a stack of items of the same exact type
 	 * stackable types: MISSILE SCROLL POTION FOOD
 	 * multiple item stacks can occupy the same spot on the grid
@@ -145,6 +146,29 @@ public class Item{
 			Main.takeTurn();
 		}
 	}
+	
+	public void eat(Entity e, char c){
+		if(type.supertype!=Items.Item_Supertype.FOOD) return;
+		
+		String descriptor;
+		if(type.foodValue >= 10){
+			descriptor = "great!";
+		}else if(type.foodValue >= 5){
+			descriptor = "good.";
+		}else if(false){
+			descriptor = "off.";
+		}else{
+			descriptor = "fine.";
+		}
+		
+		e.SAT += type.foodValue; // TODO: cap
+		e.inv.removeItem(c);
+		
+		Main.appendText("That "+type.name+" tasted "+descriptor);
+		Main.refreshText();
+		Main.takeTurn();
+		
+	}
 
 	public void identify(){
 		Main.player.identifiedItems.put(type, type.name);
@@ -180,6 +204,8 @@ public class Item{
 
 	boolean isStackable = true;
 
+	
+	// TODO: REPLACE STATS WITH TSV
 	public enum Items {
 
 		DAGGER		(0),
@@ -189,6 +215,8 @@ public class Item{
 
 		LTR_BOOTS	(10),
 
+		DART			(20),
+		
 		SCR_ID		(30),
 		SCR_TELE	(31),
 
@@ -212,6 +240,8 @@ public class Item{
 				spiked_club();
 			}else if(itemNo == 10){
 				leatherBoots();
+			}else if(itemNo == 20){
+				dart();
 			}else if(itemNo == 30){
 				scrollOfIdentify();
 			}else if(itemNo == 31){
@@ -317,8 +347,12 @@ public class Item{
 
 		double weight; // at this strength, penalty is removed, like a log scale
 
+		// food
+		double foodValue;
+		
 		// TODO: item tiers & balanced generation
-
+		// TODO: change item methods into json or other data storage method.
+		
 		/** TEMPORARY **/
 		public static Items randomItemType(int level /*, LevelType type*/){
 			
@@ -400,6 +434,15 @@ public class Item{
 		/** evokables/consumables **/
 
 
+		public void dart(){
+			supertype = Item_Supertype.MISSILE;
+			name = "throwing dart";
+			sprite = subImage(8,1);
+			
+			tier = 1;
+			commonStackSize = 5;
+		}
+		
 		/** SCROLLS **/
 
 		public void scrollOfIdentify(){
@@ -452,6 +495,7 @@ public class Item{
 			name = "bread ration";
 			sprite = subImage(5,5);
 
+			foodValue = 10;
 			tier = 1;
 		}
 		

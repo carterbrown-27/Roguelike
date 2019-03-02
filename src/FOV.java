@@ -1,7 +1,12 @@
+import java.awt.Point;
+import java.util.ArrayList;
+
 
 public class FOV {
 
-	/*** @SquidLib interpretation ***/
+	/*** @SquidLib interpretation
+	 * thanks to them
+	 * <github link here> ***/
 
 	public enum DIAGONAL {
 		UP_LEFT		(-1,-1),
@@ -113,5 +118,94 @@ public class FOV {
 				}
 			}
 		}
+	}
+	
+	public static ArrayList<Point> bresenhamLine(Point start, Point end){
+		ArrayList<Point> linePoints = new ArrayList<Point>();
+		
+		// TODO: float -> int optimization
+		int x1 = start.x;
+		int x2 = end.x;
+		int y1 = start.y;
+		int y2 = end.y;
+		
+		int rise = y2-y1;
+		int run = x2-x1;
+		
+		// vertical line
+		if(run == 0){
+			// if start is greater than end, switch the two.
+			if(y2 < y1){
+				int temp = y1;
+				y1 = y2;
+				y2 = temp;
+			}
+			
+			for(int y = y1; y <= y2; y++){
+				linePoints.add(new Point(x1,y));
+			}
+		}else{
+			float slope = (float) rise / run;
+			int adjust = 1;
+			if(slope<0) adjust = -1;
+			
+			float offset = 0;
+			float threshold = 0.5f;
+			
+			// less than y = x;
+			/* ....
+			 * ....
+			 * ..xx shifts y value
+			 * xx..
+			 */
+			if(Math.abs(slope) <= 1){
+				float delta = Math.abs(slope);
+				int y = y1;
+				if(x2 < x1){
+					int temp = x1;
+					x1 = x2;
+					x2 = temp;
+					y = y2;
+				}
+				
+				for(int x = x1; x <= x2; x++){
+					linePoints.add(new Point(x,y));
+					offset += delta;
+					
+					if(offset >= threshold){
+						y += adjust;
+						threshold++;
+					}
+				}
+			// greater than y = x;
+			/* x....
+			 * x....
+			 * .x... shifts x value
+			 * .x...
+			 */
+			}else{
+				float delta = Math.abs((float) run / rise);
+				int x = x1;
+				if(y2 < y1){
+					int temp = y1;
+					y1 = y2;
+					y2 = temp;
+					x = x2;
+				}
+				
+				for(int y = y1; y <= y2; y++){
+					linePoints.add(new Point(x,y));
+					offset+=delta;
+					
+					if(offset >= threshold){
+						x += adjust;
+						threshold++;
+					}
+				}
+			}
+		}
+		
+		return linePoints;
+		//return (Point[]) linePoints.toArray();
 	}
 }

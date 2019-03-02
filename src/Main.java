@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Main {
+	
+	/** TODO: saves **/
 	//	public static int seed = 12345678;
 	public static Random rng = new Random();
 	//	public static boolean randSeed = true;
@@ -30,8 +32,11 @@ public class Main {
 	public static boolean itemPickup = false;
 	public static boolean inventoryScreen = false;
 	public static boolean itemScreen = false;
-
 	public static boolean pickItem = false;
+	
+	public static Point targetPos;
+	public static boolean aimScreen = false;
+
 	public static boolean identify = false;
 	public static boolean enchant = false;
 	
@@ -141,7 +146,11 @@ public class Main {
 									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
 										appendText("(q)uaff");
 									}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
-										appendText("(q)uiver");
+										if(!i.quivered){
+											appendText("(q)uiver");
+										}else{
+											appendText("(u)nquiver");
+										}
 									}
 									appendText("(d)rop\n(r)eassign\n(ESC) exit");
 									selectedItem = c;
@@ -153,6 +162,9 @@ public class Main {
 							char c = selectedItem;
 							Item i = player.e.inv.inv.get(c);
 							if(e.getKeyChar() == 'd'){
+								if(i.weilded || i.quivered || i.worn){
+									player.equip(i, false);
+								}
 								player.e.inv.dropAll(c, player.e);
 							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
 								if(!i.weilded && e.getKeyChar() == 'w'){
@@ -171,16 +183,22 @@ public class Main {
 									i.read(player.e, c);
 								}
 							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
-								if(e.getKeyChar() == 'q'){
-
-								}								
+								if(!i.quivered && e.getKeyChar() == 'q'){
+									player.quiver(i);
+								}else if(i.quivered && e.getKeyChar() == 'u'){
+									player.unquiver(i);
+								}			
 							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
 								if(e.getKeyChar() == 'q'){
 									i.quaff(player.e, c);
 								}
+							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.FOOD)){
+								if(e.getKeyChar() == 'e'){
+									i.eat(player.e, c);
+								}
 							}
 							itemScreen = false;
-
+							refreshStats();
 						}else if(pickItem){
 							boolean flag = false;
 							for (char c = 'a'; c <= 'z'; c++) {
@@ -201,35 +219,47 @@ public class Main {
 							}else{
 								pickItem = false;
 							}
-						}else if (e.getKeyCode() == KeyEvent.VK_K || e.getKeyCode() == KeyEvent.VK_UP) {
-							player.act_adj(0);
-						} else if (e.getKeyCode() == KeyEvent.VK_H || e.getKeyCode() == KeyEvent.VK_LEFT) {
-							if(e.isControlDown()){
-								player.act_adj(6);
-							}else if(e.isShiftDown()){
-								player.act_adj(7);
-							}else{
-								player.act_adj(3);
+							
+						
+						/** DIRECTIONALS **/
+						}else if (directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown()) >= 0) {
+							int d = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
+							if(aimScreen){
+								Point p = DIRECTIONS.values()[d].p;
+								targetPos.x += p.x;
+								targetPos.y += p.y;
+								// TODO: aim visuals && los check
+								
+							}else{								
+								player.act_adj(d);
 							}
-						} else if (e.getKeyCode() == KeyEvent.VK_J || e.getKeyCode() == KeyEvent.VK_DOWN) {
-							player.act_adj(2);
-						} else if (e.getKeyCode() == KeyEvent.VK_L || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-							if(e.isControlDown()){
-								player.act_adj(5);
-							}else if(e.isShiftDown()){
-								player.act_adj(4);
-							}else{
-								player.act_adj(1);
-							}
-						}else if(e.getKeyCode() == KeyEvent.VK_Y){
-							player.act_adj(7);
-						}else if(e.getKeyCode() == KeyEvent.VK_U){
-							player.act_adj(4);
-						}else if(e.getKeyCode() == KeyEvent.VK_B){
-							player.act_adj(6);
-						}else if(e.getKeyCode() == KeyEvent.VK_N){
-							player.act_adj(5);
+							
+							
 						}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
+							if(aimScreen){
+								ArrayList<Point> line = FOV.bresenhamLine(player.e.getPos(), targetPos);
+								
+								boolean f = true;
+								for(Point p: line){
+									if(p.equals(player.e.getPos()) || p.equals(line.get(line.size()-1))){
+										continue;
+									}
+										
+									if(!floors.get(cF).isFullOpen(p.x, p.y)){
+										f = false;
+										break;
+									}
+								}
+								if(f){
+									// valid target
+									appendTextRF("valid target");
+								}else{
+									appendTextRF("invalid target");
+								}
+								
+								aimScreen = false;
+								return;
+							}
 							if(floors.get(cF).valueAt(player.e.getPos()) == 3){
 								if(floors.size()<=cF+1){
 									newFloor();
@@ -244,7 +274,11 @@ public class Main {
 
 						} else if(e.getKeyCode() == KeyEvent.VK_P){
 							floors.get(cF).printMap();
-
+							
+						} else if(e.getKeyCode() == KeyEvent.VK_T){
+							aimScreen = !aimScreen;
+							targetPos = player.e.getPos();
+							
 						} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
 							// open attack selections
 							// area.append("space.\n");
@@ -300,6 +334,10 @@ public class Main {
 							refreshText();
 						}else if(e.getKeyCode() == KeyEvent.VK_5){
 							player.startRest();
+							
+						}else if(e.getKeyCode() == KeyEvent.VK_X){
+							// TODO: overview
+						
 						}else{
 							for(Player.Ability a: Player.Ability.values()){
 								if(e.getKeyCode() == a.k){
@@ -339,6 +377,10 @@ public class Main {
 		Item dagger = new Item(Item.Items.DAGGER,1,0);
 		player.e.inv.addItem(dagger);
 		player.weild(player.e.inv.inv.get(player.e.inv.getFirstItem()));
+		
+		Item darts = new Item(Item.Items.DART,5,0);
+		player.e.inv.addItem(darts);
+		player.quiver(player.e.inv.inv.get(player.e.inv.getItemTypeChar(Item.Items.DART)));
 
 		for(Item.Items i: Item.Items.scrolls){
 			randomNames.put(i, "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
@@ -528,11 +570,23 @@ public class Main {
 		stats.append("  HP: "+player.e.HP+"\n");
 		stats.append("  SP: "+player.e.SP+"\n");
 		stats.append("  STR: "+player.e.STRENGTH+"\n");
+		stats.append("  SAT: "+ActionLibrary.round(player.e.SAT,1)+"\n");
+		
 		if(player.e.weapon != null){			
-			stats.append(" Weapon: "+player.e.weapon.name);
+			stats.append("  Weapon: "+player.e.weapon.name);
 		}else{
-			stats.append(" Weapon: none");
+			stats.append("  Weapon: none");
 		}
+		stats.append("\n");
+		
+		if(player.e.quivered != null){			
+			stats.append("  Quivr'd: "+player.e.quivered.name);
+		}else{
+			stats.append("  Quivr'd: none");
+		}
+		stats.append("\n");
+		
+		
 		String line = "  ";
 		for(Entity.Status s: player.e.statuses.keySet()){
 			line+=s.name();
@@ -541,6 +595,11 @@ public class Main {
 		stats.append("      _________________________________________________________\n\n");
 	}
 
+	public static void appendTextRF(String text){
+		appendText(text);
+		refreshText();
+	}
+	
 	public static void appendText(String text){
 		String[] strArray = text.split("\\r?\\n");
 		for(String str: strArray){
@@ -714,5 +773,55 @@ public class Main {
 			}
 		}
 		return name;
+	}
+	
+	public static int directionValue(int keyCode, boolean controlDown, boolean shiftDown){
+		if (keyCode == KeyEvent.VK_K || keyCode == KeyEvent.VK_UP) {
+			return 0;
+		} else if (keyCode == KeyEvent.VK_H || keyCode == KeyEvent.VK_LEFT) {
+			if(controlDown){
+				return 6;
+			}else if(shiftDown){
+				return 7;
+			}else{
+				return 3;
+			}
+		} else if (keyCode == KeyEvent.VK_J || keyCode == KeyEvent.VK_DOWN) {
+			return 2;
+		} else if (keyCode == KeyEvent.VK_L || keyCode == KeyEvent.VK_RIGHT) {
+			if(controlDown){
+				return 5;
+			}else if(shiftDown){
+				return 4;
+			}else{
+				return 1;
+			}
+		}else if(keyCode == KeyEvent.VK_Y){
+			return 7;
+		}else if(keyCode == KeyEvent.VK_U){
+			return 4;
+		}else if(keyCode == KeyEvent.VK_B){
+			return 6;
+		}else if(keyCode == KeyEvent.VK_N){
+			return 5;
+		}
+		return -1;
+	}
+	
+	public enum DIRECTIONS  {
+		UP 				(0,-1),
+		RIGHT 		(+1,0),
+		DOWN 			(0,+1),
+		LEFT			(-1,0),
+		UP_RIGHT	(+1,-1),
+		DOWN_RIGHT(+1,+1),
+		DOWN_LEFT	(-1,+1),
+		UP_LEFT		(-1,-1);
+		
+		Point p;
+		
+		DIRECTIONS(int x, int y){
+			p = new Point(x,y);
+		}
 	}
 }

@@ -193,6 +193,32 @@ public class Player extends KeyAdapter {
 		Main.takeTurn();
 	}
 	
+	public void equip(Item i, boolean b){
+		if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){
+			if(b){
+				putOn(i);
+			}else{
+				takeOff(i);
+			}
+		}else if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
+			if(b){
+				weild(i);
+			}else{
+				unweild(i);
+			}
+		}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
+			if(b){
+				quiver(i);
+			}else{
+				unquiver(i);
+			}
+		}
+	}
+	
+	
+	
+	
+	
 	public void weild(Item i){
 		if(e.weapon!=null) unweild(e.weapon);
 		i.weilded = true;
@@ -204,6 +230,27 @@ public class Player extends KeyAdapter {
 		if(i!=null) i.weilded = false;
 		e.weapon = null;
 		Main.appendText("You unweild your "+i.name+".");
+	}
+	
+	public void quiver(Item i){
+		if(i!=null){
+			unquiver(e.quivered);
+		}else{
+			return;
+		}
+		i.quivered = true;
+		e.quivered = i;
+		Main.appendText("You quiver your "+i.name+"(s).");
+	}
+	
+	public void unquiver(Item i){
+		if(i!=null){
+			i.quivered = false;
+		}else{
+			return;
+		}
+		e.quivered = null;
+		Main.appendText("You put away your "+i.name+"(s).");
 	}
 	
 	public void takeOff(Item i){
@@ -260,11 +307,6 @@ public class Player extends KeyAdapter {
 		Main.appendText("You put on your "+i.name+".");
 	}
 	
-	public void quiver(Item i){
-		if(e.quivered!=null) e.quivered.quivered = false;
-		i.quivered = true;
-		e.quivered = i;
-	}
 //	public ArrayList<Entity> getAdjacents() {
 //		ArrayList<Entity> targets = new ArrayList<Entity>();
 //		for(Entity i: map.entities.values()){
