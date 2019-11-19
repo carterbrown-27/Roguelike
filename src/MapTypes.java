@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.imageio.ImageIO;
 
@@ -20,7 +21,7 @@ public enum MapTypes {
 	public BufferedImage[] foregroundImages = new BufferedImage[foreground_characters.length];
 
 	public Tile[] usedTiles = new Tile[tile_characters.length];
-	public BufferedImage[] usedImages = new BufferedImage[usedTiles.length];
+	public BufferedImage[] defaultImages = new BufferedImage[usedTiles.length];
 	
 	public HashMap<Integer,BufferedImage[]> variations = new HashMap<Integer,BufferedImage[]>();
 	public HashMap<Integer,BufferedImage[]> directionals = new HashMap<Integer,BufferedImage[]>();
@@ -136,30 +137,31 @@ public enum MapTypes {
 			// temp.setVariations(tilesArray[0],40);
 			// usedTiles[0] = temp;
 			variations.put(0, tilesArray[0]);
+			// variations.put(0, Arrays.copyOfRange(tilesArray[0],0,6));
 			variationPercentages.put(0, 70);
-			usedImages[0] = tilesArray[0][3];
+			defaultImages[0] = tilesArray[0][3];
 			
 			// walls
 			// usedTiles[1] = new Tile(1,tilesArray[1][4],false);
 			BufferedImage[] temp = {tilesArray[1][2],tilesArray[1][3]};
 			variations.put(1,temp);
 			variationPercentages.put(1,30);
-			usedImages[1] = tilesArray[1][1];
+			defaultImages[1] = tilesArray[1][1];
 			
 			// rope stairs
 			// usedTiles[2] = new Tile(2,tilesArray[1][8],true);
-			usedImages[2] = tilesArray[1][8];
+			defaultImages[2] = tilesArray[1][8];
 			
 			// hole stairs
 			// usedTiles[3] = new Tile(3,tilesArray[1][8],true);[
 			// usedTiles[3]= new Tile(3,tilesArray[1][7],true);
-			usedImages[3] = tilesArray[1][7];
+			defaultImages[3] = tilesArray[1][7];
 			
 			// other
 			// usedTiles[4] = usedTiles[0];
-			usedImages[4] = usedImages[0];
+			defaultImages[4] = defaultImages[0];
 			// usedTiles[5] = usedTiles[0];
-			usedImages[5] = itemmap.getSubimage(0*tileSize+0, 0*tileSize, tileSize, tileSize);
+			defaultImages[5] = itemmap.getSubimage(0*tileSize+0, 0*tileSize, tileSize, tileSize);
 			
 			BufferedImage[] tempDir = {
 					tilesArray[3][5], // 0
@@ -183,7 +185,7 @@ public enum MapTypes {
 			directionals.put(6,tempDir);
 			
 			// open door
-			usedImages[7] = itemmap.getSubimage(2*tileSize+2, 0*tileSize, tileSize, tileSize);
+			defaultImages[7] = itemmap.getSubimage(2*tileSize+2, 0*tileSize, tileSize, tileSize);
 			
 			// bridge
 			BufferedImage vertB = itemmap.getSubimage(1*tileSize+1, 9*tileSize+9, tileSize, tileSize);
@@ -224,6 +226,6 @@ public enum MapTypes {
 		}else if(directionals.containsKey(type)){
 			return directionals.get(type)[adj];
 		}
-		return usedImages[type];
+		return defaultImages[type];
 	}
 }

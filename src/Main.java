@@ -1,4 +1,4 @@
-/** @author hillstylelife **/
+/** @author carterbrown-27 **/
 
 import java.io.*;
 import javax.imageio.*;
