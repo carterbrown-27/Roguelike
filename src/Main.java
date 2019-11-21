@@ -367,10 +367,14 @@ public class Main {
 	public static void startGame(){
 		floors.clear();
 		cF = 0;
+		
+		long time = System.currentTimeMillis();
 
 		floors.put(cF, new Map(map_h,map_w,map_fill,rng));
 		ropePoint = floors.get(cF).getPosition(2);
 
+		System.out.println("@@@ gen = "+(System.currentTimeMillis()-time)+"ms @@@");
+		
 		player = new Player(ropePoint.x,ropePoint.y,floors.get(cF));
 		
 		/** TEMP **/
@@ -425,12 +429,14 @@ public class Main {
 			ImageIO.write(floors.get(cF).renderMap(), "png", output);
 		}catch(Exception e){};
 
+		System.out.println("@@@ Ready = "+(System.currentTimeMillis()-time)+"ms @@@");
 		if(frame==null){
 			frame = buildFrame(render(ropePoint.x,ropePoint.y));
 		}else{
 			refreshFrame(render(ropePoint.x,ropePoint.y));
 		}
-
+		
+		System.out.println("@@@ frameUp = "+(System.currentTimeMillis()-time)+"ms @@@");
 		running = true;
 	}
 
@@ -545,7 +551,7 @@ public class Main {
 		panel.add(picLabel,BorderLayout.WEST);
 		panel.setSize(frame.getWidth(), frame.getHeight());
 		// panel.setLocation(new Point(panel.getX(),panel.getY()+25));
-		consolePanel.setSize(frame.getWidth()-picLabel.getWidth()-10, frame.getHeight()-10);
+		consolePanel.setSize((int) (frame.getWidth()-picLabel.getWidth()*1.1), frame.getHeight()-10);
 		area.setSize(consolePanel.getWidth(), consolePanel.getHeight());
 		stats.setSize(consolePanel.getWidth(), consolePanel.getHeight());
 		refreshStats();
@@ -712,7 +718,7 @@ public class Main {
 
 	public static BufferedImage render(int x, int y){
 		BufferedImage img = floors.get(cF).render_vig(x, y, player.ViewDistance, player.Luminosity);
-		img = resize(img,img.getWidth()*3,img.getHeight()*3);
+		img = resize(img, img.getWidth()*3, img.getHeight()*3);
 		return img;
 	}
 

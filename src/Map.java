@@ -485,7 +485,7 @@ public class Map {
 			}
 
 			if(roomType.equals(RoomType.RANDOM)){
-				// TODO: pick random
+				// TODO: Tabulate %s
 				System.out.println("picking type.");
 				int a = rng.nextInt(10);
 				if(a>=7){

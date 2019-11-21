@@ -10,7 +10,7 @@ public class Player extends KeyAdapter {
 	public BufferedImage img;
 	public Map map;
 	
-	public int ViewDistance = 6;
+	public int ViewDistance = 5;
 	public int Luminosity = 4;
 	
 	public Ability ability = Ability.BASIC;
@@ -19,6 +19,8 @@ public class Player extends KeyAdapter {
 	public ActionLibrary lib;
 	
 	public boolean resting = false;
+	
+	ArrayList<Integer> dirs = new ArrayList<Integer>();
 	
 	// String = item name (ie blue potion) <> Item.Items = item real name (ie potion of flight)
 	public HashMap<Item.Items,String> identifiedItems = new HashMap<Item.Items,String>();
@@ -78,7 +80,6 @@ public class Player extends KeyAdapter {
 		System.out.println("Action not possible.");
 	}
 	
-	ArrayList<Integer> dirs = new ArrayList<Integer>();
 	public void act_adj(int dir){
 		if(ability.equals(Ability.BASIC)){
 			basic(dir);
