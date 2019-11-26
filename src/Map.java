@@ -8,6 +8,7 @@ import java.util.*;
 public class Map {
 	public static int height = 52; // 52
 	public static int width = 90; // 90
+	public static int MIN_DOORS = 32; // 32
 
 	public static int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
@@ -294,7 +295,7 @@ public class Map {
 				if(isOpen(aheadTile(d)));
 			}
 			// System.out.println(doorCount);
-		}while(doorCount<32);
+		}while(doorCount<MIN_DOORS);
 		
 		// doctorMap();
 		printMap();
@@ -1182,7 +1183,8 @@ public class Map {
 				tries++;
 			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
 			System.out.println("placed exits");
-			if(tries<=300){
+			if(tries<=150){
+				// TODO: change this to flood fill from every unvisited node source
 				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), buildOpenMap(), entities, true, true);
 				if(p==null || p.getParent() == null){
 					System.out.println("connecting exits failed.");

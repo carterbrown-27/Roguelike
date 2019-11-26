@@ -1,0 +1,6 @@
+- tinker with map sizes --> lower, less rooms.
+	-- invisible barriers to make the map mould
+- add projectiles
+- add more room types & turn precons.txt into a json
+- move any in-code data into external json files.
+- add door tunneling

@@ -77,13 +77,13 @@ public enum MapTypes {
 				int count = 0;
 				
 				String line = br.readLine();
-				while(line!=null && !line.equals("***")){
-					if(line.equals("---")){
+				while(line!=null){
+					if(line.equals("---") || line.equals("***")){
 						room = charGridFromStrings(rows);
 						precons.put(count,room);
 						count++;
 						rows.clear();
-						
+						if(line.equals("***")) break;
 					}else if(line.equals("+++")){
 						 room = charGridFromStrings(rows);
 						 precons.put(count, room);

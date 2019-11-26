@@ -760,7 +760,6 @@ public class Main {
 		int prev = -1;
 
 		while(name.length() < length){
-			
 			if((name.length() == length-1 && prev == 2) || prev == 3 || (prev == 2 && rng.nextBoolean())
 					|| (prev == 0 && rng.nextBoolean() && rng.nextBoolean()) || (prev==-1 && rng.nextBoolean())){
 				
