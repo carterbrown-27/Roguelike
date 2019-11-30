@@ -14,7 +14,7 @@ public enum MapTypes {
 	public final String PATH = "imgs/";
 	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
 	
-	public final String TILEMAP = "sourcedTileset_bluer.png";
+	public final String TILEMAP = "sourcedTileset_v2.0.png";
 	public final String ITEMS = "sourcedItems.png";
 	
 	public char[] foreground_characters = {' ','H'};
