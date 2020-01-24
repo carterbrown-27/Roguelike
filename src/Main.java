@@ -126,9 +126,9 @@ public class Main {
 									appendText(i.type.description);
 
 									// appendText("Do what with this item?");
-
+									// TODO: move this logic
 									if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
-										if(!i.weilded){
+										if(!i.wielded){
 											appendText("(w)ield");
 										}else{
 											appendText("(u)nweild");
@@ -162,14 +162,14 @@ public class Main {
 							char c = selectedItem;
 							Item i = player.e.inv.inv.get(c);
 							if(e.getKeyChar() == 'd'){
-								if(i.weilded || i.quivered || i.worn){
+								if(i.wielded || i.quivered || i.worn){
 									player.equip(i, false);
 								}
 								player.e.inv.dropAll(c, player.e);
 							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
-								if(!i.weilded && e.getKeyChar() == 'w'){
+								if(!i.wielded && e.getKeyChar() == 'w'){
 									player.weild(i);
-								}else if(i.weilded && e.getKeyChar() == 'u'){
+								}else if(i.wielded && e.getKeyChar() == 'u'){
 									player.unweild(i);
 								}
 							}else if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){

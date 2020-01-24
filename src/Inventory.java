@@ -49,30 +49,12 @@ public class Inventory {
 		}
 		for(char c: inv.keySet()){
 			Item i = inv.get(c);
-			String quantity;
-			if(i.amount==1){
-				if(isVowelStart(i.getDisplayName())){
-					quantity = "an";
-				}else{
-					quantity = "a";
-				}
-			}else{
-				quantity = String.valueOf(i.amount);
-			}
-
-			String line = "";
-			line+= c+" - "+quantity+" "+i.getDisplayName();
-			
-			if(i.weilded) line+= " (weilded)";
-			if(i.quivered) line+= " (quivered)";
-			if(i.worn) line+= " (worn)" ;
-			Main.appendText(line);
-
+			Main.appendText(i.toString());
 		}
 	}
 
 
-	public boolean isVowelStart(String str){
+	public static boolean isVowelStart(String str){
 		if(str.length()==0) return false;
 		char c = str.charAt(0);
 		if(c=='a'||c=='i'||c=='e'||c=='o'||c=='u') return true;

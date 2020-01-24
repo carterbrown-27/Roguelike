@@ -1,0 +1,179 @@
+{
+	"Weapons" : {
+		"stackable" : false,
+		"unknown" : false,
+		
+		"Dagger" : {
+			"name" : "dagger",
+			"spriteIndex" : {
+				"x" : 5,
+				"y" : 1
+			},
+			"tier" : 2,
+			
+			"type" : "short blade",
+			"damage" : 3.0,
+			"accuracy" : 6.5,
+			"weight" : 2.0,
+			
+			"description" : "A short metal blade that is efficient in short ranged combat."
+		},
+		
+		"Hand Axe" : {
+			"name" : "hand axe",
+			"spriteIndex" : {
+				"x" : 6,
+				"y" : 1
+			},
+			"tier" : 4,
+			
+			"type" : "axe",
+			"damage" : 9.0,
+			"accuracy" : 5.5,
+			"weight" : 6.0,
+			
+			"description" : "A small battleaxe that can be effectively weilded using one hand by stronger warriors."
+		},
+		
+		"Club" : {
+			"name" : "club",
+			"spriteIndex" : {
+				"x" : 0,
+				"y" : 9
+			},
+			"tier" : 1,
+			
+			"type" : "bludgeon",
+			"damage" : 6.0,
+			"accuracy" : 4.5,
+			"weight" : 4.5,
+			
+			"description" : ""
+		},
+		
+		"Spiked Club" : {
+			"name" : "spiked club",
+			"spriteIndex" : {
+				"x" : 4,
+				"y" : 1
+			},
+			"tier" : 2,
+			
+			"type" : "bludgeon",
+			"damage" : 7.0,
+			"accuracy" : 4.5,
+			"weight" : 5.0,
+			
+			"description" : ""
+		}
+	},
+	
+	"Armour" : {
+		"stackable" : false,
+		"unknown" : false,
+		
+		"Leather Boots" : {
+			"name" : "pair of leather boots",
+			"spriteIndex" : {
+				"x" : 0,
+				"y" : 4
+			},
+			"tier" : 2,
+			
+			"type" : "boots",	
+			"defence": 1.5
+		}
+	},
+	
+	"Scrolls" : {
+		"stackable" : true,
+		"unknown" : true,
+		
+		"defaultSpriteIndex" : {
+			"x" : 0,
+			"y" : 3
+		},
+		
+		"defaultName" : "scroll",
+		
+		"Scroll of Identification" : {
+			"name" : "scroll of Identify",
+			"tier" : 2
+		},
+		
+		"Scroll of Teleportation" : {
+			"name" : "scroll of Teleportation",
+			"tier" : 2
+		}
+	},
+	
+	"Potions" : {
+		"stackable" : true,
+		"unknown" : true,
+	
+		"defaultSpriteIndex" : {
+			"x" : 2,
+			"y" : 2
+		},
+		
+		"defaultName" : "potion",
+		
+		"Potion of Healing" : {
+			"name" : "scroll of Healing",
+			"tier" : 2
+		},
+		
+		"Potion of Might" : {
+			"name" : "scroll of Might",
+			"tier" : 2
+		},
+		
+		"Potion of Flight" : {
+			"name" : "scroll of Flight",
+			"tier" : 2
+		}
+	},
+	
+	"Missiles" : {
+		"stackable" : true,
+		"unknown" : false,
+		
+		"Throwing Dart" : {
+			"name" : "throwing dart",
+			"spriteIndex" : {
+				"x" : 8,
+				"y" : 1
+			},
+			"tier" : 1,
+			
+			"damage" : 2.0,
+			"commonStack" : 5
+		}
+	},
+	
+	"Food" : {
+		"stackable" : true,
+		"unknown" : false,
+		
+		"Bread" : {
+			"name" : "bread ration",
+			"spriteIndex" : {
+				"x" : 5,
+				"y" : 5
+			},
+			"tier" : 1,
+			
+			"foodValue" : 10
+		}
+	},
+	
+	"Special" : {
+		"Silver Key" : {
+			"name" : "silver key",
+			"spriteIndex" : {
+				"x" : 4,
+				"y" : 0
+			}
+		}
+	}
+}	

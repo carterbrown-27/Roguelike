@@ -5,7 +5,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Player extends KeyAdapter {
+// TODO: extends entity
+public class Player {
 	public Entity e;
 	public BufferedImage img;
 	public Map map;
@@ -23,7 +24,8 @@ public class Player extends KeyAdapter {
 	ArrayList<Integer> dirs = new ArrayList<Integer>();
 	
 	// String = item name (ie blue potion) <> Item.Items = item real name (ie potion of flight)
-	public HashMap<Item.Items,String> identifiedItems = new HashMap<Item.Items,String>();
+	// TODO: REFACTOR
+	public HashMap<Item,String> identifiedItems = new HashMap<Item,String>();
 	
 	Player(int x, int y, Map _map){
 		map = _map;
@@ -194,59 +196,41 @@ public class Player extends KeyAdapter {
 		Main.takeTurn();
 	}
 	
-	public void equip(Item i, boolean b){
-		if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){
-			if(b){
-				putOn(i);
-			}else{
-				takeOff(i);
-			}
-		}else if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
-			if(b){
-				weild(i);
-			}else{
-				unweild(i);
-			}
-		}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
-			if(b){
-				quiver(i);
-			}else{
-				unquiver(i);
-			}
-		}
+	public <T extends Equippable> void equip(T item){
+		
 	}
 	
+	public <T extends Equippable> void unequip(T item){
+		
+	}
 	
-	
-	
-	
-	public void weild(Item i){
+	public void weild(Weapon i){
 		if(e.weapon!=null) unweild(e.weapon);
-		i.weilded = true;
+		i.equipped = true;
 		e.weapon = i;
 		Main.appendText("You are now weilding your "+i.name+".");
 	}
 	
-	public void unweild(Item i){
-		if(i!=null) i.weilded = false;
+	public void unweild(Weapon i){
+		if(i!=null) i.equipped = false;
 		e.weapon = null;
 		Main.appendText("You unweild your "+i.name+".");
 	}
 	
-	public void quiver(Item i){
+	public void quiver(Missile i){
 		if(i!=null){
 			unquiver(e.quivered);
 		}else{
 			return;
 		}
-		i.quivered = true;
+		i.equipped = true;
 		e.quivered = i;
 		Main.appendText("You quiver your "+i.name+"(s).");
 	}
 	
-	public void unquiver(Item i){
+	public void unquiver(Missile i){
 		if(i!=null){
-			i.quivered = false;
+			i.equipped = false;
 		}else{
 			return;
 		}
