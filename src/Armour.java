@@ -1,18 +1,10 @@
-public class Weapon extends Item implements Equippable {
+
+public class Armour extends Item implements Equippable {
 	private boolean equipped = false;
-	double baseDamage;
-	double baseAccuracy;
-	
-	Weapon(String id){
+	Armour(String id) {
 		super(id);
 	}
-	
-	@Override
-	public String[] listPrompts() {
-		// TODO: implement
-		return new String[] {};
-	}
-	
+
 	@Override
 	public void equip(Entity e) {
 		// TODO Auto-generated method stub
@@ -24,14 +16,16 @@ public class Weapon extends Item implements Equippable {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
 	@Override
 	public boolean isEquipped() {
-		return this.equipped;
+		// TODO Auto-generated method stub
+		return equipped;
 	}
-	
+
 	@Override
 	public boolean isEquippable() {
-		return true;
+		// TODO Auto-generated method stub
+		return equippable;
 	}
 }

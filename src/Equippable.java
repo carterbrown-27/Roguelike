@@ -1,9 +1,11 @@
 public interface Equippable {
-	public abstract void equip();
+	public final boolean equippable = true;
 	
-	public abstract void unequip();
+	public abstract void equip(Entity e);
+	
+	public abstract void unequip(Entity e);
 	
 	public abstract boolean isEquipped();
 	
-	public abstract String[] listPrompts();
+	public abstract boolean isEquippable();
 }

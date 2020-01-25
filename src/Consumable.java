@@ -1,11 +1,10 @@
-public interface Consumable {
-	public abstract void use();
+public interface Consumable  {
 	
-	public abstract void getAmount();
+	public void use(Entity e);
 	
-	public abstract void setAmount(int amt);
+	public int getAmount();
 	
-	public abstract void changeAmount(int amt);
+	public void setAmount(int amt);
 	
-	public abstract String[] listPrompts();
+	public void changeAmount(int amt);
 }

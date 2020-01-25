@@ -6,11 +6,11 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Map {
-	public static int height = 52; // 52
-	public static int width = 90; // 90
-	public static int MIN_DOORS = 32; // 32
+	public int height = 52; // 52
+	public int width = 90; // 90
+	public int MIN_DOORS = 32; // 32
 
-	public static int randFillPercent = 46; // 46 [+4 / -3]
+	public int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
 
 	public int[][] map;
@@ -31,7 +31,7 @@ public class Map {
 
 	private MapTypes type = MapTypes.UNDERCITY;
 
-	public static final boolean undercity = true;
+	public final boolean undercity = true;
 
 	public boolean debugFlag = false;
 
@@ -277,11 +277,12 @@ public class Map {
 					i--;
 				}else if(isSandwich(p.point.x,p.point.y) ){
 					doorCount++;
-					if(true || rng.nextInt(7)>=1){
+					if(true /*|| rng.nextInt(7)>=1*/){
 						map[p.point.y][p.point.x] = 5;
-					}else{
-						map[p.point.y][p.point.x] = 7;
 					}
+//					else{
+//						map[p.point.y][p.point.x] = 7;
+//					}
 				}else{
 					// if door is not between two walls, destroy it
 					if(isOnMap(p.point.x,p.point.y)) map[p.point.y][p.point.x] = 1;
@@ -320,7 +321,7 @@ public class Map {
 				obstructed = true;
 			}
 			if(!obstructed){
-				if(true || length!=0 || fromOtherC){
+				if(true /*|| length!=0 || fromOtherC */){
 					map[end.point.y][end.point.x] = 0;
 				}
 				// doors on sides

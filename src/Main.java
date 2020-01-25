@@ -57,7 +57,7 @@ public class Main {
 	public static int seed;
 
 	public static HashMap<String,String> randomNames = new HashMap<>();
-	public static HashMap<String,Item.potionColours> potionColours = new HashMap<>();	
+	public static HashMap<String,Potion.PotionColours> potionColours = new HashMap<>();	
 
 	public static void main(String[] args){
 
@@ -88,7 +88,7 @@ public class Main {
 					if (System.currentTimeMillis()-lastPress>=interval) {
 						lastPress = System.currentTimeMillis();
 						if(!itemPickup && !inventoryScreen){
-							txt.clear(); /**TEMP**/
+							txt.clear(); /**TODO: TEMP**/
 							refreshText();
 						}
 						if(itemPickup){
@@ -118,7 +118,8 @@ public class Main {
 							if (player.e.inv.inv.containsKey(c)) {
 								selected = true;
 								// open item menu
-								/** temporary **/
+								/** TODO: temporary **/
+								// TODO: replace inventory with split-by-class system
 								Item i = player.e.inv.inv.get(c);
 
 								appendText(c+" - "+i.getDisplayName()+" selected.");
@@ -136,41 +137,21 @@ public class Main {
 					}else if(itemScreen){
 						char c = selectedItem;
 						Item i = player.e.inv.inv.get(c);
+						
+						// TODO: fix all of this.
 						if(e.getKeyChar() == 'd'){
-							if(i.wielded || i.quivered || i.worn){
-								player.equip(i, false);
+							if(i.isEquipped()){
+								player.equip(i);
 							}
 							player.e.inv.dropAll(c, player.e);
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.WEAPON)){
-							if(!i.wielded && e.getKeyChar() == 'w'){
-								player.weild(i);
-							}else if(i.wielded && e.getKeyChar() == 'u'){
-								player.unweild(i);
-							}
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.ARMOUR)){
-							if(!i.worn && e.getKeyChar() == 'p'){
-								player.putOn(i);
-							}else if(i.worn && e.getKeyChar() == 't'){
-								player.takeOff(i);
-							}
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.SCROLL)){
-							if(e.getKeyChar() == 'r'){
-								i.read(player.e, c);
-							}
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.MISSILE)){
-							if(!i.quivered && e.getKeyChar() == 'q'){
-								player.quiver(i);
-							}else if(i.quivered && e.getKeyChar() == 'u'){
-								player.unquiver(i);
-							}			
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
-							if(e.getKeyChar() == 'q'){
-								i.quaff(player.e, c);
-							}
-						}else if(i.type.supertype.equals(Item.Items.Item_Supertype.FOOD)){
-							if(e.getKeyChar() == 'e'){
-								i.eat(player.e, c);
-							}
+						}
+						
+						if(EQUIPPABLE){
+						
+						}
+						
+						if(CONSUMABLE){
+							
 						}
 						itemScreen = false;
 						refreshStats();
@@ -200,7 +181,7 @@ public class Main {
 					}else if (directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown()) >= 0) {
 						int d = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
 						if(aimScreen){
-							Point p = DIRECTIONS.values()[d].p;
+							Point p = Direction.values()[d].p;
 							targetPos.x += p.x;
 							targetPos.y += p.y;
 							// TODO: aim visuals && los check
@@ -359,12 +340,13 @@ public class Main {
 		Missile darts = new Missile("darts");
 		player.e.inv.addItem(darts);
 		player.quiver(player.e.inv.inv.get(player.e.inv.getItemTypeChar(Item.Items.DART)));
-
-		for(String i: Item.scrolls){
-			randomNames.put(i, "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
+		
+		// TODO: init Item.Scrolls & Item.Potions
+		for(Scroll i: Item.scrolls){
+			randomNames.put(i.getTypeName(), "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
 		}
-		for(String i: Item.potions){
-			randomNames.put(i, randomPotionName(i));
+		for(Potion i: Item.potions){
+			randomNames.put(i.getTypeName(), randomPotionName(i));
 		}
 
 		/** temporary **/
@@ -385,24 +367,24 @@ public class Main {
 			Point t = floors.get(cF).randomOpenSpace();
 			Item.ItemType ty = Item.randomItemType(cF);
 			System.out.println("adding "+ty);
-			floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Item(ty,1,cF));
+			floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Weapon("Dagger"));
 		}
 
 		int chests = rng.nextInt(2)+1;
 		for(int i = 0; i < chests; i++){
 			Point t = floors.get(cF).randomEmptySpace();
 			System.out.println("adding Chest/Key pair");
-			floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Item("Silver Key"));
+			floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Special("Silver Key"));
 			t = floors.get(cF).randomEmptySpace();
 			new Entity(StaticEntity.SEType.SILVER_CHEST,t.x,t.y,floors.get(cF));
 		}
-
-
-
+		
 		try{
 			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+"-t"+System.currentTimeMillis()+".png");
 			ImageIO.write(floors.get(cF).renderMap(), "png", output);
-		}catch(Exception e){};
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 
 		System.out.println("@@@ Ready = "+(System.currentTimeMillis()-time)+"ms @@@");
 		if(frame==null){
@@ -454,20 +436,17 @@ public class Main {
 				System.out.println("adding item #"+i);
 				
 				// TODO: CHANGE THIS
-				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Item(Item.randomItemType(cF)));
+				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(Item.randomItemType(level));
 			}
 
 			int chests = rng.nextInt(2)+1;
 			for(int i = 0; i < chests; i++){
 				t = floors.get(cF).randomEmptySpace();
 				System.out.println("adding Chest/Key pair");
-				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Item("Silver Key"));
+				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Special("Silver Key"));
 				t = floors.get(cF).randomEmptySpace();
 				floors.get(cF).addEntity(new Entity(StaticEntity.SEType.SILVER_CHEST,t.x,t.y,floors.get(cF)));
 			}
-
-
-
 		}
 		try{
 			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+"-t"+System.currentTimeMillis()+".png");
@@ -481,8 +460,8 @@ public class Main {
 	public static JPanel consolePanel = new JPanel();
 
 	private static JFrame buildFrame(BufferedImage img) {
-		//		GUI gui = new GUI();
-		//		gui.run();
+		// GUI gui = new GUI();
+		// gui.run();
 
 		JFrame frame = new JFrame();
 		JFrame_HEIGHT = img.getHeight()+42;
@@ -698,8 +677,9 @@ public class Main {
 		img = resize(img, img.getWidth()*3, img.getHeight()*3);
 		return img;
 	}
-
-	public static String randomPotionName(String i){
+	
+	// TODO: move to Potion Class
+	public static String randomPotionName(Potion p){
 		String[] colours = {"red","orange","green","blue","violet","pink","mahogany",
 				"aquamarine","golden","silver","charcoal","brown"};
 		String[] descriptors = {"bubbly","foggy","smoking","flat","swirling","percipitated","thick","glowing","shimmering","frosted"};
@@ -713,10 +693,10 @@ public class Main {
 		do{
 			r = rng.nextInt(colours.length);
 		}
-		while(potionColours.containsValue(Potion.potionColours.values()[r]));
+		while(potionColours.containsValue(Potion.PotionColours.values()[r]));
 
 		name+=colours[r];
-		potionColours.put(i, Potion.potionColours.values()[r]);
+		potionColours.put(p.getTypeName(), Potion.PotionColours.values()[r]);
 		name+=" potion";
 
 		return name;
@@ -725,11 +705,10 @@ public class Main {
 	public static String randomName(){
 
 		int length = rng.nextInt(5)+4;
-		char[] vowels = {'a','e','i','o','u','y'};
+		char[] vowels = {'a','e','i','o','u'};
 
-		char[] ctv = {'r','h','w','l'};
-		char[] consonants = {'b','c','d','f','g','j','k',
-				'm','p','v','z','s','t','n'};
+		char[] ctv = {'r','h','w','l','y','n'};
+		char[] consonants = {'b','c','d','f','g','j','k','l','m','p','r','v','z','s','t','n','w'};
 
 		// String[] pairs = {"ld","st","pr","qu","sh"};
 
@@ -790,7 +769,7 @@ public class Main {
 		return -1;
 	}
 
-	public static enum DIRECTIONS  {
+	public static enum Direction  {
 		UP 				(0,-1),
 		RIGHT 			(+1,0),
 		DOWN 			(0,+1),
@@ -802,7 +781,7 @@ public class Main {
 
 		Point p;
 
-		DIRECTIONS(int x, int y){
+		Direction(int x, int y){
 			p = new Point(x,y);
 		}
 	}

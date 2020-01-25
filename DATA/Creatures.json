@@ -1,0 +1,121 @@
+{
+	"Player" : {
+		"name" : "Player",
+		"spriteIndex" : {
+			"x" : 2,
+			"y" : 6
+		},
+		
+		"strength" : 2.5,
+		"HP" : {
+			"max" : 15,
+			"regenRate" : 1.0
+		},
+		"SP" : {
+			"max" : 4,
+			"regenRate" : 1.0
+		},
+		"speed" : 1.0,
+		"evasiveness" : 1.0,
+		
+		"properties" : {
+			"hasAI" : false
+		}
+	},
+	
+	"Rat" : {
+		"name" : "Rat",
+		"spriteIndex" : {
+			"x" : -1,
+			"y" : -1
+		},
+		
+		"strength" : 2,
+		"HP" : {
+			"max" : 6,
+			"regenRate" : 1.0
+		},
+		"SP" : {
+			"max" : 3,
+			"regenRate" : 1.0
+		},
+		"speed" : 1.0,
+		"evasiveness" : 0.8,
+		
+		"properties" : {
+			
+		}
+	},
+	
+	"Bat" : {
+		"name" : "Bat",
+		"spriteIndex" : {
+			"x" : 3,
+			"y" : 8
+		},
+		
+		"strength" : 2,
+		"HP" : {
+			"max" : 4,
+			"regenRate" : 1.0
+		},
+		"SP" : {
+			"max" : 3,
+			"regenRate" : 1.0
+		},
+		"speed" : 0.8,
+		"evasiveness" : 1.5,
+		
+		"properties" : {
+			"flying" : true
+		}
+	},
+	
+	"Goblin" : {
+		"name" : "Goblin",
+		"spriteIndex" : {
+			"x" : 7,
+			"y" : 9
+		},
+		
+		"strength" : 3,
+		"HP" : {
+			"max" : 14,
+			"regenRate" : 1.0
+		},
+		"SP" : {
+			"max" : 3,
+			"regenRate" : 1.0
+		},
+		"speed" : 1.0,
+		"evasiveness" : 1.0,
+		
+		"properties" : {
+		
+		}
+	},
+	
+	"Blue Ooze" : {
+		"name" : "Blue Ooze",
+		"spriteIndex" : {
+			"x" : 8,
+			"y" : 9
+		},
+		
+		"strength" : 3,
+		"HP" : {
+			"max" : 10,
+			"regenRate" : 1.0
+		},
+		"SP" : {
+			"max" : 2,
+			"regenRate" : 1.0
+		},
+		"speed" : 1.5,
+		"evasiveness" : 0.9,
+		
+		"properties" : {
+			"amphibious" : true
+		}
+	}
+}

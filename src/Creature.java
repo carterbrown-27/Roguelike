@@ -3,17 +3,8 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public enum Creature {
-	PLAYER (0),
-	RAT		 (1), 
-	BAT		 (2),
-	GOBLIN (3),
-	OOZE	 (4);
-//	SNAKE  (4),
-//	FROG	 (5),
-//	SLIME	 (6),
-//	SPIDER (7);
-	
+public class Creature extends Entity {
+
 	// fields
 	public BufferedImage sourcedItems;
 	
@@ -35,23 +26,11 @@ public enum Creature {
 	public boolean isAmphibious = false;
 	// methods
 	
-	Creature(int type){
-		if(type==0){
-			createPlayer();
-		}else if(type==1){
-			createRat();
-		}else if(type==2){
-			createBat();
-		}else if(type==3){
-			createGoblin();
-		}else if(type==4){
-			createOoze();
-		}
-	}
-	
+	@Deprecated
 	public static Creature randomType(){
 		return Creature.values()[Main.rng.nextInt(Creature.values().length)];
 	}
+	
 	public BufferedImage subImage(int x, int y){
 		if(sourcedItems == null){
 			try {
@@ -63,74 +42,13 @@ public enum Creature {
 		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
 	}
 	
-	private void createPlayer(){
-		NAME = "player";
-		SPRITE = subImage(2,6);
-		
-		STRENGTH = 2.5;
-		HP_MAX = 15;
-		SP_MAX = 4;
-		
-		EVASIVENESS = 1.0;
-		
-		hasAI = false;
-	}
-	
+	@Deprecated
 	private void createRat(){
-		NAME = "rat";
+		// TODO: edit sprites
 		try {
 			SPRITE = ImageIO.read(new File("imgs/rat.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		STRENGTH = 2;
-		HP_MAX = 6;
-		SP_MAX = 3;
-		SPEED = 1;
-		EVASIVENESS = 0.8;
 	}
-	
-	private void createBat(){
-		NAME = "bat";
-		SPRITE = subImage(3,8);
-		
-		STRENGTH = 2;
-		HP_MAX = 4;
-		SP_MAX = 3;
-		SPEED = 0.8;
-		EVASIVENESS = 1.5;
-		
-		isFlying = true;
-	}
-	
-	private void createGoblin(){
-		NAME = "goblin";
-		SPRITE = subImage(7,9);
-		
-		STRENGTH = 3;
-		HP_MAX = 14;
-		SP_MAX = 3;
-		SPEED = 1;
-		EVASIVENESS = 1.0;
-	}
-	
-	private void createOoze(){
-		NAME = "ooze";
-		SPRITE = subImage(8,9);
-		
-		STRENGTH = 3;
-		HP_MAX = 10;
-		SP_MAX = 2;
-		SPEED = 1.2;
-		
-		EVASIVENESS = 0.9;
-		
-		isAmphibious = true; // TODO: invis while swimming
-	}
-	
-	
-//	private BufferedImage getSprite(String path){
-//		
-//	}
 }

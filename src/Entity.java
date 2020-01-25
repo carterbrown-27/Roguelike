@@ -1,8 +1,10 @@
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
-public class Entity {
-
+public class Entity extends GameObject {
+	
+	// TODO: move all creature logic to creature class
+	
 	public int x;
 	public int y;
 
@@ -37,18 +39,21 @@ public class Entity {
 	public HashMap<Status,Integer> statuses = new HashMap<Status,Integer>();
 
 	public Inventory inv = new Inventory();	
-
-	public Item weapon;
-	public Item quivered;
-	public Item helmet;
-	public Item boots;
-	public Item chestplate;
-	public Item greaves;
-	public Item gloves;
-	public Item ring_left;
-	public Item ring_right;
-	public Item[] armour = {weapon,quivered,helmet,boots,chestplate,greaves,gloves};
-	public Item amulet;
+	
+	// TODO: move these to creature
+	public Weapon weapon;
+	public Missile quivered;	
+	
+	// TODO: move, replace this with ArmourSet Class
+	public Armour helmet;
+	public Armour boots;
+	public Armour chestplate;
+	public Armour greaves;
+	public Armour gloves;
+	public Armour ring_left;
+	public Armour ring_right;
+	public Armour amulet;
+	public Armour[] armour = {helmet,boots,chestplate,greaves,gloves};
 
 	public boolean awake = false;
 
@@ -62,7 +67,7 @@ public class Entity {
 		creature = _creature;
 		img = _creature.SPRITE;
 		map = _map;
-		if(!creature.equals(Creature.PLAYER)){
+		if(NOT_PLAYER){
 			name = map.addEntity(this);
 			ai = new AI(this);
 			System.out.println("AI attached.");
@@ -318,6 +323,7 @@ public class Entity {
 		return p;
 	}
 
+	// TODO: replace all with reference to Main.DIRECTIONS
 	public int getDir(Point d){
 		if(d.x==x+1 && d.y == y-1) return 4;
 		if(d.x==x+1 && d.y == y+1) return 5;
@@ -347,7 +353,7 @@ public class Entity {
 
 	public double getDefense(){
 		double defense = 0;
-		for(Item i: armour){
+		for(Armour a: armour){
 			if(i!=null){
 				defense += i.type.baseDefense;
 			}

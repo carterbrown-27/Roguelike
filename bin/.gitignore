@@ -1,8 +1,6 @@
-/Missile.class
-/Equippable.class
-/Snippet.class
 /Consumable.class
-/Item$potionColours.class
-/Item$ItemTypes.class
-/Item$ItemType.class
+/Potion$potionColours.class
 /Main$1.class
+/Potion$PotionColours.class
+/Main$Direction.class
+/GameObject.class

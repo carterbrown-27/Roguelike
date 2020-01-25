@@ -1,5 +1,4 @@
 import java.awt.Point;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.*;
@@ -29,7 +28,7 @@ public class Player {
 	Player(int x, int y, Map _map){
 		map = _map;
 		this.e = new Entity(Creature.PLAYER,x,y,map);
-		map.entities.remove(this.e);
+		map.entities.remove(e);
 		map.player = this.e;
 		lib = new ActionLibrary(e);
 	}
@@ -108,6 +107,11 @@ public class Player {
 			}
 		}
 	}
+	
+	public boolean isItemIdentified(Item i) {
+		return identifiedItems.contains(i.getTypeName());
+	}
+	
 	
 	public void basic(int dir){
 		if(!e.move(dir)){
@@ -197,11 +201,12 @@ public class Player {
 	
 	// TODO: implement
 	public <T extends Equippable> void equip(T item){
-		
+		// temp
+		item.equip(e);
 	}
 	
 	public <T extends Equippable> void unequip(T item){
-		
+		item.unequip(e);
 	}
 	
 //	public void weild(Weapon i){

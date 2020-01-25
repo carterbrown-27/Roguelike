@@ -1,20 +1,18 @@
-import java.awt.Point;
 // TODO: switch from json-simple to java-json.
 import org.json.simple.*;
 import org.json.simple.parser.JSONParser;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import javax.imageio.ImageIO;
 
 
-public class Item{
-	
-	private static BufferedImage potionImages;
+public abstract class Item extends GameObject {
 	private static BufferedImage sourcedItems;
 	private static JSONObject masterJSON;
+	public static Scroll[] scrolls;
+	public static Potion[] potions;
+	private static boolean initialized;
 	
 	private JSONObject supertypeData;
 	private JSONObject itemData;
@@ -24,6 +22,7 @@ public class Item{
 	private String typeName;
 	private String displayName;
 	private String description;
+	private int amount;
 	
 	private char inventoryID = '?';
 
@@ -100,17 +99,6 @@ public class Item{
 		}
 		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
 	}
-
-	public static BufferedImage subImagePotion(int x, int y){
-		if(potionImages==null){
-			try {
-				potionImages = ImageIO.read(new File("imgs/potions.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return potionImages.getSubimage(x*24+x, y*24+y, 24, 24);
-	}
 	
 	// returns jsonobject if its found in the child of the item object, otherwise, return the default value.
 	public Object getSpecValue(String key){
@@ -125,12 +113,35 @@ public class Item{
 		return this.description;
 	}
 	
+	public int getAmount() {
+		return amount;
+	}
+	
+	public void setAmount(int amt) {
+		this.amount = amt;
+	}
+
+	public void changeAmount(int amt) {
+		this.amount += amt;
+		if(this.amount < 0) {
+			this.amount = 0;
+		}
+	}
+	
 	public boolean isUnknown(){
 		return (boolean) getSpecValue("unknown");
 	}
 
 	public boolean isStackable(){
 		return (boolean) getSpecValue("stackable");
+	}
+	
+	public BufferedImage getSprite() {
+		return sprite;
+	}
+	
+	public ItemType getSuperType() {
+		return superType;
 	}
 
 	// TODO: move, refactor
@@ -229,42 +240,6 @@ public class Item{
 		ItemType(String _name){
 			this.name = _name;
 		}
-	}
-
-	public static enum potionColours {
-		RED		 		(0),
-		ORANGE 		 	(1),
-		GREEN	 		(2),
-		BLUE 	 		(3),
-		VIOLET 		 	(4),
-		PINK	 		(5),
-		MAHOGANY 	 	(6),
-		AQUAMARINE		(7),
-		GOLDEN 			(8),
-		SILVER 		 	(9),
-		CHARCOAL 	 	(10),
-		BROWN  		 	(11);
-
-		potionColours(int n){
-			colour = colours[n];
-			image = images[n];
-		}
-
-		public String getName(int i){
-			return colours[i];
-		}
-		public BufferedImage getImage(int i){
-			return images[i];
-		}
-
-		public String colour;
-		public BufferedImage image;
-
-		public String[] colours = {"red","orange","green","blue","violet","pink",
-				"mahogany","aquamarine","golden","silver","charcoal","brown"};
-
-		public BufferedImage[] images = {subImagePotion(0,0),subImagePotion(0,1),subImagePotion(2,0),subImagePotion(1,0),subImagePotion(3,0),subImagePotion(4,1),
-				subImagePotion(5,1), subImagePotion(2,1),subImagePotion(4,0),subImagePotion(1,1),subImagePotion(5,0),subImagePotion(3,1)};
 	}
 
 	/** TEMPORARY **/

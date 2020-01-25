@@ -3,8 +3,8 @@ import java.util.HashMap;
 
 public class Inventory {
 
-	HashMap<Character,Item> inv = new HashMap<Character,Item>();
-	HashMap<Integer,Integer> keys = new HashMap<Integer,Integer>();
+	HashMap<Character,Item> inv = new HashMap<>();
+	HashMap<Integer,Integer> keys = new HashMap<>();
 
 	char firstOpen = 'a';
 
@@ -18,7 +18,7 @@ public class Inventory {
 	
 	public boolean containsUnidentified(){
 		for(Item i: inv.values()){
-			if(i.isUnknown() && !Main.player.identifiedItems.containsKey(i.type)){
+			if(i.isUnknown() && !Main.player.isItemIdentified(i)){
 				return true;
 			}
 		}
@@ -26,14 +26,10 @@ public class Inventory {
 	}
 
 	public void pickUp(char c, Entity destination){
-		Item i;
-		if(isOneItem()){
-			i = inv.remove(getFirstItem());
-		}else{
-			i = inv.remove(c);
-		}
-		if(i.type.supertype.equals(Item.Items.Item_Supertype.SPECIAL)){
-			if(i.isInClass(Item.Items.keys)){
+		// TODO: rework key system
+		Item i = inv.remove(c);
+		if(SPECIAL){
+			if(KEY){
 				destination.pickupKey(i.floorFoundOn);
 			}
 		}else{
@@ -64,7 +60,7 @@ public class Inventory {
 
 	public BufferedImage drawPile(){
 		for(Item i: inv.values()){
-			if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
+			if(POTION){
 				return Main.potionColours.get(i.type).image;
 			}else{
 				return i.sprite;
@@ -73,9 +69,11 @@ public class Inventory {
 		return null;
 	}
 	
-	public char getItemTypeChar(Item.Items t){
+	@Deprecated
+	public char getItemTypeChar(Item t){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(inv.containsKey(c) && inv.get(c).type.equals(t)){
+			// TODO: fix
+			if(inv.containsKey(c) && inv.get(c).equals(t)){
 				return c;
 			}
 		}
@@ -100,11 +98,12 @@ public class Inventory {
 		firstOpen = '!';
 	}
 
-	public void addItem(Item i){
+	public <T extends Item> void addItem(T i){
 		// stack items
 		if (i.isStackable()) {
+			// TODO handle better
 			for (Item t : inv.values()) {
-				if (t.name.equals(i.name)){
+				if (t.getDisplayName().equals(i.getDisplayName())){
 					t.amount+=i.amount;
 					return;
 				}
@@ -129,17 +128,18 @@ public class Inventory {
 	}
 	
 	public void makeRandomInventory(int tier, int amount){
-		double n = (double) amount*2/3 + Main.rng.nextDouble()*(double) amount*2/3;
+		double n = (double) amount*2/3 + (Main.rng.nextDouble() * (double) amount*2/3);
 		n = (int) ActionLibrary.round(n, 0);
 		
 		for(int x = 0; x < n; x++){
-			Item.Items t = Item.Items.randomItemType(tier);
-			addItem(new Item (t,getStackSize(t),Main.cF));
+			// TODO: change
+			Item.ItemType t = Item.randomItemType(tier);
+			addItem();
 		}
 	}
 	
-	public int getStackSize(Item.Items type){
-		int c = type.commonStackSize;
+	public int getStackSize(ConsumableItem type){
+		int c = type.getCommonStackSize();
 		// TODO: variation
 		return c;
 	}
