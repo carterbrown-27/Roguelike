@@ -18,4 +18,10 @@ public class Weapon extends Item implements Equippable {
 	public boolean isEquipped() {
 		return this.equipped;
 	}
+	
+	@Override
+	public String[] listPrompts() {
+		// TODO: implement
+		return new String[] {};
+	}
 }

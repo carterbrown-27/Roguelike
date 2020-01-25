@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+// TODO: extend Entity class
 public class StaticEntity {
 	
 	public SEType type;

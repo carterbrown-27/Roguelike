@@ -2,7 +2,16 @@
 	"Weapons" : {
 		"stackable" : false,
 		"unknown" : false,
-		
+		"prompts" : {
+			"equipPrompt" : {
+				"char" : "w",
+				"text" : "(w)ield"
+			},
+			"unequipPrompt" : {
+				"char" : "u",
+				"text" : "(u)nwield"
+			}
+		},
 		"Dagger" : {
 			"name" : "dagger",
 			"spriteIndex" : {
@@ -72,6 +81,17 @@
 		"stackable" : false,
 		"unknown" : false,
 		
+		"prompts" : {
+			"equipPrompt" : {
+				"char" : "p",
+				"text" : "(p)ut on"
+			},
+			"unequipPrompt" : {
+				"char" : "t",
+				"text" : "(t)ake off"
+			}
+		},
+		
 		"Leather Boots" : {
 			"name" : "pair of leather boots",
 			"spriteIndex" : {
@@ -88,6 +108,12 @@
 	"Scrolls" : {
 		"stackable" : true,
 		"unknown" : true,
+		"prompts" : {
+			"use" : {
+				"char" : "r",
+				"text" : "(r)ead"
+			}
+		},
 		
 		"defaultSpriteIndex" : {
 			"x" : 0,
@@ -98,45 +124,90 @@
 		
 		"Scroll of Identification" : {
 			"name" : "scroll of Identify",
-			"tier" : 2
+			"tier" : 2,
+			
+			"effects" : {
+				"ID" : 1,
+				"NOISE" : 3,
+				"LIGHT" : 4
+			},
+			"selfUseMsg" : "Your pack glows with a blue light and you are overwhelmed with a fleeting knowledge.",
+			"otherUseMsg" : "",
+			"failureMsg" : "You have nothing in your pack to identify!"
 		},
 		
 		"Scroll of Teleportation" : {
 			"name" : "scroll of Teleportation",
-			"tier" : 2
+			"tier" : 2,
+			
+			"effects" : {
+				"TELEPORT" : null,
+				"DIZZY" : 5,
+				"NOISE" : 7
+			},
+			"selfUseMsg" : "You are swept up by a whirlwind. Your surroundings seem different.",
+			"otherUseMsg" : "You hear a loud noise. The %s vanishes."
 		}
 	},
 	
 	"Potions" : {
 		"stackable" : true,
 		"unknown" : true,
+		
+		"prompts" : {
+			"use" : {
+				"char" : "q",
+				"text" : "(q)uaff"
+			}
+		},
 	
 		"defaultSpriteIndex" : {
 			"x" : 2,
 			"y" : 2
 		},
-		
 		"defaultName" : "potion",
 		
 		"Potion of Healing" : {
 			"name" : "scroll of Healing",
-			"tier" : 2
+			"tier" : 2,		
+			
+			"effects" : {
+				"HP_CHANGE" : 30
+			},
+			"selfUseMsg" : "You feel rejuvenated.",
+			"otherUseMsg" : "The %s appears to be in much better health."
 		},
 		
 		"Potion of Might" : {
 			"name" : "scroll of Might",
-			"tier" : 2
+			"tier" : 2,
+			
+			"effects" : {
+				"MIGHT" : 10
+			},
+			"selfUseMsg" : "Your body shudders with newfound strength!",
+			"otherUseMsg" : "The %s's body shudders with newfound strength."
 		},
 		
 		"Potion of Flight" : {
 			"name" : "scroll of Flight",
-			"tier" : 2
+			"tier" : 2,
+			
+			"effects" : {
+				"FLIGHT" : 10
+			},
+			"selfUseMsg" : "You feel your feet leave the ground!",
+			"otherUseMsg" : "The %s raises into the air."
 		}
 	},
 	
 	"Missiles" : {
 		"stackable" : true,
 		"unknown" : false,
+		
+		"prompts" : {
+		
+		},
 		
 		"Throwing Dart" : {
 			"name" : "throwing dart",
@@ -154,6 +225,13 @@
 	"Food" : {
 		"stackable" : true,
 		"unknown" : false,
+		
+		"prompts" : {
+			"use" : {
+				"char" : "e",
+				"text" : "(e)at"
+			}
+		},
 		
 		"Bread" : {
 			"name" : "bread ration",

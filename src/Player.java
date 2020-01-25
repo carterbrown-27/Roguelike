@@ -2,8 +2,7 @@ import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 // TODO: extends entity
 public class Player {
@@ -25,7 +24,7 @@ public class Player {
 	
 	// String = item name (ie blue potion) <> Item.Items = item real name (ie potion of flight)
 	// TODO: REFACTOR
-	public HashMap<Item,String> identifiedItems = new HashMap<Item,String>();
+	public Set<String> identifiedItems = new HashSet<String>();
 	
 	Player(int x, int y, Map _map){
 		map = _map;
@@ -196,6 +195,7 @@ public class Player {
 		Main.takeTurn();
 	}
 	
+	// TODO: implement
 	public <T extends Equippable> void equip(T item){
 		
 	}
@@ -204,93 +204,93 @@ public class Player {
 		
 	}
 	
-	public void weild(Weapon i){
-		if(e.weapon!=null) unweild(e.weapon);
-		i.equipped = true;
-		e.weapon = i;
-		Main.appendText("You are now weilding your "+i.name+".");
-	}
+//	public void weild(Weapon i){
+//		if(e.weapon!=null) unweild(e.weapon);
+//		i.equipped = true;
+//		e.weapon = i;
+//		Main.appendText("You are now weilding your "+i.name+".");
+//	}
+//	
+//	public void unweild(Weapon i){
+//		if(i!=null) i.equipped = false;
+//		e.weapon = null;
+//		Main.appendText("You unweild your "+i.name+".");
+//	}
+//	
+//	public void quiver(Missile i){
+//		if(i!=null){
+//			unquiver(e.quivered);
+//		}else{
+//			return;
+//		}
+//		i.equipped = true;
+//		e.quivered = i;
+//		Main.appendText("You quiver your "+i.name+"(s).");
+//	}
+//	
+//	public void unquiver(Missile i){
+//		if(i!=null){
+//			i.equipped = false;
+//		}else{
+//			return;
+//		}
+//		e.quivered = null;
+//		Main.appendText("You put away your "+i.name+"(s).");
+//	}
 	
-	public void unweild(Weapon i){
-		if(i!=null) i.equipped = false;
-		e.weapon = null;
-		Main.appendText("You unweild your "+i.name+".");
-	}
+//	public void takeOff(Item i){
+//		if(i==null) return;
+//		i.worn = false;
+//		if(e.helmet.equals(i)){
+//			e.helmet = null;
+//		}else if(e.chestplate.equals(i)){
+//			e.chestplate = null;
+//		}else if(e.greaves.equals(i)){
+//			e.greaves = null;
+//		}else if(e.boots.equals(i)){
+//			e.boots = null;
+//		}else if(e.gloves.equals(i)){
+//			e.gloves = null;
+//		}else if(e.ring_left.equals(i)){
+//			e.ring_left = null;
+//		}else if(e.ring_right.equals(i)){
+//			e.ring_right = null;
+//		}
+//		Main.appendText("You take off your "+i.name+".");
+//	}
 	
-	public void quiver(Missile i){
-		if(i!=null){
-			unquiver(e.quivered);
-		}else{
-			return;
-		}
-		i.equipped = true;
-		e.quivered = i;
-		Main.appendText("You quiver your "+i.name+"(s).");
-	}
-	
-	public void unquiver(Missile i){
-		if(i!=null){
-			i.equipped = false;
-		}else{
-			return;
-		}
-		e.quivered = null;
-		Main.appendText("You put away your "+i.name+"(s).");
-	}
-	
-	public void takeOff(Item i){
-		if(i==null) return;
-		i.worn = false;
-		if(e.helmet.equals(i)){
-			e.helmet = null;
-		}else if(e.chestplate.equals(i)){
-			e.chestplate = null;
-		}else if(e.greaves.equals(i)){
-			e.greaves = null;
-		}else if(e.boots.equals(i)){
-			e.boots = null;
-		}else if(e.gloves.equals(i)){
-			e.gloves = null;
-		}else if(e.ring_left.equals(i)){
-			e.ring_left = null;
-		}else if(e.ring_right.equals(i)){
-			e.ring_right = null;
-		}
-		Main.appendText("You take off your "+i.name+".");
-	}
-	
-	public void putOn(Item i){
-		if(i.isInClass(Item.Items.helmets)){
-			if(e.helmet!=null) takeOff(e.helmet);
-			e.helmet = i;
-		}else if(i.isInClass(Item.Items.chestplates)){
-			if(e.chestplate!=null) takeOff(e.chestplate);
-			e.chestplate = i;
-		}else if(i.isInClass(Item.Items.greaves)){
-			if(e.greaves!=null) takeOff(e.greaves);
-			e.greaves = i;
-		}else if(i.isInClass(Item.Items.boots)){
-			if(e.boots!=null) takeOff(e.boots);
-			e.boots = i;
-		}else if(i.isInClass(Item.Items.gloves)){
-			if(e.gloves!=null) takeOff(e.gloves);
-			e.gloves = i;
-		}else if(i.isInClass(Item.Items.rings)){
-			if(e.ring_left == null){
-				e.ring_left = i;
-			}else if(e.ring_right == null){
-				e.ring_right = i;
-			}else{
-				// take off rings
-				Main.appendText("you must take off one of your two rings first.");
-			}
-		}else if(i.isInClass(Item.Items.amulets)){
-			if(e.amulet!=null) takeOff(e.amulet);
-			e.amulet = i;
-		}
-		i.worn = true;
-		Main.appendText("You put on your "+i.name+".");
-	}
+//	public void putOn(Item i){
+//		if(i.isInClass(Item.Items.helmets)){
+//			if(e.helmet!=null) takeOff(e.helmet);
+//			e.helmet = i;
+//		}else if(i.isInClass(Item.Items.chestplates)){
+//			if(e.chestplate!=null) takeOff(e.chestplate);
+//			e.chestplate = i;
+//		}else if(i.isInClass(Item.Items.greaves)){
+//			if(e.greaves!=null) takeOff(e.greaves);
+//			e.greaves = i;
+//		}else if(i.isInClass(Item.Items.boots)){
+//			if(e.boots!=null) takeOff(e.boots);
+//			e.boots = i;
+//		}else if(i.isInClass(Item.Items.gloves)){
+//			if(e.gloves!=null) takeOff(e.gloves);
+//			e.gloves = i;
+//		}else if(i.isInClass(Item.Items.rings)){
+//			if(e.ring_left == null){
+//				e.ring_left = i;
+//			}else if(e.ring_right == null){
+//				e.ring_right = i;
+//			}else{
+//				// take off rings
+//				Main.appendText("you must take off one of your two rings first.");
+//			}
+//		}else if(i.isInClass(Item.Items.amulets)){
+//			if(e.amulet!=null) takeOff(e.amulet);
+//			e.amulet = i;
+//		}
+//		i.worn = true;
+//		Main.appendText("You put on your "+i.name+".");
+//	}
 	
 //	public ArrayList<Entity> getAdjacents() {
 //		ArrayList<Entity> targets = new ArrayList<Entity>();

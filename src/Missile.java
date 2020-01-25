@@ -3,8 +3,14 @@ public class Missile extends Item implements Equippable, Consumable {
 	private boolean equipped;
 	private int amount;
 	
-	Missile(){
-		super("");
+	Missile(String id, int _amount){
+		super(id);
+		this.amount = _amount;
+	}
+	
+	Missile(String id){
+		// TODO: replace 1 with stack size.
+		this(id,1);
 	}
 	
 	public void equip() {
@@ -38,5 +44,11 @@ public class Missile extends Item implements Equippable, Consumable {
 	
 	public void changeAmount(int amt) {
 		
+	}
+	
+	@Override
+	public String[] listPrompts() {
+		// TODO: implement
+		return new String[] {};
 	}
 }
