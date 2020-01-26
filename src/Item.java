@@ -8,7 +8,6 @@ import javax.imageio.ImageIO;
 
 
 public abstract class Item extends GameObject {
-	private static BufferedImage sourcedItems;
 	private static JSONObject masterJSON;
 	public static Scroll[] scrolls;
 	public static Potion[] potions;
@@ -88,17 +87,6 @@ public abstract class Item extends GameObject {
 		JSONObject obj = new JSONObject();
 		return obj;
 	}
-
-	public static BufferedImage subImage(int x, int y){
-		if(sourcedItems==null){
-			try {
-				sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
-	}
 	
 	// returns jsonobject if its found in the child of the item object, otherwise, return the default value.
 	public Object getSpecValue(String key){
@@ -143,6 +131,7 @@ public abstract class Item extends GameObject {
 	public ItemType getSuperType() {
 		return superType;
 	}
+
 
 	// TODO: move, refactor
 //	public void quaff(Entity e, char c){

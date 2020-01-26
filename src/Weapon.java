@@ -1,10 +1,25 @@
 public class Weapon extends Item implements Equippable {
 	private boolean equipped = false;
-	double baseDamage;
-	double baseAccuracy;
+	double damage;
+	double accuracy;
+	double weight;
 	
 	Weapon(String id){
 		super(id);
+		// TODO: weapon init here:
+	}
+	
+	public double getDamage() {
+		return damage;
+	}
+	// TODO: add a dmg calculation here (maybe)
+	
+	public double getAccuracy() {
+		return accuracy;
+	}
+	
+	public double getWeight() {
+		return weight;
 	}
 	
 	@Override

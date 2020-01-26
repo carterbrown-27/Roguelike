@@ -3,9 +3,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
-// TODO: extends entity
-public class Player {
-	public Entity e;
+public class Player extends Creature {
 	public BufferedImage img;
 	public Map map;
 	
@@ -26,11 +24,11 @@ public class Player {
 	public Set<String> identifiedItems = new HashSet<String>();
 	
 	Player(int x, int y, Map _map){
+		super();
 		map = _map;
-		this.e = new Entity(Creature.PLAYER,x,y,map);
-		map.entities.remove(e);
-		map.player = this.e;
-		lib = new ActionLibrary(e);
+		map.entities.remove(this.getName());
+		map.player = this;
+		lib = new ActionLibrary(this);
 	}
 	
 	public enum Ability{
@@ -306,6 +304,4 @@ public class Player {
 //		}
 //		return targets;
 //	}
-	
-
 }

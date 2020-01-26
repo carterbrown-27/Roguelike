@@ -1,8 +1,14 @@
 
 public class Armour extends Item implements Equippable {
 	private boolean equipped = false;
+	private double defence;
+	
 	Armour(String id) {
 		super(id);
+	}
+	
+	public double getDefence() {
+		return defence;
 	}
 
 	@Override

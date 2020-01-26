@@ -3,8 +3,9 @@ import java.util.HashMap;
 
 public class Inventory {
 
-	HashMap<Character,Item> inv = new HashMap<>();
-	HashMap<Integer,Integer> keys = new HashMap<>();
+	private HashMap<Character,Item> inv = new HashMap<>();
+	private HashMap<Integer,Integer> keys = new HashMap<>();
+	private ArmourSet armourSet = new ArmourSet();
 
 	char firstOpen = 'a';
 
@@ -120,9 +121,10 @@ public class Inventory {
 		}
 	}
 
+	// TODO: refactor, move
 	public void removeItem(char c){
-		inv.get(c).amount--;
-		if(inv.get(c).amount <= 0){
+		inv.get(c).changeAmount(-1);
+		if(inv.get(c).getAmount() <= 0){
 			inv.remove(c);			
 		}
 	}
@@ -138,7 +140,8 @@ public class Inventory {
 		}
 	}
 	
-	public int getStackSize(ConsumableItem type){
+	// TODO: replace
+	public <T extends Consumable> int getStackSize(T type){
 		int c = type.getCommonStackSize();
 		// TODO: variation
 		return c;

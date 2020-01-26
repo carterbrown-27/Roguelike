@@ -1,5 +1,6 @@
 import java.awt.Point;
 
+// TODO: static-ize most of this.
 public class ActionLibrary {
 	private Entity e;
 	private Pathfinder pf = new Pathfinder();
@@ -98,7 +99,7 @@ public class ActionLibrary {
 	
 	public double getAttackDamage(){
 		double baseDamage = e.STRENGTH;
-		if(e.weapon!=null) baseDamage += e.weapon.type.baseDamage;
+		if(e.weapon!=null) baseDamage += e.weapon.getDamage();
 		return baseDamage/2 + (Main.rng.nextDouble()*baseDamage);
 	}
 
@@ -137,7 +138,9 @@ public class ActionLibrary {
 
 
 		if (e.weapon!=null) {
-			double deltaS = e.STRENGTH + e.weapon.type.baseAccuracy /* x skill */ - (e.weapon.type.weight * 2);
+			double deltaS = e.STRENGTH + e.weapon.getAccuracy() /* x skill */ - (e.weapon.getAccuracy() * 2);
+			
+			// calculations, move these?
 			if (deltaS < 0){
 				return Math.min(Math.max(Math.pow(deltaS, 2) * (-1) * 0.025 + 1.0 , 0.1), 1.51);	
 			}else{		

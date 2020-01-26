@@ -550,7 +550,7 @@ public class Main {
 
 
 		String line = "  ";
-		for(Entity.Status s: player.e.statuses.keySet()){
+		for(Status s: player.e.statuses.keySet()){
 			line+=s.name();
 		}
 		stats.append(line+"\n");
@@ -780,7 +780,7 @@ public class Main {
 		UP_LEFT			(-1,-1);
 
 		Point p;
-
+		
 		Direction(int x, int y){
 			p = new Point(x,y);
 		}

@@ -6,30 +6,31 @@ import javax.imageio.ImageIO;
 public class Creature extends Entity {
 
 	// fields
-	public BufferedImage sourcedItems;
 	
-	public double STRENGTH = 1;
-	public double HP_MAX = 1; // 6 dmg = player with dagger
-	public double SP_MAX = 1;
-	public double SP_REGEN = 1;
-	public double SPEED = 1.0;
-	public double EVASIVENESS = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	public double HP;
+	public double SP;
+	public double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	public double strength = 1;
+	public double HP_max = 1; // 6 dmg = player with dagger
+	public double SP_max = 1;
+	public double SP_regen = 1;
+	public double speed = 1.0;
 	
-	
-	public BufferedImage SPRITE;
-	public String NAME;
-	
-	// attributes
+	public AI ai;
 	public boolean hasAI = true;
+	
+	public BufferedImage sprite;
+	public String name;
 	
 	public boolean isFlying = false;
 	public boolean isAmphibious = false;
-	// methods
 	
-	@Deprecated
-	public static Creature randomType(){
-		return Creature.values()[Main.rng.nextInt(Creature.values().length)];
+	// constructors
+	Creature(){
+		super();
 	}
+	
+	// methods
 	
 	public BufferedImage subImage(int x, int y){
 		if(sourcedItems == null){

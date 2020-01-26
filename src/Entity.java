@@ -1,6 +1,8 @@
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+
+import Main.Direction;
 public class Entity extends GameObject {
 	
 	// TODO: move all creature logic to creature class
@@ -14,24 +16,10 @@ public class Entity extends GameObject {
 	public Map map;
 	public BufferedImage img;
 
-	public int speed = 1;
-
-	public Creature creature;
-	public AI ai;
-
-	public StaticEntity SE;
-
-	public double HP;
-	public double SP;
-	public double STRENGTH;
-	public double EV;
 	
 	public double SAT = 10; // TEMP
 	
 	public boolean waiting = false;
-	
-	public boolean isFlying = false;
-	public boolean isAmphibious = false;
 
 	public boolean inPlayerView = false;
 	
@@ -43,17 +31,6 @@ public class Entity extends GameObject {
 	// TODO: move these to creature
 	public Weapon weapon;
 	public Missile quivered;	
-	
-	// TODO: move, replace this with ArmourSet Class
-	public Armour helmet;
-	public Armour boots;
-	public Armour chestplate;
-	public Armour greaves;
-	public Armour gloves;
-	public Armour ring_left;
-	public Armour ring_right;
-	public Armour amulet;
-	public Armour[] armour = {helmet,boots,chestplate,greaves,gloves};
 
 	public boolean awake = false;
 
@@ -64,7 +41,6 @@ public class Entity extends GameObject {
 	Entity(Creature _creature, int _x, int _y, Map _map){
 		x = _x;
 		y =_y;
-		creature = _creature;
 		img = _creature.SPRITE;
 		map = _map;
 		if(NOT_PLAYER){
@@ -194,31 +170,7 @@ public class Entity extends GameObject {
 			isFlying = start;
 		}
 	}
-
-	public enum Status {
-		RESTING		(0),
-		MIGHTY		(1),
-		POISONED	(2),
-		FLIGHT		(3);
-
-		public String name;
-		public String[] names = {"Resting","Mighty","Poisoned","Flying"};
-
-		public boolean upkeep = false;
-		public boolean[] upkeeps = {true,false,true,false};
-
-		public int baseDuration;
-		public int[] baseDurations = {25,45,12,45};
-
-		public int t;
-		Status(int _t){
-			t = _t;
-			name = names[t];
-			upkeep = upkeeps[t];
-			baseDuration = baseDurations[t];
-		}
-	}
-
+	
 
 	public int getX(){ return x; }
 	public int getY(){ return y; }
@@ -270,7 +222,8 @@ public class Entity extends GameObject {
 	public boolean isOpen(int x, int y){
 		if(!map.isOnMap(x,y)) return false;
 		int[][] m = map.buildOpenMap();
-		if(m[y][x]!=1 && (m[y][x]!=2 || isAmphibious || isFlying) && (m[y][x]!=3 || isFlying)) return true;
+		// wall			// water 		// fly-over-able
+		if(m[y][x]!=1 && m[y][x]!=2 && m[y][x]!=3) return true;
 		return false;
 	}
 	
@@ -322,40 +275,25 @@ public class Entity extends GameObject {
 		}
 		return p;
 	}
-
-	// TODO: replace all with reference to Main.DIRECTIONS
+	
 	public int getDir(Point d){
-		if(d.x==x+1 && d.y == y-1) return 4;
-		if(d.x==x+1 && d.y == y+1) return 5;
-		if(d.x==x-1 && d.y == y+1) return 6;
-		if(d.x==x-1 && d.y == y-1) return 7;
-		if(d.y==y-1) return 0;
-		if(d.x==x+1) return 1;
-		if(d.y==y+1) return 2;
-		if(d.x==x-1) return 3;
+		Main.Direction[] dirs = Main.Direction.values();
+		for(int i = 0; i < dirs.length; i++) {
+			if(d.equals(dirs[i].p)) return i;
+		}
 
 		return -1;
 	}
 
-	public Point getPoint(int dir){
-		if(dir == 0) return new Point(x,y-1);
-		if(dir == 1) return new Point(x+1,y);
-		if(dir == 2) return new Point(x,y+1);
-		if(dir == 3) return new Point(x-1,y);
-
-		if(dir == 4) return new Point(x+1,y-1);
-		if(dir == 5) return new Point(x+1,y+1);
-		if(dir == 6) return new Point(x-1,y+1);
-		if(dir == 7) return new Point(x-1,y-1);
-
-		return null;
+	public Point getPoint(int dir) {
+		return Main.Direction.values()[dir].p;
 	}
 
 	public double getDefense(){
 		double defense = 0;
 		for(Armour a: armour){
-			if(i!=null){
-				defense += i.type.baseDefense;
+			if(a!=null){
+				defense += a.getDefence();
 			}
 		}
 		return defense;
