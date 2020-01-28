@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-// TODO: extend Entity class
+// TODO: extend Entity class, or deprecte entirely.
+
+@Deprecated
 public class StaticEntity {
 	
 	public SEType type;
@@ -30,9 +32,9 @@ public class StaticEntity {
 		if(c=='g' && inv!=null){
 			
 		}else if(c=='o' && isLocked){
-			if(e.inv.keys.containsKey(Main.cF)){
+			if(e.inv.getKeys().containsKey(Main.cF)){
 				isLocked = false;
-				e.useKey(Main.cF);
+				e.inv.useKey(Main.cF);
 				if(inv.isEmpty()){
 					Main.appendText("You open the "+type.name+" and find nothing.");
 				}else{

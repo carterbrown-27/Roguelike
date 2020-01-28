@@ -8,16 +8,16 @@ import javax.imageio.ImageIO;
 
 
 public abstract class Item extends GameObject {
+	private static Scroll[] scrolls;
+	private static Potion[] potions;
+	
 	private static JSONObject masterJSON;
-	public static Scroll[] scrolls;
-	public static Potion[] potions;
 	private static boolean initialized;
 	
 	private JSONObject supertypeData;
 	private JSONObject itemData;
 	
 	private ItemType superType;
-	private BufferedImage sprite;
 	private String typeName;
 	private String displayName;
 	private String description;
@@ -49,7 +49,7 @@ public abstract class Item extends GameObject {
 		
 		JSONObject spriteIndex = (JSONObject) getSpecValue("spriteIndex");
 		
-		this.sprite = subImage((int) spriteIndex.get("x"), (int) spriteIndex.get("y"));
+		this.setSprite((int) spriteIndex.get("x"), (int) spriteIndex.get("y"));
 		this.displayName = (String) itemData.getOrDefault("name","<none>");
 		this.description = (String) itemData.getOrDefault("description","<none>");
 	}
@@ -125,11 +125,19 @@ public abstract class Item extends GameObject {
 	}
 	
 	public BufferedImage getSprite() {
-		return sprite;
+		return super.getSprite();
 	}
 	
 	public ItemType getSuperType() {
 		return superType;
+	}
+	
+	public static Potion[] getPotions() {
+		return potions;
+	}
+	
+	public static Scroll[] getScrolls() {
+		return scrolls;
 	}
 
 
@@ -209,7 +217,7 @@ public abstract class Item extends GameObject {
 	}
 
 	public String getDisplayName(){
-		if(!isUnknown() || Main.player.identifiedItems.contains(typeName)){
+		if(!isUnknown() || Main.player.isItemIdentified(this)){
 			return displayName;
 		}else {
 			return Main.randomNames.getOrDefault((typeName),"<random name not found>");

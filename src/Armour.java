@@ -1,5 +1,4 @@
-
-public class Armour extends Item implements Equippable {
+public final class Armour extends Item implements Equippable {
 	private boolean equipped = false;
 	private double defence;
 	

@@ -1,55 +1,167 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+
 import javax.imageio.ImageIO;
+
+import Entity.turnEnding;
 
 public class Creature extends Entity {
 
 	// fields
+	private double HP;
+	private double HP_max = 1; // 6 dmg = player with dagger
+	private double SP;
+	private double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	private double strength = 1;
+	private double SP_max = 1;
+	private double SP_regen = 1;
+	private double speed = 1.0;
+	private double satiation = 10; // TEMP
 	
-	public double HP;
-	public double SP;
-	public double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
-	public double strength = 1;
-	public double HP_max = 1; // 6 dmg = player with dagger
-	public double SP_max = 1;
-	public double SP_regen = 1;
-	public double speed = 1.0;
+	private AI ai;
 	
-	public AI ai;
-	public boolean hasAI = true;
+	@Deprecated
+	private boolean hasAI = true;
 	
-	public BufferedImage sprite;
-	public String name;
+	private HashMap<Status,Integer> statuses = new HashMap<Status,Integer>();
 	
-	public boolean isFlying = false;
-	public boolean isAmphibious = false;
+	public Weapon weapon;
+	public Missile quivered;	
+	
+	// TODO: create data struct. - potentially extend Status (attribute)
+	private boolean flying = false;
+	private boolean amphibious = false;
 	
 	// constructors
-	Creature(){
-		super();
+	Creature(String id, int _x, int _y){
+		super(id,_x,_y);
 	}
 	
 	// methods
-	
-	public BufferedImage subImage(int x, int y){
-		if(sourcedItems == null){
-			try {
-				sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
-	}
 	
 	@Deprecated
 	private void createRat(){
 		// TODO: edit sprites
 		try {
-			SPRITE = ImageIO.read(new File("imgs/rat.png"));
+			setSprite(ImageIO.read(new File("imgs/rat.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void upkeep(){
+		satiation = Math.max(satiation-0.01,0);
+		for(Status s: statuses.keySet()){
+			if(s.upkeep){
+				// TODO: move this data elsewhere.
+				if(s.equals(Status.RESTING)){
+					HP += 0.5;
+				}else if(s.equals(Status.POISONED)){
+					HP--;
+				}
+				// TODO: add static regen
+			}
+			statuses.replace(s, statuses.get(s)-1);
+			if(statuses.get(s) <= 0){
+				removeStatus(s);
+			}
+		}
+	}
+	
+	public void endStep() {
+		// recover HP, SP
+		// hunger
+		// etc.
+	}
+	
+	public boolean awakeCheck(){
+		// TODO: upgrade
+		if(awake) return true;
+		if(ai == null) return false;
+		// TODO add creature viewDis
+		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.Luminosity); 
+		if(vision[Main.player.getY()][Main.player.getX()]){
+			awake = true;
+			return true;
+		}
+		return false;
+	}
+	
+	public turnEnding takeTurn(){
+		waiting = false;
+		if(ai == null){
+			return turnEnding.NOTACREATURE; // not a creature
+		}
+		if(awakeCheck()){
+			upkeep();
+
+			if (HP<0.05) {
+				Main.appendText("You kill the " + super.getName() + ".");
+				return turnEnding.DEAD; // dead
+			}
+			if(!ai.takeTurn()){
+				waiting = true;
+				return turnEnding.WAITING;
+			}
+		}
+		return turnEnding.NORMAL; // not dead
+	}
+	
+	// TODO: instead of the branching, use polymorphism (Creature < Player)
+	public void addStatus(Status s){
+		if(!statuses.containsKey(s)){
+			toggle(s, true);
+			if(ai!=null){
+				Main.appendText(String.format("The %s is %s!", getName(), s.name));
+			}else{
+				Main.appendText(String.format("You are %s!", s.name));
+			}
+			statuses.put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+		}else{
+			statuses.replace(s, statuses.get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+		}
+	}
+
+	public void removeStatus(Status s){
+		toggle(s, false);
+		if(ai!=null){
+			Main.appendText("The "+getName()+" is no longer "+s.name+".");
+		}else{
+			Main.appendText("You are no longer "+s.name+".");
+		}
+		statuses.remove(s);
+	}
+
+	public void toggle(Status s, boolean start){
+		int mod = 1;
+		if(!start) mod = -1;
+		if(s.equals(Status.MIGHTY)){
+			strength += Math.max(5,strength/2)*mod;
+		}else if(s.equals(Status.FLIGHT)){
+			isFlying = start;
+		}
+	}
+	
+	public double getHP() {
+		return HP;
+	}
+	
+	public void changeHP(double delta) {
+		HP += delta;
+		if(HP <= 0) {
+			// die
+		}else if(HP > HP_max) {
+			HP = HP_max;
+		}
+	}
+	
+	public double getSP() {
+		return SP;
+	}
+	
+	public double getEV() {
+		return EV;
 	}
 }

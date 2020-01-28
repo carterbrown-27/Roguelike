@@ -1,3 +1,4 @@
+// TODO: JSON-ize
 public enum Status {
 		RESTING		(0),
 		MIGHTY		(1),
@@ -12,8 +13,8 @@ public enum Status {
 
 		public int baseDuration;
 		public int[] baseDurations = {25,45,12,45};
-
-		public int t;
+		
+		private int t;
 		Status(int _t){
 			t = _t;
 			name = names[t];

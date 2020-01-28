@@ -17,11 +17,10 @@ public class Player extends Creature {
 	
 	public boolean resting = false;
 	
-	ArrayList<Integer> dirs = new ArrayList<Integer>();
+	private ArrayList<Integer> dirs = new ArrayList<Integer>();
 	
-	// String = item name (ie blue potion) <> Item.Items = item real name (ie potion of flight)
-	// TODO: REFACTOR
-	public Set<String> identifiedItems = new HashSet<String>();
+	// String = item.getDisplayName();
+	private Set<String> identifiedItems = new HashSet<String>();
 	
 	Player(int x, int y, Map _map){
 		super();
@@ -83,22 +82,22 @@ public class Player extends Creature {
 			basic(dir);
 		}else if(ability.equals(Ability.SLASH)){
 			if(melee(dir,1.5)){
-				e.SP-=Ability.SLASH.s;
+				SP-=Ability.SLASH.s;
 				Main.takeTurn();
 				deselect();
 			}
 		}else if(ability.equals(Ability.LUNGE)){
 			dirs.add(dir);
 			if(dirs.size()==2){
-				Point start = e.getPos();
+				Point start = getPos();
 				if(lunge(dirs.get(0),dirs.get(1))){
-					e.SP-=Ability.LUNGE.s;
-					System.out.println(e.SP);
+					SP-=Ability.LUNGE.s;
+					System.out.println(SP);
 					Main.takeTurn();
 					deselect();
 				}else{
-					e.x = start.x;
-					e.y = start.y;
+					x = start.x;
+					y = start.y;
 					deselect();
 					error();
 				}
@@ -111,8 +110,8 @@ public class Player extends Creature {
 	}
 	
 	
-	public void basic(int dir){
-		if(!e.move(dir)){
+	public void basic(Direction dir){
+		if(!move(dir)){
 			if(melee(dir,1)){
 				Main.takeTurn();
 			}else{
@@ -124,7 +123,8 @@ public class Player extends Creature {
 	}
 	
 	public boolean enemiesNearby(){
-		for(Entity e: map.entities.values()){
+		// TODO: creature map
+		for(Entity e: map.entities){
 			if(e.awakeCheck()){
 				return true;
 			}
@@ -133,17 +133,18 @@ public class Player extends Creature {
 	}
 	
 	public void rest(){
-		while(!enemiesNearby() && e.HP < e.creature.HP_MAX){
-			e.HP = Math.min(e.HP+1, e.creature.HP_MAX);
+		while(!enemiesNearby()){
+			super.changeHP(+1);
 			Main.takeTurn();
 		}
+		
 		resting = false;
-		Main.appendText("You feel better - HP: "+e.HP);
+		Main.appendText("You feel better - HP: "+getHP());
 		Main.refreshText();
 	}
 	
 	public void startRest(){
-		if (e.HP < e.creature.HP_MAX) {
+		if (HP < HP_max) {
 			if (!enemiesNearby()) {
 				if (!resting) {
 					Main.appendText("You start resting.");
@@ -162,19 +163,18 @@ public class Player extends Creature {
 	}
 	
 	public boolean lunge(int movedir, int attackdir){
-		return (e.move(movedir) && melee(attackdir,0.5));
+		return (move(movedir) && melee(attackdir,0.5));
 	}
 	
-	public boolean melee(int dir, double modifier){
-		Entity target =  targetAdjacent(dir);
+	public boolean melee(Entity target, double modifier){
 		if(target!=null && target.SE==null){
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
-				Main.appendText("You hit the "+target.creature.NAME);								
-				Main.appendText(target.creature.NAME+" 's HP: "+ ActionLibrary.round(target.HP,1));				
+				Main.appendText("You hit the "+target.getName());								
+				Main.appendText(target.getName()+" 's HP: "+ ActionLibrary.round(target.HP,1));				
 			}else{
-				Main.appendText("You miss the "+target.creature.NAME);				
+				Main.appendText("You miss the "+target.getName());				
 			}
 			return true;
 		}
@@ -183,7 +183,7 @@ public class Player extends Creature {
 	
 	public Entity targetAdjacent(int dir){
 		for(Entity i: map.entities.values()){
-			if(e.isAdjacentTo(i.getPos()) && e.getDir(i.getPos()) ==  dir){
+			if(isAdjacentTo(i.getPos()) && getDir(i.getPos()) ==  dir){
 				return i;
 			}
 		}
@@ -192,19 +192,19 @@ public class Player extends Creature {
 	
 	
 	public void pickUp(char c, Inventory origInv){
-		Main.appendText("You pick up the " + origInv.inv.get(c).getDisplayName());
-		origInv.pickUp(c,e);
+		Main.appendText("You pick up the " + origInv.getItem(c).getDisplayName());
+		origInv.pickUp(c,this);
 		Main.takeTurn();
 	}
 	
 	// TODO: implement
 	public <T extends Equippable> void equip(T item){
 		// temp
-		item.equip(e);
+		item.equip(this);
 	}
 	
 	public <T extends Equippable> void unequip(T item){
-		item.unequip(e);
+		item.unequip(this);
 	}
 	
 //	public void weild(Weapon i){

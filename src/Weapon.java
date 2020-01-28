@@ -1,4 +1,4 @@
-public class Weapon extends Item implements Equippable {
+public final class Weapon extends Item implements Equippable {
 	private boolean equipped = false;
 	double damage;
 	double accuracy;

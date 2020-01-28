@@ -7,8 +7,16 @@ public class Inventory {
 	private HashMap<Integer,Integer> keys = new HashMap<>();
 	private ArmourSet armourSet = new ArmourSet();
 
-	char firstOpen = 'a';
-
+	private char firstOpen = 'a';
+	
+	Inventory(){
+		
+	}
+	
+	public Item getItem(Character c) {
+		return inv.get(c);
+	}
+	
 	public boolean isEmpty(){
 		return inv.isEmpty();
 	}
@@ -44,6 +52,7 @@ public class Inventory {
 		}else{
 			Main.appendText("Your Inventory:");
 		}
+		
 		for(char c: inv.keySet()){
 			Item i = inv.get(c);
 			Main.appendText(i.toString());
@@ -62,9 +71,9 @@ public class Inventory {
 	public BufferedImage drawPile(){
 		for(Item i: inv.values()){
 			if(POTION){
-				return Main.potionColours.get(i.type).image;
+				return Main.potionColours.get(i).image;
 			}else{
-				return i.sprite;
+				return i.getSprite();
 			}
 		}
 		return null;
@@ -81,6 +90,7 @@ public class Inventory {
 		return '!';
 	}
 
+	@Deprecated
 	public char getFirstItem(){
 		for(char c = 'a'; c <= 'z'; c++){
 			if(inv.containsKey(c)){
@@ -140,6 +150,10 @@ public class Inventory {
 		}
 	}
 	
+	public boolean contains(char c) {
+		return inv.containsKey(c);
+	}
+	
 	// TODO: replace
 	public <T extends Consumable> int getStackSize(T type){
 		int c = type.getCommonStackSize();
@@ -148,7 +162,7 @@ public class Inventory {
 	}
 	
 	public void dropAll(char c, Entity e){
-		e.map.tileMap[e.y][e.x].inventory.addItem(inv.remove(c));
+		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(inv.remove(c));
 	}
 
 	public void switchItem(char itemToMove, char destination){
@@ -160,6 +174,23 @@ public class Inventory {
 			}else{
 				inv.put(destination, inv.get(itemToMove));
 				inv.remove(itemToMove);
+			}
+		}
+	}
+	
+	public void pickupKey(int floor){
+		if(keys.containsKey(floor)){
+			keys.replace(floor,keys.get(floor)+1);
+		}else{
+			keys.put(floor,1);
+		}
+	}
+	
+	public void useKey(int floor){
+		if(keys.containsKey(floor)){
+			keys.replace(floor,keys.get(floor)-1);
+			if(keys.get(floor) <= 0){
+				keys.remove(floor);
 			}
 		}
 	}

@@ -94,10 +94,10 @@ public class Main {
 						if(itemPickup){
 							for (char c = 'a'; c <= 'z'; c++) {
 								if(currentInventory==null){
-									currentInventory = floors.get(cF).tileMap[player.e.y][player.e.x].inventory;
+									currentInventory = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
 								}
 
-								if (e.getKeyChar() == c && currentInventory.inv.containsKey(c)) {
+								if (e.getKeyChar() == c && currentInventory.contains(c)) {
 									player.pickUp(c,currentInventory);
 									if(currentInventory.isEmpty()){
 										currentInventory = null;
@@ -115,12 +115,12 @@ public class Main {
 							refreshText();
 							boolean selected = false;
 							char c = e.getKeyChar();
-							if (player.e.inv.inv.containsKey(c)) {
+							if (player.inv.contains(c)) {
 								selected = true;
 								// open item menu
 								/** TODO: temporary **/
 								// TODO: replace inventory with split-by-class system
-								Item i = player.e.inv.inv.get(c);
+								Item i = player.inv.getItem(c);
 
 								appendText(c+" - "+i.getDisplayName()+" selected.");
 								appendText(i.getDescription());
@@ -136,14 +136,14 @@ public class Main {
 						inventoryScreen = false;
 					}else if(itemScreen){
 						char c = selectedItem;
-						Item i = player.e.inv.inv.get(c);
+						Item i = player.inv.getItem(c);
 						
 						// TODO: fix all of this.
 						if(e.getKeyChar() == 'd'){
 							if(i.isEquipped()){
 								player.equip(i);
 							}
-							player.e.inv.dropAll(c, player.e);
+							player.inv.dropAll(c, player);
 						}
 						
 						if(EQUIPPABLE){
@@ -153,14 +153,15 @@ public class Main {
 						if(CONSUMABLE){
 							
 						}
+						
 						itemScreen = false;
 						refreshStats();
 					}else if(pickItem){
 						boolean flag = false;
 						for (char c = 'a'; c <= 'z'; c++) {
-							if (e.getKeyChar() == c && player.e.inv.inv.containsKey(c)) {
-								Item i = player.e.inv.inv.get(c);
-								if(identify && !player.identifiedItems.containsKey(i.type)){
+							if (e.getKeyChar() == c && player.inv.contains(c)) {
+								Item i = player.inv.getItem(c);
+								if(identify && !player.isItemIdentified(i)){
 									flag = true;
 									i.identify();
 									identify = false;
@@ -193,11 +194,11 @@ public class Main {
 
 					}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
 						if(aimScreen){
-							ArrayList<Point> line = FOV.bresenhamLine(player.e.getPos(), targetPos);
+							ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
 
 							boolean f = true;
 							for(Point p: line){
-								if(p.equals(player.e.getPos()) || p.equals(line.get(line.size()-1))){
+								if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
 									continue;
 								}
 
@@ -216,13 +217,13 @@ public class Main {
 							aimScreen = false;
 							return;
 						}
-						if(floors.get(cF).valueAt(player.e.getPos()) == 3){
+						if(floors.get(cF).valueAt(player.getPos()) == 3){
 							if(floors.size()<=cF+1){
 								newFloor();
 							}else{
 								changeFloor(cF+1,true,false);
 							}
-						}else if(floors.get(cF).valueAt(player.e.getPos()) == 2 && cF > 0){
+						}else if(floors.get(cF).valueAt(player.getPos()) == 2 && cF > 0){
 							// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
 							changeFloor(cF-1,false,false);
 						}
@@ -233,7 +234,7 @@ public class Main {
 
 					} else if(e.getKeyCode() == KeyEvent.VK_T){
 						aimScreen = !aimScreen;
-						targetPos = player.e.getPos();
+						targetPos = player.getPos();
 
 					} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
 						// open attack selections
@@ -241,11 +242,14 @@ public class Main {
 						// if already open attack
 					} else if(e.getKeyCode() == KeyEvent.VK_G){
 						// get
-						Inventory tileInv = floors.get(cF).tileMap[player.e.y][player.e.x].inventory;
+						Inventory tileInv = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
 						Inventory selectedInv = null;
+						
+						
+						// TODO: fix CHESTS
 						if(tileInv.isEmpty()){
-							for(Entity n: floors.get(cF).entities.values()){
-								if(n.SE != null && n.x == player.e.x && n.y == player.e.y){
+							for(Entity n: floors.get(cF).entities){
+								if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
 									if(!n.SE.isLocked){
 										selectedInv = n.inv;
 										appendText("Pick up what?");
@@ -253,7 +257,7 @@ public class Main {
 										appendText("It's locked.");
 										return;
 									}
-									// n.SE.interact(player.e,'g');
+									// n.SE.interact(player,'g');
 									break;
 								}
 							}
@@ -275,14 +279,14 @@ public class Main {
 						}
 
 					}else if(e.getKeyCode() == KeyEvent.VK_I){
-						player.e.inv.printContents(false);
+						player.inv.printContents(false);
 
-						if(!player.e.inv.isEmpty()) inventoryScreen = true;
+						if(!player.inv.isEmpty()) inventoryScreen = true;
 
 					}else if(e.getKeyCode() == KeyEvent.VK_O){
-						for(Entity n: floors.get(cF).entities.values()){
-							if(n.SE != null && n.x == player.e.x && n.y == player.e.y){
-								n.SE.interact(player.e,'o');
+						for(Entity n: floors.get(cF).entities){
+							if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
+								n.SE.interact(player,'o');
 							}
 						}
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
@@ -297,7 +301,7 @@ public class Main {
 					}else{
 						for(Player.Ability a: Player.Ability.values()){
 							if(e.getKeyCode() == a.k){
-								if(player.e.SP >= a.s){
+								if(player.getSP() >= a.s){
 									player.select(a);
 									appendText(a.name);
 								}else{
@@ -333,19 +337,19 @@ public class Main {
 
 		/** TEMP **/
 		Weapon dagger = new Weapon("dagger");
-		player.e.inv.addItem(dagger);
-		// TODO FIX THIS
-		player.equip((Weapon) player.e.inv.inv.get(player.e.inv.getFirstItem()));
+		player.inv.addItem(dagger);
+		// TODO: FIX THIS
+		player.equip((Weapon) player.inv.getItem(player.inv.getFirstItem()));
 
 		Missile darts = new Missile("darts");
-		player.e.inv.addItem(darts);
-		player.quiver(player.e.inv.inv.get(player.e.inv.getItemTypeChar(Item.Items.DART)));
+		player.inv.addItem(darts);
+		player.quiver(player.inv.get(player.inv.getItemTypeChar(DART)));
 		
 		// TODO: init Item.Scrolls & Item.Potions
-		for(Scroll i: Item.scrolls){
+		for(Scroll i: Item.getScrolls()){
 			randomNames.put(i.getTypeName(), "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
 		}
-		for(Potion i: Item.potions){
+		for(Potion i: Item.getPotions()){
 			randomNames.put(i.getTypeName(), randomPotionName(i));
 		}
 
@@ -355,10 +359,10 @@ public class Main {
 			Point t;
 			do{
 				t = floors.get(cF).randomOpenSpace();				
-			}while(Math.abs(t.x-player.e.x) <=3 && Math.abs(t.y-player.e.y) <=3);
+			}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
 			
 			System.out.println("point picked");
-			new Entity(Creature.randomType(), t.x, t.y, floors.get(cF));
+			new Creature(RANDOMTYPE, t.x, t.y);
 			System.out.println("Entity Added.");
 		}
 
@@ -412,11 +416,11 @@ public class Main {
 		// TODO: update for multiple stairs
 		if(!down) startPoint= floors.get(cF).getPosition(3);
 		player.map = floors.get(cF);
-		floors.get(cF).player = player.e;
-		player.e.x = startPoint.x;
-		player.e.y = startPoint.y;
-		player.e.map = floors.get(cF);
-		// floors.get(currentFloor).player = player.e;
+		floors.get(cF).player = player;
+		player.x = startPoint.x;
+		player.y = startPoint.y;
+		player.map = floors.get(cF);
+		// floors.get(currentFloor).player = player;
 
 		if(isNew){
 
@@ -426,7 +430,7 @@ public class Main {
 			for (int i = 0; i < mobs; i++) {
 				do{
 					t = floors.get(cF).randomOpenSpace();				
-				}while(Math.abs(t.x-player.e.x) <=3 && Math.abs(t.y-player.e.y) <=3);
+				}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
 				new Entity(Creature.randomType(), t.x, t.y, floors.get(cF));
 			}
 
@@ -526,23 +530,23 @@ public class Main {
 		stats.setFont(f);
 		stats.setText("");
 
-		player.e.HP = ActionLibrary.round(player.e.HP, 1);
+		player.HP = ActionLibrary.round(player.HP, 1);
 
 		stats.append("  <Player Name>\t\t                     .\n\n");
-		stats.append("  HP: "+player.e.HP+"\n");
-		stats.append("  SP: "+player.e.SP+"\n");
-		stats.append("  STR: "+player.e.STRENGTH+"\n");
-		stats.append("  SAT: "+ActionLibrary.round(player.e.SAT,1)+"\n");
+		stats.append("  HP: "+player.HP+"\n");
+		stats.append("  SP: "+player.SP+"\n");
+		stats.append("  STR: "+player.STRENGTH+"\n");
+		stats.append("  SAT: "+ActionLibrary.round(player.SAT,1)+"\n");
 
-		if(player.e.weapon != null){			
-			stats.append("  Weapon: "+player.e.weapon.getDisplayName());
+		if(player.weapon != null){			
+			stats.append("  Weapon: "+player.weapon.getDisplayName());
 		}else{
 			stats.append("  Weapon: none");
 		}
 		stats.append("\n");
 
-		if(player.e.quivered != null){			
-			stats.append("  Quivr'd: "+player.e.quivered.getDisplayName());
+		if(player.quivered != null){			
+			stats.append("  Quivr'd: "+player.quivered.getDisplayName());
 		}else{
 			stats.append("  Quivr'd: none");
 		}
@@ -550,7 +554,7 @@ public class Main {
 
 
 		String line = "  ";
-		for(Status s: player.e.statuses.keySet()){
+		for(Status s: player.statuses.keySet()){
 			line+=s.name();
 		}
 		stats.append(line+"\n");
@@ -604,30 +608,30 @@ public class Main {
 
 	public static void advanceTicks(int _ticks){
 		ticks++;
-		Point pos = player.e.getPos();
+		Point pos = player.getPos();
 		// System.out.println(pos.toString());
 		refreshFrame(render(pos.x,pos.y));
 	}
 
 	public static Point lastPos;
 	public static void takeTurn(){
-		Inventory floorInv = floors.get(cF).tileMap[player.e.y][player.e.x].inventory;
-		if(!floorInv.isEmpty() && (lastPos!=null && !player.e.getPos().equals(lastPos))){
+		Inventory floorInv = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
+		if(!floorInv.isEmpty() && (lastPos!=null && !player.getPos().equals(lastPos))){
 			floorInv.printContents(true);
 		}
-		player.e.HP = ActionLibrary.round(player.e.HP, 1);
+		player.HP = ActionLibrary.round(player.getHP(), 1);
 
-		// double playerHP = player.e.HP;
+		// double playerHP = player.HP;
 		// TODO: move max to e
-		player.e.upkeep();
+		player.upkeep();
 
-		player.e.SP =  Math.min(player.e.SP + Creature.PLAYER.SP_REGEN, player.e.creature.SP_MAX);
+		player.SP =  Math.min(player.getSP() + player.getSP_regen(), player.getSP_max());
 		ArrayList<Entity> dead = new ArrayList<Entity>();
 
 		// int[] order = floors.get(currentFloor).getEntityPriority();
 		// for(int i: order){
 		Queue<Entity> q = new LinkedList<Entity>();
-		for(Entity e: floors.get(cF).entities.values()){
+		for(Entity e: floors.get(cF).entities){
 			e.awakeCheck();
 			if(e.awake) q.add(e);
 		}
@@ -637,13 +641,13 @@ public class Main {
 			// TODO: add mob sleep/detection stuff
 			// Entity e = floors.get(currentFloor).entities.get(i);
 			Entity.turnEnding ending = e.takeTurn();
-			System.out.println(e.name+" takes a turn.");
+			System.out.println(e.getName()+" takes a turn.");
 			if(ending.equals(Entity.turnEnding.DEAD)){
 				e.x = -1;
 				e.y = -1;
 				dead.add(e);
 			}else if(ending.equals(Entity.turnEnding.WAITING)){
-				System.out.println(e.name+" is waiting.");
+				System.out.println(e.getName()+" is waiting.");
 				if(!allWaiting(q)){
 					q.add(e);
 				}else{
@@ -655,10 +659,10 @@ public class Main {
 			e.die();
 		}
 
-		Point pos = player.e.getPos();
+		Point pos = player.getPos();
 		lastPos = pos;
-		// if(player.e.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.e.HP,2));
-		if(player.e.HP < 0.05){
+		// if(player.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.HP,2));
+		if(player.HP < 0.05){
 			appendText("You die...");
 			running = false;
 		}
@@ -767,22 +771,5 @@ public class Main {
 			return 5;
 		}
 		return -1;
-	}
-
-	public static enum Direction  {
-		UP 				(0,-1),
-		RIGHT 			(+1,0),
-		DOWN 			(0,+1),
-		LEFT			(-1,0),
-		UP_RIGHT		(+1,-1),
-		DOWN_RIGHT		(+1,+1),
-		DOWN_LEFT		(-1,+1),
-		UP_LEFT			(-1,-1);
-
-		Point p;
-		
-		Direction(int x, int y){
-			p = new Point(x,y);
-		}
 	}
 }
