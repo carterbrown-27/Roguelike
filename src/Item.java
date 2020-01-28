@@ -210,12 +210,7 @@ public abstract class Item extends GameObject {
 //		Main.takeTurn();
 //
 //	}
-
-	public void identify(){
-		Main.player.identifiedItems.add(typeName);
-		Main.appendText("It was a "+typeName+".");
-	}
-
+	
 	public String getDisplayName(){
 		if(!isUnknown() || Main.player.isItemIdentified(this)){
 			return displayName;

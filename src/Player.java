@@ -17,10 +17,10 @@ public class Player extends Creature {
 	
 	public boolean resting = false;
 	
-	private ArrayList<Integer> dirs = new ArrayList<Integer>();
+	private ArrayList<Direction> dirs = new ArrayList<>();
 	
 	// String = item.getDisplayName();
-	private Set<String> identifiedItems = new HashSet<String>();
+	private Set<String> identifiedItems = new HashSet<>();
 	
 	Player(int x, int y, Map _map){
 		super();
@@ -77,12 +77,12 @@ public class Player extends Creature {
 		System.out.println("Action not possible.");
 	}
 	
-	public void act_adj(int dir){
+	public void act_adj(Direction dir){
 		if(ability.equals(Ability.BASIC)){
 			basic(dir);
 		}else if(ability.equals(Ability.SLASH)){
 			if(melee(dir,1.5)){
-				SP-=Ability.SLASH.s;
+				changeSP(-Ability.SLASH.s);
 				Main.takeTurn();
 				deselect();
 			}
@@ -91,8 +91,8 @@ public class Player extends Creature {
 			if(dirs.size()==2){
 				Point start = getPos();
 				if(lunge(dirs.get(0),dirs.get(1))){
-					SP-=Ability.LUNGE.s;
-					System.out.println(SP);
+					changeSP(-Ability.LUNGE.s);
+					System.out.println(getSP());
 					Main.takeTurn();
 					deselect();
 				}else{
@@ -144,7 +144,7 @@ public class Player extends Creature {
 	}
 	
 	public void startRest(){
-		if (HP < HP_max) {
+		if (getHP() < getHP_max()) {
 			if (!enemiesNearby()) {
 				if (!resting) {
 					Main.appendText("You start resting.");
@@ -162,17 +162,17 @@ public class Player extends Creature {
 		}
 	}
 	
-	public boolean lunge(int movedir, int attackdir){
+	public boolean lunge(Direction movedir, Direction attackdir){
 		return (move(movedir) && melee(attackdir,0.5));
 	}
 	
-	public boolean melee(Entity target, double modifier){
-		if(target!=null && target.SE==null){
+	public boolean melee(Creature target, double modifier){
+		if(target!=null){
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
 				Main.appendText("You hit the "+target.getName());								
-				Main.appendText(target.getName()+" 's HP: "+ ActionLibrary.round(target.HP,1));				
+				Main.appendText(target.getName()+" 's HP: "+target.getHP());				
 			}else{
 				Main.appendText("You miss the "+target.getName());				
 			}
@@ -181,13 +181,18 @@ public class Player extends Creature {
 		return false;
 	}
 	
-	public Entity targetAdjacent(int dir){
-		for(Entity i: map.entities.values()){
+	public Entity targetAdjacent(Direction dir){
+		for(Entity i: map.entities){
 			if(isAdjacentTo(i.getPos()) && getDir(i.getPos()) ==  dir){
 				return i;
 			}
 		}
 		return null;
+	}
+	
+	public void identify(Item i) {
+		identifiedItems.add(i.getTypeName());
+		Main.appendText("It was a "+i.getTypeName()+".");
 	}
 	
 	

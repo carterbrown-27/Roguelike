@@ -25,8 +25,7 @@ public class Map {
 	public Player player;
 
 	public int tileSize = 24;
-
-	public  static Random rng = new Random();
+	
 	private Pathfinder pf = new Pathfinder();
 
 	private MapTypes type = MapTypes.UNDERCITY;
@@ -42,16 +41,15 @@ public class Map {
 
 	public final char[] dirChars = {'T','R','D','L'};
 
-	Map(int _height, int _width, int _randFillPercent, Random _rng){
-		this(_height,_width,_randFillPercent,smooths,_rng);
+	Map(int _height, int _width, int _randFillPercent){
+		this(_height,_width,_randFillPercent,smooths);
 	}
 
-	Map(int _height, int _width, int _randFillPercent, int _smooths, Random _rng){
+	Map(int _height, int _width, int _randFillPercent, int _smooths){
 		height = _height;
 		width = _width;
 		randFillPercent = _randFillPercent;
 		smooths = _smooths;
-		rng = _rng;
 
 		map = new int[height][width];
 		foreground = new int[height][width];
@@ -130,7 +128,7 @@ public class Map {
 				if(x==0||x==width-1||y==0||y==height-1){
 					map[y][x] = 1;
 					// random placement
-				} else if(rng.nextInt(100)<=randFillPercent){
+				} else if(Main.rng.nextInt(100)<=randFillPercent){
 					map[y][x] = 1;
 				}else{
 					map[y][x] = 0;
@@ -159,27 +157,27 @@ public class Map {
 			invalidDoors = new ArrayList<PointDir>();
 			Queue<Room> q = new LinkedList<Room>();
 
-			int start_x = rng.nextInt(width*2/3) + width/6 - 1;
-			int start_y = rng.nextInt(height*2/3) + height/6 - 1;
+			int start_x = Main.rng.nextInt(width*2/3) + width/6 - 1;
+			int start_y = Main.rng.nextInt(height*2/3) + height/6 - 1;
 
 			q.add(new Room(new PointDir(new Point(start_x,start_y),dirChars[RIGHT]),true,RoomType.REGULAR));
 
 			// starting point
 			// Top = 0, Right = 1, Bottom = 2, Left = 3
 
-			//			int quadrant = rng.nextInt(3);
+			//			int quadrant = Main.rng.nextInt(3);
 			//			switch(quadrant){
 			//			case 0:
-			//				q.add(new PointDir(new Point(rng.nextInt(width-1), rng.nextInt(height/3)), dirs[DOWN]));
+			//				q.add(new PointDir(new Point(Main.rng.nextInt(width-1), Main.rng.nextInt(height/3)), dirs[DOWN]));
 			//				break;
 			//			case 1:
-			//				q.add(new PointDir(new Point(width-rng.nextInt(width/3)-1, rng.nextInt(height-1)), dirs[LEFT]));
+			//				q.add(new PointDir(new Point(width-Main.rng.nextInt(width/3)-1, Main.rng.nextInt(height-1)), dirs[LEFT]));
 			//				break;
 			//			case 2:
-			//				q.add(new PointDir(new Point(rng.nextInt(width-1), height-rng.nextInt(height/3)-1), 'T'));
+			//				q.add(new PointDir(new Point(Main.rng.nextInt(width-1), height-Main.rng.nextInt(height/3)-1), 'T'));
 			//				break;
 			//			case 3:
-			//				q.add(new PointDir(new Point(rng.nextInt(width/3),rng.nextInt(height-1)), dirs[RIGHT]));
+			//				q.add(new PointDir(new Point(Main.rng.nextInt(width/3),Main.rng.nextInt(height-1)), dirs[RIGHT]));
 			//				break;
 			//			}
 
@@ -190,7 +188,7 @@ public class Map {
 				for(int t = 0; t < R.doors; t++){
 
 					Room r;
-					if (rng.nextInt(10)>=4) {
+					if (Main.rng.nextInt(10)>=4) {
 						int attempts = 0;
 						RoomType prev = null;
 						final int ROOM_ATTEMPTS = 4;
@@ -198,7 +196,7 @@ public class Map {
 							PointDir p = R.getRandomDoor();
 							if(p==null) break;
 							Point ahead = aheadTile(p);
-							if(isOpen(ahead) && rng.nextInt(4)==4){
+							if(isOpen(ahead) && Main.rng.nextInt(4)==4){
 								workingDoors.add(p);
 								break;
 							}
@@ -229,7 +227,7 @@ public class Map {
 						if (doors!=null) {
 							workingDoors.add(p);
 							for (PointDir i : doors) {
-								if(rng.nextInt(10)>=5){
+								if(Main.rng.nextInt(10)>=5){
 									r = new Room(i, false, RoomType.RANDOM);
 									workingDoors.add(i);
 									if(r.valid){
@@ -277,7 +275,7 @@ public class Map {
 					i--;
 				}else if(isSandwich(p.point.x,p.point.y) ){
 					doorCount++;
-					if(true /*|| rng.nextInt(7)>=1*/){
+					if(true /*|| Main.rng.nextInt(7)>=1*/){
 						map[p.point.y][p.point.x] = 5;
 					}
 //					else{
@@ -311,7 +309,7 @@ public class Map {
 		int length = 0; 
 		PointDir end = door;
 		boolean obstructed = false;
-		while(!obstructed && length<=5 && (rng.nextInt(7)<=5 || length <=3)){
+		while(!obstructed && length<=5 && (Main.rng.nextInt(7)<=5 || length <=3)){
 			// TODO: fix obstruction detection.
 			Point temp = aheadTile(end);
 			if((!isOnMap(temp.x,temp.y) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
@@ -325,9 +323,9 @@ public class Map {
 					map[end.point.y][end.point.x] = 0;
 				}
 				// doors on sides
-				if(rng.nextInt(8)>=6){
+				if(Main.rng.nextInt(8)>=6){
 					if (dir==dirChars[UP] || dir==dirChars[DOWN]) {
-						if (rng.nextBoolean()) {
+						if (Main.rng.nextBoolean()) {
 							// left of path
 							if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1)  {
 								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), dirChars[LEFT]));
@@ -347,7 +345,7 @@ public class Map {
 							}
 						}
 					}else if(dir==dirChars[LEFT] || dir==dirChars[RIGHT]){
-						if (rng.nextBoolean()) {
+						if (Main.rng.nextBoolean()) {
 							// up of path
 							if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
 								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), dirChars[UP]));
@@ -372,15 +370,15 @@ public class Map {
 			}
 		}
 		// map[door.point.x][door.point.y] = 5;
-		if(rng.nextInt(10)>=7){
+		if(Main.rng.nextInt(10)>=7){
 			if(end.dir==dirChars[UP] || end.dir==dirChars[DOWN]){
-				if(rng.nextBoolean()){
+				if(Main.rng.nextBoolean()){
 					end.dir = dirChars[LEFT];
 				}else{
 					end.dir = dirChars[RIGHT];
 				}
 			}else{
-				if(rng.nextBoolean()){
+				if(Main.rng.nextBoolean()){
 					end.dir = dirChars[UP];
 				}else{
 					end.dir = dirChars[DOWN];
@@ -489,7 +487,7 @@ public class Map {
 			if(roomType.equals(RoomType.RANDOM)){
 				// TODO: Tabulate %s
 				System.out.println("picking type.");
-				int a = rng.nextInt(10);
+				int a = Main.rng.nextInt(10);
 				if(a>=7){
 					roomType = RoomType.SEWER;
 				}else if(a>=4){
@@ -511,9 +509,9 @@ public class Map {
 					int offsetCount = 0;
 					do{
 						if(dir==dirChars[UP] || dir==dirChars[DOWN]){
-							offset = rng.nextInt(w-1)+1; // from 1 -> w
+							offset = Main.rng.nextInt(w-1)+1; // from 1 -> w
 						}else{
-							offset = rng.nextInt(h-1)+1;
+							offset = Main.rng.nextInt(h-1)+1;
 						}
 
 						Point p = precon_getDoorstep();
@@ -572,7 +570,7 @@ public class Map {
 				}
 				int rand;
 				if(doorPoints.size()>1){
-					rand = rng.nextInt(doorPoints.size()-1);
+					rand = Main.rng.nextInt(doorPoints.size()-1);
 				}else{
 					rand = 0;
 				}
@@ -591,26 +589,26 @@ public class Map {
 
 		public void setBounds(){
 			if (roomType.equals(RoomType.REGULAR)) {
-				int min = rng.nextInt(1)+3;
-				w = rng.nextInt(5) + min;
-				h = rng.nextInt(5) + min;
+				int min = Main.rng.nextInt(1)+3;
+				w = Main.rng.nextInt(5) + min;
+				h = Main.rng.nextInt(5) + min;
 			}else if (roomType.equals(RoomType.SEWER)){
 				final int l_min = 8;
 				final int l_var = 6;
 
 				if(dir==dirChars[UP] || dir==dirChars[DOWN]){
 					// wide
-					w = rng.nextInt(l_var)+l_min;
-					h = rng.nextInt(2)+4;
+					w = Main.rng.nextInt(l_var)+l_min;
+					h = Main.rng.nextInt(2)+4;
 				}else{
 					// tall
-					h = rng.nextInt(l_var)+l_min;
-					w = rng.nextInt(2)+4;
+					h = Main.rng.nextInt(l_var)+l_min;
+					w = Main.rng.nextInt(2)+4;
 				}
 			}else if(roomType.equals(RoomType.PRECON)){
 				if(!preconPicked){
-					precon_id = rng.nextInt(type.precons.size());
-					rotationNinety = rng.nextInt(3);
+					precon_id = Main.rng.nextInt(type.precons.size());
+					rotationNinety = Main.rng.nextInt(3);
 					
 					h = type.precons.get(precon_id).length - 2;
 					w = type.precons.get(precon_id)[0].length - 2;
@@ -629,10 +627,10 @@ public class Map {
 			if(!roomType.equals(RoomType.PRECON)){
 				if(dir==dirChars[UP] || dir==dirChars[DOWN]){
 					// System.out.println(w);
-					offset = rng.nextInt(w-1)+1; // from 1 -> w
+					offset = Main.rng.nextInt(w-1)+1; // from 1 -> w
 				}else{
 					// System.out.println(h);
-					offset = rng.nextInt(h-1)+1;
+					offset = Main.rng.nextInt(h-1)+1;
 				}
 			}
 		}
@@ -654,16 +652,16 @@ public class Map {
 		public PointDir randomDoor(){
 			int tries = 0;
 			while(tries < 15){
-				int d = rng.nextInt(3);
+				int d = Main.rng.nextInt(3);
 				PointDir p = null;
 				if(d==0 && (start || door.dir!=dirChars[UP])){
-					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y),dirChars[UP]);
+					p = new PointDir(new Point(Main.rng.nextInt(w-1)+1 + x, y),dirChars[UP]);
 				}else if(d==1 && (start || door.dir!=dirChars[RIGHT])){
-					p = new PointDir(new Point(x + tw-1, rng.nextInt(h-1)+1 + y),dirChars[RIGHT]);					
+					p = new PointDir(new Point(x + tw-1, Main.rng.nextInt(h-1)+1 + y),dirChars[RIGHT]);					
 				}else if(d==2 && (start || door.dir!=dirChars[DOWN])){
-					p = new PointDir(new Point(rng.nextInt(w-1)+1 + x, y + th-1),dirChars[DOWN]);					
+					p = new PointDir(new Point(Main.rng.nextInt(w-1)+1 + x, y + th-1),dirChars[DOWN]);					
 				}else if(start || door.dir!=dirChars[LEFT]){
-					p = new PointDir(new Point(x, rng.nextInt(h-1)+1 + y),dirChars[LEFT]);
+					p = new PointDir(new Point(x, Main.rng.nextInt(h-1)+1 + y),dirChars[LEFT]);
 				}
 				if(p == null || (room != null && room[p.point.y-y][p.point.x-x] == 'X')){
 					tries++;
@@ -808,7 +806,7 @@ public class Map {
 
 			int doorCount = doors-temp;
 			while(doorCount > 0 && possibleDoors.size()>1){
-				int r = rng.nextInt(possibleDoors.size()-1);
+				int r = Main.rng.nextInt(possibleDoors.size()-1);
 
 				doorPoints.add(possibleDoors.get(r));
 				possibleDoors.remove(r);
@@ -898,14 +896,14 @@ public class Map {
 		public void buildSewer(){
 			if(h<=3 || w<=3) return;
 			int waterWidth = 2;
-			boolean noBridge = (doors==0 && rng.nextInt(10)<=7);
+			boolean noBridge = (doors==0 && Main.rng.nextInt(10)<=7);
 			if((door.dir == dirChars[UP] || door.dir == dirChars[DOWN]) && w>4){
 				// horizontal
 				int river_h;
 				if(h<=4){
 					river_h = 1;
 				}else{
-					river_h = rng.nextInt(h-4)+1;
+					river_h = Main.rng.nextInt(h-4)+1;
 				}
 
 				// - 2 for edges, -2 for width, -river_h, +1
@@ -915,14 +913,14 @@ public class Map {
 					waterWidth = 2;
 				}else{
 					if(false){
-						waterWidth = rng.nextInt(h-2-river_h+1-2)+2;
+						waterWidth = Main.rng.nextInt(h-2-river_h+1-2)+2;
 					}else{
 						waterWidth = h-2;
 					}
 				}
 
 				// width || x x x || = 7 = 3 possible = [0,1,2] + 2) -> 7-5 = [2,3,4]
-				int bridge_x = rng.nextInt(w-3)+2;
+				int bridge_x = Main.rng.nextInt(w-3)+2;
 				for(int i = 1; i <= w; i++){
 					for(int t = 1; t <= waterWidth; t++){
 						if (noBridge || i!=bridge_x) {
@@ -939,20 +937,20 @@ public class Map {
 				if(w<=4){
 					river_w = 1;
 				}else{
-					river_w = rng.nextInt(w-4)+1;
+					river_w = Main.rng.nextInt(w-4)+1;
 				}
 
 				if(w-2-river_w+1 == 2){
 					waterWidth = 2;
 				}else{
 					if(false){
-						waterWidth = rng.nextInt(w-2-river_w+1-2)+2;
+						waterWidth = Main.rng.nextInt(w-2-river_w+1-2)+2;
 					}else{
 						waterWidth = w-2;
 					}
 				}
 
-				int bridge_y = rng.nextInt(h-3)+2;
+				int bridge_y = Main.rng.nextInt(h-3)+2;
 				for(int i = 1; i <= h; i++){
 					for(int t = 1; t <= waterWidth; t++){
 						if (noBridge || i!=bridge_y) {
@@ -1130,8 +1128,8 @@ public class Map {
 		int y;
 		do{
 			// System.out.println("picking point...");
-			x = rng.nextInt(width-1);
-			y = rng.nextInt(height-1);
+			x = Main.rng.nextInt(width-1);
+			y = Main.rng.nextInt(height-1);
 		}while(!isEmpty(x,y) || map[y][x] == 5);
 		return (new Point(x,y));
 	}
@@ -1141,8 +1139,8 @@ public class Map {
 		int y;
 		do{
 			// System.out.println("picking point...");
-			x = rng.nextInt(width-1);
-			y = rng.nextInt(height-1);
+			x = Main.rng.nextInt(width-1);
+			y = Main.rng.nextInt(height-1);
 		}while(!isFullOpen(x,y) || map[y][x] == 5);
 		return (new Point(x,y));
 	}
@@ -1174,12 +1172,12 @@ public class Map {
 		do {
 			do {
 				do {
-					x1 = rng.nextInt(width-1);
-					y1 = rng.nextInt(height-1);
+					x1 = Main.rng.nextInt(width-1);
+					y1 = Main.rng.nextInt(height-1);
 				} while (!isOpen(x1,y1));
 				do {
-					x2 = rng.nextInt(width-1);
-					y2 = rng.nextInt(height-1);
+					x2 = Main.rng.nextInt(width-1);
+					y2 = Main.rng.nextInt(height-1);
 				} while (!isOpen(x2,y2));
 				tries++;
 			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);

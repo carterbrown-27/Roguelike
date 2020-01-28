@@ -5,8 +5,6 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
-import Entity.turnEnding;
-
 public class Creature extends Entity {
 
 	// fields
@@ -19,6 +17,8 @@ public class Creature extends Entity {
 	private double SP_regen = 1;
 	private double speed = 1.0;
 	private double satiation = 10; // TEMP
+	
+	private ArmourSet armourSet = new ArmourSet();
 	
 	private AI ai;
 	
@@ -35,8 +35,8 @@ public class Creature extends Entity {
 	private boolean amphibious = false;
 	
 	// constructors
-	Creature(String id, int _x, int _y){
-		super(id,_x,_y);
+	Creature(String id, Point p){
+		super(id,p);
 	}
 	
 	// methods
@@ -53,7 +53,7 @@ public class Creature extends Entity {
 	
 	public void upkeep(){
 		satiation = Math.max(satiation-0.01,0);
-		for(Status s: statuses.keySet()){
+		for(Status s: getStatuses().keySet()){
 			if(s.upkeep){
 				// TODO: move this data elsewhere.
 				if(s.equals(Status.RESTING)){
@@ -63,8 +63,8 @@ public class Creature extends Entity {
 				}
 				// TODO: add static regen
 			}
-			statuses.replace(s, statuses.get(s)-1);
-			if(statuses.get(s) <= 0){
+			getStatuses().replace(s, getStatuses().get(s)-1);
+			if(getStatuses().get(s) <= 0){
 				removeStatus(s);
 			}
 		}
@@ -111,16 +111,16 @@ public class Creature extends Entity {
 	
 	// TODO: instead of the branching, use polymorphism (Creature < Player)
 	public void addStatus(Status s){
-		if(!statuses.containsKey(s)){
+		if(!getStatuses().containsKey(s)){
 			toggle(s, true);
 			if(ai!=null){
 				Main.appendText(String.format("The %s is %s!", getName(), s.name));
 			}else{
 				Main.appendText(String.format("You are %s!", s.name));
 			}
-			statuses.put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+			getStatuses().put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
 		}else{
-			statuses.replace(s, statuses.get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+			getStatuses().replace(s, getStatuses().get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
 		}
 	}
 
@@ -131,7 +131,7 @@ public class Creature extends Entity {
 		}else{
 			Main.appendText("You are no longer "+s.name+".");
 		}
-		statuses.remove(s);
+		getStatuses().remove(s);
 	}
 
 	public void toggle(Status s, boolean start){
@@ -140,8 +140,20 @@ public class Creature extends Entity {
 		if(s.equals(Status.MIGHTY)){
 			strength += Math.max(5,strength/2)*mod;
 		}else if(s.equals(Status.FLIGHT)){
-			isFlying = start;
+			flying = start;
 		}
+	}
+	
+	// GETTERS, SETTERS, MUTATORS
+	
+	@Deprecated
+	public boolean isFlying() {
+		return flying;
+	}
+	
+	@Deprecated
+	public boolean isAmphibious() {
+		return amphibious;
 	}
 	
 	public double getHP() {
@@ -149,11 +161,17 @@ public class Creature extends Entity {
 	}
 	
 	public void changeHP(double delta) {
-		HP += delta;
+		setHP(getHP() + delta);
+	}
+	
+	public void setHP(double value) {
+		HP = value;
+		HP = ActionLibrary.round(HP, 1);
+		
 		if(HP <= 0) {
 			// die
-		}else if(HP > HP_max) {
-			HP = HP_max;
+		}else if(HP > getHP_max()) {
+			HP = getHP_max();
 		}
 	}
 	
@@ -161,7 +179,43 @@ public class Creature extends Entity {
 		return SP;
 	}
 	
+	public void changeSP(double delta) {
+		setSP(getSP() + delta);
+	}
+	
+	public void setSP(double value) {
+		SP = value;
+		SP = ActionLibrary.round(SP, 1);
+		SP = Math.min(SP_max, SP);
+	}
+	
 	public double getEV() {
 		return EV;
+	}
+	
+	public double getStrength() {
+		return strength;
+	}
+	
+	// TODO: remove these, only allow immutable gets.
+	public HashMap<Status,Integer> getStatuses() {
+		return statuses;
+	}
+	
+	public ArmourSet getArmourSet() {
+		return armourSet;
+	}
+
+	public double getHP_max() {
+		return HP_max;
+	}
+
+	
+	public double getDefence() {
+		return armourSet.getDefence();
+	}
+	
+	public double getSatiation() {
+		return satiation;
 	}
 }

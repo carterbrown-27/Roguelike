@@ -24,12 +24,9 @@ public class Entity extends GameObject {
 	public FOV fov = new FOV();
 	public boolean isPassable = false;
 
-	Entity(String id, int _x, int _y){
-		x = _x;
-		y =_y;
-		
-		pos = new Point(_x,_y);
-		
+	Entity(String id, Point _pos){
+		// TODO: init by id
+		this.pos = _pos;
 		// TODO: eliminate
 		if(NOT_PLAYER){
 			// TODO: move map logic to Map.
@@ -85,7 +82,7 @@ public class Entity extends GameObject {
 	
 
 	public boolean isFullOpen(int x, int y){
-		for(Entity e: map.entities.values()){
+		for(Entity e: map.entities){
 			if(!e.isPassable && e.getX()==x && e.getY()==y) return false;
 		}
 		if(map.player.x == x && map.player.y == y) return false;

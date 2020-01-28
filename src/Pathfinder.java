@@ -1,19 +1,21 @@
 import java.awt.Point;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class Pathfinder {
 	
 	private Creature c;
-	private HashMap<String,Entity> entities = new HashMap<String,Entity>();
+	private HashSet<Entity> entities = new HashSet<>();
 	private boolean entityCol = false;
 	
 	private Queue<PointBFS> q;
 	private Point end;
 	
 	public static class PointBFS{
-		private Point point;
+		// TODO: privatize?
+		public Point point;
 		private PointBFS parent;
 	
 		PointBFS(int x, int y, PointBFS _parent){
@@ -47,7 +49,7 @@ public class Pathfinder {
 		this.c = _c;
 	}
 	
-	public PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashMap<String,Entity> entities, boolean diagonals, boolean entityCol){
+	public PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, boolean diagonals, boolean entityCol){
 		this.entities = entities;
 		this.entityCol = entityCol;
 		this.end = end;
@@ -88,7 +90,7 @@ public class Pathfinder {
 		}
 		if(check.x<0 || check.y<0 || check.y>=map.length || check.x>=map[check.y].length) return false;
 		if (entityCol) {
-			for (Entity e : entities.values()) {
+			for (Entity e : entities) {
 				if (!e.equals((Entity) this.c) && !e.isPassable && e.getX() == check.x && e.getY() == check.y){
 					return false;
 				}
@@ -99,8 +101,8 @@ public class Pathfinder {
 //		}
 		
 		// TODO: fix collision checking, maybe flesh out Tile class
-		if(map[check.y][check.x] != 1 && (map[check.y][check.x] != 2 || (c!=null && (c.isFlying || c.isAmphibious))) &&
-				(map[check.y][check.x] != 3 || (c!=null && c.isFlying))) return true;
+		if(map[check.y][check.x] != 1 && (map[check.y][check.x] != 2 || (c!=null && (c.isFlying() || c.isAmphibious() ))) &&
+				(map[check.y][check.x] != 3 || (c!=null && c.isFlying() ))) return true;
 		return false;
 	}
 	

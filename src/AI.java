@@ -3,7 +3,7 @@ public class AI {
 	public Creature c;
 	public int t = 0;
 	public ActionLibrary lib;
-	public Entity player;
+	public Player player;
 
 	AI(Creature _c){
 		System.out.println("configuring AI...");

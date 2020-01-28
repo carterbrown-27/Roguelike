@@ -81,17 +81,17 @@ public class ActionLibrary {
 		if(pBFS!=null){
 			pBFS = pBFS.getParent();
 			if(pBFS==null) return false;
-			Point p = pBFS.getPos();
+			Point p = pBFS.point;
 			return c.move(c.getDir(p));
 		}
 		return false;
 	}
 
-	public boolean melee(Entity target, double damage_modifier){
+	public boolean melee(Creature target, double damage_modifier){
 		int dir = c.getDir(player.getPos());
 		if(!isAI || dir!=-1){
 			if(hitCalculation(target)){
-				target.getHP() -= calculateDmg(target,damage_modifier);
+				target.changeHP(-calculateDmg(target,damage_modifier));
 			}else{
 				return false;
 			}
@@ -100,18 +100,19 @@ public class ActionLibrary {
 	}
 	
 	public double getAttackDamage(){
-		double baseDamage = c.strength;
+		double baseDamage = c.getStrength();
 		if(c.weapon!=null) baseDamage += c.weapon.getDamage();
 		return baseDamage/2 + (Main.rng.nextDouble()*baseDamage);
 	}
 
-	public double calculateDmg(Entity target, double damage_modifier){
-		return round(getAttackDamage() * damage_modifier - ((target.getDefence()/2 + (Main.rng.nextDouble()*target.getDefence())) / 2), 1);
+	public double calculateDmg(Creature target, double damage_modifier){
+		return round(getAttackDamage() * damage_modifier
+				- ( (target.getDefence()/2 + (Main.rng.nextDouble()*target.getDefence()) ) / 2), 1);
 	}
 
 
 	public boolean lunge(){
-		c.SP -= 3;
+		c.changeSP(-3);
 		// System.out.println("Lunge:");
 		return (move(false) && melee(player,0.5));
 	}

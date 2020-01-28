@@ -44,20 +44,25 @@ public class Main {
 
 	public static char selectedItem;
 
-	public static HashMap<Integer,Map> floors = new HashMap<Integer,Map>();
+	public static HashMap<Integer,Map> floors = new HashMap<>();
 	public static Map gen;
 
 	public static int cF;
 	public static Point ropePoint;
 
-	public static final int map_h = 60;
-	public static final int map_w = 60;
-	public static final int map_fill = 49;
+	public static final int MAP_H = 60;
+	public static final int MAP_W = 60;
+	public static final int MAP_FILL = 49;
 
 	public static int seed;
 
 	public static HashMap<String,String> randomNames = new HashMap<>();
 	public static HashMap<String,Potion.PotionColours> potionColours = new HashMap<>();	
+
+	public static int JFrame_WIDTH = 1500;
+	public static int JFrame_HEIGHT = 1000;
+	public static JPanel consolePanel = new JPanel();
+
 
 	public static void main(String[] args){
 
@@ -84,237 +89,240 @@ public class Main {
 		frame.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
-				if(running){
-					if (System.currentTimeMillis()-lastPress>=interval) {
-						lastPress = System.currentTimeMillis();
-						if(!itemPickup && !inventoryScreen){
-							txt.clear(); /**TODO: TEMP**/
-							refreshText();
-						}
-						if(itemPickup){
-							for (char c = 'a'; c <= 'z'; c++) {
-								if(currentInventory==null){
-									currentInventory = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
-								}
-
-								if (e.getKeyChar() == c && currentInventory.contains(c)) {
-									player.pickUp(c,currentInventory);
-									if(currentInventory.isEmpty()){
-										currentInventory = null;
-										itemPickup = false;
-									}
-								}
-							}
-							if(e.getKeyChar() < 'a' || e.getKeyChar() >'z'){
-								currentInventory = null;
-								itemPickup = false;
-							}
-
-						}else if(inventoryScreen){
-							txt.clear();
-							refreshText();
-							boolean selected = false;
-							char c = e.getKeyChar();
-							if (player.inv.contains(c)) {
-								selected = true;
-								// open item menu
-								/** TODO: temporary **/
-								// TODO: replace inventory with split-by-class system
-								Item i = player.inv.getItem(c);
-
-								appendText(c+" - "+i.getDisplayName()+" selected.");
-								appendText(i.getDescription());
-
-								String[] prompts = i.listPrompts();
-								for(String s: prompts) {
-									appendText(s);
-								}
-								selectedItem = c;
-							}
-							if(selected) itemScreen = true;
-						}
-						inventoryScreen = false;
-					}else if(itemScreen){
-						char c = selectedItem;
-						Item i = player.inv.getItem(c);
-						
-						// TODO: fix all of this.
-						if(e.getKeyChar() == 'd'){
-							if(i.isEquipped()){
-								player.equip(i);
-							}
-							player.inv.dropAll(c, player);
-						}
-						
-						if(EQUIPPABLE){
-						
-						}
-						
-						if(CONSUMABLE){
-							
-						}
-						
-						itemScreen = false;
-						refreshStats();
-					}else if(pickItem){
-						boolean flag = false;
+				if(!running){
+					if(e.getKeyCode() == KeyEvent.VK_SPACE){
+						// restart
+						startGame();
+					}
+					return;
+				}
+				
+				if (System.currentTimeMillis()-lastPress>=interval) {
+					lastPress = System.currentTimeMillis();
+					if(!itemPickup && !inventoryScreen){
+						txt.clear(); /**TODO: TEMP**/
+						refreshText();
+					}
+					if(itemPickup){
 						for (char c = 'a'; c <= 'z'; c++) {
-							if (e.getKeyChar() == c && player.inv.contains(c)) {
-								Item i = player.inv.getItem(c);
-								if(identify && !player.isItemIdentified(i)){
-									flag = true;
-									i.identify();
-									identify = false;
-								}else if(enchant){
-									flag = true;
-									enchant = false;
+							if(currentInventory==null){
+								currentInventory = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
+							}
+
+							if (e.getKeyChar() == c && currentInventory.contains(c)) {
+								player.pickUp(c,currentInventory);
+								if(currentInventory.isEmpty()){
+									currentInventory = null;
+									itemPickup = false;
 								}
 							}
 						}
-						if(!flag){
-							appendText(e.getKeyChar()+" is not a valid option.");
-						}else{
-							pickItem = false;
+						if(e.getKeyChar() < 'a' || e.getKeyChar() >'z'){
+							currentInventory = null;
+							itemPickup = false;
 						}
 
-
-						/** DIRECTIONALS **/
-					}else if (directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown()) >= 0) {
-						int d = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
-						if(aimScreen){
-							Point p = Direction.values()[d].p;
-							targetPos.x += p.x;
-							targetPos.y += p.y;
-							// TODO: aim visuals && los check
-
-						}else{								
-							player.act_adj(d);
-						}
-
-
-					}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
-						if(aimScreen){
-							ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
-
-							boolean f = true;
-							for(Point p: line){
-								if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
-									continue;
-								}
-
-								if(!floors.get(cF).isFullOpen(p.x, p.y)){
-									f = false;
-									break;
-								}
-							}
-							if(f){
-								// valid target
-								appendTextRF("valid target");
-							}else{
-								appendTextRF("invalid target");
-							}
-
-							aimScreen = false;
-							return;
-						}
-						if(floors.get(cF).valueAt(player.getPos()) == 3){
-							if(floors.size()<=cF+1){
-								newFloor();
-							}else{
-								changeFloor(cF+1,true,false);
-							}
-						}else if(floors.get(cF).valueAt(player.getPos()) == 2 && cF > 0){
-							// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
-							changeFloor(cF-1,false,false);
-						}
-						appendText("Current Floor: "+cF);
-
-					} else if(e.getKeyCode() == KeyEvent.VK_P){
-						floors.get(cF).printMap();
-
-					} else if(e.getKeyCode() == KeyEvent.VK_T){
-						aimScreen = !aimScreen;
-						targetPos = player.getPos();
-
-					} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
-						// open attack selections
-						// area.append("space.\n");
-						// if already open attack
-					} else if(e.getKeyCode() == KeyEvent.VK_G){
-						// get
-						Inventory tileInv = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
-						Inventory selectedInv = null;
-						
-						
-						// TODO: fix CHESTS
-						if(tileInv.isEmpty()){
-							for(Entity n: floors.get(cF).entities){
-								if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
-									if(!n.SE.isLocked){
-										selectedInv = n.inv;
-										appendText("Pick up what?");
-									}else{											
-										appendText("It's locked.");
-										return;
-									}
-									// n.SE.interact(player,'g');
-									break;
-								}
-							}
-						}else{
-							selectedInv = tileInv;
-						}
-
-						if(selectedInv == null || selectedInv.isEmpty()){
-							appendText("There is nothing here.");
-							return;
-						}
-
-						if(selectedInv.isOneItem()){
-							player.pickUp(selectedInv.getFirstItem(),selectedInv);
-						}else if(!selectedInv.isEmpty()){
-							itemPickup = true;
-							currentInventory = selectedInv;
-							appendText("Pick up what?");
-						}
-
-					}else if(e.getKeyCode() == KeyEvent.VK_I){
-						player.inv.printContents(false);
-
-						if(!player.inv.isEmpty()) inventoryScreen = true;
-
-					}else if(e.getKeyCode() == KeyEvent.VK_O){
-						for(Entity n: floors.get(cF).entities){
-							if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
-								n.SE.interact(player,'o');
-							}
-						}
-					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
+					}else if(inventoryScreen){
 						txt.clear();
 						refreshText();
-					}else if(e.getKeyCode() == KeyEvent.VK_5){
-						player.startRest();
+						boolean selected = false;
+						char c = e.getKeyChar();
+						if (player.inv.contains(c)) {
+							selected = true;
+							// open item menu
+							/** TODO: temporary **/
+							// TODO: replace inventory with split-by-class system
+							Item i = player.inv.getItem(c);
 
-					}else if(e.getKeyCode() == KeyEvent.VK_X){
-						// TODO: overview
+							appendText(c+" - "+i.getDisplayName()+" selected.");
+							appendText(i.getDescription());
 
-					}else{
-						for(Player.Ability a: Player.Ability.values()){
-							if(e.getKeyCode() == a.k){
-								if(player.getSP() >= a.s){
-									player.select(a);
-									appendText(a.name);
-								}else{
-									appendText("Not enough stamina (stamina!).");
-									player.deselect();
-								}
-								break;
+							String[] prompts = i.listPrompts();
+							for(String s: prompts) {
+								appendText(s);
+							}
+							selectedItem = c;
+						}
+						if(selected) itemScreen = true;
+					}
+					inventoryScreen = false;
+				}else if(itemScreen){
+					char c = selectedItem;
+					Item i = player.inv.getItem(c);
+
+					// TODO: fix all of this.
+					if(e.getKeyChar() == 'd'){
+						if(i.isEquipped()){
+							player.equip(i);
+						}
+						player.inv.dropAll(c, player);
+					}
+
+					if(EQUIPPABLE){
+
+					}
+
+					if(CONSUMABLE){
+
+					}
+
+					itemScreen = false;
+					refreshStats();
+				}else if(pickItem){
+					boolean flag = false;
+					for (char c = 'a'; c <= 'z'; c++) {
+						if (e.getKeyChar() == c && player.inv.contains(c)) {
+							Item i = player.inv.getItem(c);
+							if(identify && !player.isItemIdentified(i)){
+								flag = true;
+								player.identify(i);
+								identify = false;
+							}else if(enchant){
+								flag = true;
+								enchant = false;
 							}
 						}
 					}
-				}else if(e.getKeyCode() == KeyEvent.VK_SPACE){
-					// restart
-					startGame();
+					if(!flag){
+						appendText(e.getKeyChar()+" is not a valid option.");
+					}else{
+						pickItem = false;
+					}
+
+
+					/** DIRECTIONALS **/
+				}else if (directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown()) != null) {
+					Direction dir = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
+					if(aimScreen){
+						Point p = dir.p;
+						targetPos.x += p.x;
+						targetPos.y += p.y;
+						// TODO: aim visuals && los check
+
+					}else{								
+						player.act_adj(dir);
+					}
+
+
+				}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
+					if(aimScreen){
+						ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
+
+						boolean f = true;
+						for(Point p: line){
+							if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
+								continue;
+							}
+
+							if(!floors.get(cF).isFullOpen(p.x, p.y)){
+								f = false;
+								break;
+							}
+						}
+						if(f){
+							// valid target
+							appendTextRF("valid target");
+						}else{
+							appendTextRF("invalid target");
+						}
+
+						aimScreen = false;
+						return;
+					}
+					if(floors.get(cF).valueAt(player.getPos()) == 3){
+						if(floors.size()<=cF+1){
+							newFloor();
+						}else{
+							changeFloor(cF+1,true,false);
+						}
+					}else if(floors.get(cF).valueAt(player.getPos()) == 2 && cF > 0){
+						// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
+						changeFloor(cF-1,false,false);
+					}
+					appendText("Current Floor: "+cF);
+
+				} else if(e.getKeyCode() == KeyEvent.VK_P){
+					floors.get(cF).printMap();
+
+				} else if(e.getKeyCode() == KeyEvent.VK_T){
+					aimScreen = !aimScreen;
+					targetPos = player.getPos();
+
+				} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
+					// open attack selections
+					// area.append("space.\n");
+					// if already open attack
+				} else if(e.getKeyCode() == KeyEvent.VK_G){
+					// get
+					Inventory tileInv = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
+					Inventory selectedInv = null;
+
+
+					// TODO: fix CHESTS
+					if(tileInv.isEmpty()){
+						for(Entity n: floors.get(cF).entities){
+							if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
+								if(!n.SE.isLocked){
+									selectedInv = n.inv;
+									appendText("Pick up what?");
+								}else{											
+									appendText("It's locked.");
+									return;
+								}
+								// n.SE.interact(player,'g');
+								break;
+							}
+						}
+					}else{
+						selectedInv = tileInv;
+					}
+
+					if(selectedInv == null || selectedInv.isEmpty()){
+						appendText("There is nothing here.");
+						return;
+					}
+
+					if(selectedInv.isOneItem()){
+						player.pickUp(selectedInv.getFirstItem(),selectedInv);
+					}else if(!selectedInv.isEmpty()){
+						itemPickup = true;
+						currentInventory = selectedInv;
+						appendText("Pick up what?");
+					}
+
+				}else if(e.getKeyCode() == KeyEvent.VK_I){
+					player.inv.printContents(false);
+
+					if(!player.inv.isEmpty()) inventoryScreen = true;
+
+				}else if(e.getKeyCode() == KeyEvent.VK_O){
+					for(Entity n: floors.get(cF).entities){
+						if(n.SE != null && n.getX() == player.getX() && n.getY() == player.getY()){
+							n.SE.interact(player,'o');
+						}
+					}
+				}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
+					txt.clear();
+					refreshText();
+				}else if(e.getKeyCode() == KeyEvent.VK_5){
+					player.startRest();
+
+				}else if(e.getKeyCode() == KeyEvent.VK_X){
+					// TODO: overview
+
+				}else{
+					for(Player.Ability a: Player.Ability.values()){
+						if(e.getKeyCode() == a.k){
+							if(player.getSP() >= a.s){
+								player.select(a);
+								appendText(a.name);
+							}else{
+								appendText("Not enough stamina (stamina!).");
+								player.deselect();
+							}
+							break;
+						}
+					}
 				}
 			}
 		});
@@ -328,7 +336,7 @@ public class Main {
 
 		long time = System.currentTimeMillis();
 
-		floors.put(cF, new Map(map_h,map_w,map_fill,rng));
+		floors.put(cF, new Map(MAP_H,MAP_W,MAP_FILL));
 		ropePoint = floors.get(cF).getPosition(2);
 
 		System.out.println("@@@ gen = "+(System.currentTimeMillis()-time)+"ms @@@");
@@ -344,7 +352,7 @@ public class Main {
 		Missile darts = new Missile("darts");
 		player.inv.addItem(darts);
 		player.quiver(player.inv.get(player.inv.getItemTypeChar(DART)));
-		
+
 		// TODO: init Item.Scrolls & Item.Potions
 		for(Scroll i: Item.getScrolls()){
 			randomNames.put(i.getTypeName(), "scroll(s) labeled "+((randomName()+" "+randomName()).toUpperCase()));
@@ -360,7 +368,7 @@ public class Main {
 			do{
 				t = floors.get(cF).randomOpenSpace();				
 			}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
-			
+
 			System.out.println("point picked");
 			new Creature(RANDOMTYPE, t.x, t.y);
 			System.out.println("Entity Added.");
@@ -380,9 +388,11 @@ public class Main {
 			System.out.println("adding Chest/Key pair");
 			floors.get(cF).tileMap[t.y][t.x].inventory.addItem(new Special("Silver Key"));
 			t = floors.get(cF).randomEmptySpace();
+
+			// TODO: add chests
 			new Entity(StaticEntity.SEType.SILVER_CHEST,t.x,t.y,floors.get(cF));
 		}
-		
+
 		try{
 			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(cF)+"-t"+System.currentTimeMillis()+".png");
 			ImageIO.write(floors.get(cF).renderMap(), "png", output);
@@ -406,7 +416,7 @@ public class Main {
 		blackOverlay();
 		// floors.replace(currentFloor, new Map(map_h,map_w,map_fill,rng));
 		System.out.println(floors.size()+" total");
-		floors.put(cF+1, new Map(map_h, map_w, map_fill, rng));
+		floors.put(cF+1, new Map(MAP_H, MAP_W, MAP_FILL));
 		changeFloor(cF+1,true,true);
 	}
 
@@ -438,7 +448,7 @@ public class Main {
 			for(int i = 0; i < items; i++){
 				t = floors.get(cF).randomOpenSpace();
 				System.out.println("adding item #"+i);
-				
+
 				// TODO: CHANGE THIS
 				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(Item.randomItemType(level));
 			}
@@ -458,10 +468,6 @@ public class Main {
 		}catch(Exception e){};
 		refreshFrame(render(startPoint.x,startPoint.y));
 	}
-
-	public static int JFrame_WIDTH = 1500;
-	public static int JFrame_HEIGHT = 1000;
-	public static JPanel consolePanel = new JPanel();
 
 	private static JFrame buildFrame(BufferedImage img) {
 		// GUI gui = new GUI();
@@ -530,13 +536,11 @@ public class Main {
 		stats.setFont(f);
 		stats.setText("");
 
-		player.HP = ActionLibrary.round(player.HP, 1);
-
 		stats.append("  <Player Name>\t\t                     .\n\n");
-		stats.append("  HP: "+player.HP+"\n");
-		stats.append("  SP: "+player.SP+"\n");
-		stats.append("  STR: "+player.STRENGTH+"\n");
-		stats.append("  SAT: "+ActionLibrary.round(player.SAT,1)+"\n");
+		stats.append("  HP: "+player.getHP()+"\n");
+		stats.append("  SP: "+player.getSP()+"\n");
+		stats.append("  STR: "+player.getStrength()+"\n");
+		stats.append("  SAT: "+ActionLibrary.round(player.getSatiation(),1)+"\n");
 
 		if(player.weapon != null){			
 			stats.append("  Weapon: "+player.weapon.getDisplayName());
@@ -554,8 +558,8 @@ public class Main {
 
 
 		String line = "  ";
-		for(Status s: player.statuses.keySet()){
-			line+=s.name();
+		for(Status s: player.getStatuses().keySet()){
+			line += s.name();
 		}
 		stats.append(line+"\n");
 		stats.append("      _________________________________________________________\n\n");
@@ -588,6 +592,7 @@ public class Main {
 	}
 
 	public static void blackOverlay(){
+		// TODO: load file into memory
 		try{
 			refreshFrame(ImageIO.read(new File("imgs/descendingOverlay.png")));
 		}catch(Exception e){
@@ -614,23 +619,24 @@ public class Main {
 	}
 
 	public static Point lastPos;
+	// TODO: switch Entity to Creature
 	public static void takeTurn(){
 		Inventory floorInv = floors.get(cF).tileMap[player.getY()][player.getX()].inventory;
 		if(!floorInv.isEmpty() && (lastPos!=null && !player.getPos().equals(lastPos))){
 			floorInv.printContents(true);
 		}
-		player.HP = ActionLibrary.round(player.getHP(), 1);
 
 		// double playerHP = player.HP;
 		// TODO: move max to e
 		player.upkeep();
-
-		player.SP =  Math.min(player.getSP() + player.getSP_regen(), player.getSP_max());
+		;
 		ArrayList<Entity> dead = new ArrayList<Entity>();
 
 		// int[] order = floors.get(currentFloor).getEntityPriority();
 		// for(int i: order){
 		Queue<Entity> q = new LinkedList<Entity>();
+
+		// TODO: creature list.
 		for(Entity e: floors.get(cF).entities){
 			e.awakeCheck();
 			if(e.awake) q.add(e);
@@ -651,6 +657,7 @@ public class Main {
 				if(!allWaiting(q)){
 					q.add(e);
 				}else{
+					
 				}
 			}
 		}
@@ -659,16 +666,18 @@ public class Main {
 			e.die();
 		}
 
+		// TODO: move death logic to Player.
 		Point pos = player.getPos();
 		lastPos = pos;
 		// if(player.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.HP,2));
-		if(player.HP < 0.05){
+		if(player.getHP() < 0.05){
 			appendText("You die...");
 			running = false;
 		}
 		refreshFrame(render(pos.x,pos.y));
 	}
 
+	@Deprecated
 	public static boolean allWaiting(Queue<Entity> q){
 		while(!q.isEmpty()){
 			if(!q.remove().waiting) return false;
@@ -681,7 +690,7 @@ public class Main {
 		img = resize(img, img.getWidth()*3, img.getHeight()*3);
 		return img;
 	}
-	
+
 	// TODO: move to Potion Class
 	public static String randomPotionName(Potion p){
 		String[] colours = {"red","orange","green","blue","violet","pink","mahogany",
@@ -740,36 +749,36 @@ public class Main {
 		return name;
 	}
 
-	public static int directionValue(int keyCode, boolean controlDown, boolean shiftDown){
+	public static Direction directionValue(int keyCode, boolean controlDown, boolean shiftDown){
 		if (keyCode == KeyEvent.VK_K || keyCode == KeyEvent.VK_UP) {
-			return 0;
+			return Direction.UP;
 		} else if (keyCode == KeyEvent.VK_H || keyCode == KeyEvent.VK_LEFT) {
 			if(controlDown){
-				return 6;
+				return Direction.DOWN_LEFT;
 			}else if(shiftDown){
-				return 7;
+				return Direction.UP_LEFT;
 			}else{
-				return 3;
+				return Direction.LEFT;
 			}
 		} else if (keyCode == KeyEvent.VK_J || keyCode == KeyEvent.VK_DOWN) {
-			return 2;
+			return Direction.DOWN;
 		} else if (keyCode == KeyEvent.VK_L || keyCode == KeyEvent.VK_RIGHT) {
 			if(controlDown){
-				return 5;
+				return Direction.DOWN_RIGHT;
 			}else if(shiftDown){
-				return 4;
+				return Direction.UP_RIGHT;
 			}else{
-				return 1;
+				return Direction.DOWN_RIGHT;
 			}
 		}else if(keyCode == KeyEvent.VK_Y){
-			return 7;
+			return Direction.UP_LEFT;
 		}else if(keyCode == KeyEvent.VK_U){
-			return 4;
+			return Direction.UP_RIGHT;
 		}else if(keyCode == KeyEvent.VK_B){
-			return 6;
+			return Direction.DOWN_LEFT;
 		}else if(keyCode == KeyEvent.VK_N){
-			return 5;
+			return Direction.DOWN_RIGHT;
 		}
-		return -1;
+		return null;
 	}
 }
