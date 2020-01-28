@@ -1,4 +1,4 @@
-public interface Consumable  {
+public interface Consumable {
 	
 	public void use(Entity e);
 	

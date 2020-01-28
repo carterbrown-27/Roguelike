@@ -27,10 +27,4 @@ public final class Armour extends Item implements Equippable {
 		// TODO Auto-generated method stub
 		return equipped;
 	}
-
-	@Override
-	public boolean isEquippable() {
-		// TODO Auto-generated method stub
-		return equippable;
-	}
 }

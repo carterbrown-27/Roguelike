@@ -14,20 +14,19 @@ public class Missile extends Item implements Consumable, Equippable {
 		this(id,1);
 	}
 	
+	@Override
 	public void equip(Entity e) {
 		
 	}
 	
+	@Override
 	public void unequip(Entity e) {
 		
 	}
 	
+	@Override
 	public boolean isEquipped() {
 		return this.equipped;
-	}
-	
-	public boolean isEquippable() {
-		return true;
 	}
 	
 	public void throwThis(Entity e, Point target) {

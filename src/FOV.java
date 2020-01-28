@@ -65,7 +65,7 @@ public class FOV {
 	/* this orientation
 	 * 
 	 * 	.	.	.	.	3
-	 * 		.	.	. 2
+	 * 		.	.	. 	2
 	 * 			.	.	1
 	 * 				@
 	 */

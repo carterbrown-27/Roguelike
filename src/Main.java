@@ -100,7 +100,7 @@ public class Main {
 				if (System.currentTimeMillis()-lastPress>=interval) {
 					lastPress = System.currentTimeMillis();
 					if(!itemPickup && !inventoryScreen){
-						txt.clear(); /**TODO: TEMP**/
+						txt.clear(); /* TODO: TEMP */
 						refreshText();
 					}
 					if(itemPickup){
@@ -130,7 +130,7 @@ public class Main {
 						if (player.inv.contains(c)) {
 							selected = true;
 							// open item menu
-							/** TODO: temporary **/
+							/* TODO: temporary */
 							// TODO: replace inventory with split-by-class system
 							Item i = player.inv.getItem(c);
 
@@ -152,18 +152,19 @@ public class Main {
 
 					// TODO: fix all of this.
 					if(e.getKeyChar() == 'd'){
-						if(i.isEquipped()){
-							player.equip(i);
-						}
-						player.inv.dropAll(c, player);
+						i.drop(player);
+						
+						// player.inv.dropAll(c, player);
 					}
 
-					if(EQUIPPABLE){
-
+					if(i instanceof Equippable){
+						Equippable eq = (Equippable) i;
+						// TODO: implement
 					}
 
-					if(CONSUMABLE){
-
+					if(i instanceof Consumable){
+						Consumable cnsm = (Consumable) i;
+						// TODO: implement
 					}
 
 					itemScreen = false;
@@ -343,15 +344,14 @@ public class Main {
 
 		player = new Player(ropePoint.x,ropePoint.y,floors.get(cF));
 
-		/** TEMP **/
+		// (temporary), player inventory population
 		Weapon dagger = new Weapon("dagger");
 		player.inv.addItem(dagger);
-		// TODO: FIX THIS
-		player.equip((Weapon) player.inv.getItem(player.inv.getFirstItem()));
+		player.equip(dagger);
 
 		Missile darts = new Missile("darts");
 		player.inv.addItem(darts);
-		player.quiver(player.inv.get(player.inv.getItemTypeChar(DART)));
+		player.equip(darts);
 
 		// TODO: init Item.Scrolls & Item.Potions
 		for(Scroll i: Item.getScrolls()){
@@ -361,7 +361,7 @@ public class Main {
 			randomNames.put(i.getTypeName(), randomPotionName(i));
 		}
 
-		/** temporary **/
+		// (temporary) populate level with mobs
 		int mobs = rng.nextInt(8)+16;
 		for (int i = 0; i < mobs; i++) {
 			Point t;
@@ -441,7 +441,8 @@ public class Main {
 				do{
 					t = floors.get(cF).randomOpenSpace();				
 				}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
-				new Entity(Creature.randomType(), t.x, t.y, floors.get(cF));
+				
+				new Creature();
 			}
 
 			int items = rng.nextInt(6)+8;
@@ -449,8 +450,8 @@ public class Main {
 				t = floors.get(cF).randomOpenSpace();
 				System.out.println("adding item #"+i);
 
-				// TODO: CHANGE THIS
-				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(Item.randomItemType(level));
+				// TODO: refactor & reimplement
+				floors.get(cF).tileMap[t.y][t.x].inventory.addItem(Item.randomItem(1));
 			}
 
 			int chests = rng.nextInt(2)+1;
@@ -629,41 +630,43 @@ public class Main {
 		// double playerHP = player.HP;
 		// TODO: move max to e
 		player.upkeep();
-		;
-		ArrayList<Entity> dead = new ArrayList<Entity>();
+		
+		ArrayList<Creature> dead = new ArrayList<>();
 
 		// int[] order = floors.get(currentFloor).getEntityPriority();
 		// for(int i: order){
-		Queue<Entity> q = new LinkedList<Entity>();
+		Queue<Creature> creatureQueue = new LinkedList<>();
 
 		// TODO: creature list.
-		for(Entity e: floors.get(cF).entities){
-			e.awakeCheck();
-			if(e.awake) q.add(e);
+		for(Creature c: floors.get(cF).creatures){
+			c.awakeCheck();
+			if(c.awake) creatureQueue.add(c);
 		}
 
-		while(!q.isEmpty()){
-			Entity e = q.remove();
+		
+		// TODO: overhaul.
+		while(!creatureQueue.isEmpty()){
+			Creature c = creatureQueue.remove();
 			// TODO: add mob sleep/detection stuff
 			// Entity e = floors.get(currentFloor).entities.get(i);
-			Entity.turnEnding ending = e.takeTurn();
-			System.out.println(e.getName()+" takes a turn.");
+			Entity.turnEnding ending = c.takeTurn();
+			System.out.println(c.getName()+" takes a turn.");
 			if(ending.equals(Entity.turnEnding.DEAD)){
-				e.x = -1;
-				e.y = -1;
-				dead.add(e);
+				c.x = -1;
+				c.y = -1;
+				dead.add(c);
 			}else if(ending.equals(Entity.turnEnding.WAITING)){
-				System.out.println(e.getName()+" is waiting.");
-				if(!allWaiting(q)){
-					q.add(e);
+				System.out.println(c.getName()+" is waiting.");
+				if(!allWaiting(creatureQueue)){
+					creatureQueue.add(c);
 				}else{
 					
 				}
 			}
 		}
 
-		for(Entity e: dead){
-			e.die();
+		for(Creature c: dead){
+			c.die();
 		}
 
 		// TODO: move death logic to Player.
@@ -678,7 +681,7 @@ public class Main {
 	}
 
 	@Deprecated
-	public static boolean allWaiting(Queue<Entity> q){
+	public static boolean allWaiting(Queue<Creature> q){
 		while(!q.isEmpty()){
 			if(!q.remove().waiting) return false;
 		}

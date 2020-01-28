@@ -4,7 +4,7 @@ import java.awt.Point;
 public class ActionLibrary {
 	private Creature c;
 	private Pathfinder pf = new Pathfinder();
-	public Player player;
+	public static Player player;
 	private Map map;
 	public Pathfinder.PointBFS pBFS;
 	public int distance;
@@ -82,20 +82,20 @@ public class ActionLibrary {
 			pBFS = pBFS.getParent();
 			if(pBFS==null) return false;
 			Point p = pBFS.point;
-			return c.move(c.getDir(p));
+			return c.move(c.getAdjacentDir(p));
 		}
 		return false;
 	}
 
-	public boolean melee(Creature target, double damage_modifier){
-		int dir = c.getDir(player.getPos());
-		if(!isAI || dir!=-1){
+	public boolean melee(Creature target, double damage_modifier) {
+		if(c.isAdjacentTo(target.getPos())){
 			if(hitCalculation(target)){
 				target.changeHP(-calculateDmg(target,damage_modifier));
 			}else{
 				return false;
 			}
 		}
+		// TODO: review functionality
 		return true;
 	}
 	

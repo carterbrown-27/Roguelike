@@ -32,7 +32,7 @@ public class StaticEntity {
 		if(c=='g' && inv!=null){
 			
 		}else if(c=='o' && isLocked){
-			if(e.inv.getKeys().containsKey(Main.cF)){
+			if(e.inv.hasKey(Main.cF)){
 				isLocked = false;
 				e.inv.useKey(Main.cF);
 				if(inv.isEmpty()){

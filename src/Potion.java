@@ -7,9 +7,11 @@ import javax.imageio.ImageIO;
 public class Potion extends Item implements Consumable {
 	private static BufferedImage potionImages;
 	
+	// Master Constructor
 	Potion(String id, int _amount){
 		super(id);
 		this.setAmount(_amount);
+		super.setSprite(Main.potionColours.get(this.getTypeName()).image);
 	}
 	
 	Potion(String id){

@@ -41,12 +41,14 @@ public final class Weapon extends Item implements Equippable {
 	}
 	
 	@Override
-	public boolean isEquipped() {
-		return this.equipped;
+	public void drop(Entity e) {
+		unequip(e);
+		super.drop(e);
+		// drop to floor.
 	}
 	
 	@Override
-	public boolean isEquippable() {
-		return true;
+	public boolean isEquipped() {
+		return this.equipped;
 	}
 }

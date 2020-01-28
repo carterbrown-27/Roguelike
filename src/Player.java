@@ -23,13 +23,17 @@ public class Player extends Creature {
 	private Set<String> identifiedItems = new HashSet<>();
 	
 	Player(int x, int y, Map _map){
-		super();
+		super("player", new Point(x,y));
 		map = _map;
-		map.entities.remove(this.getName());
+		
+		// TODO: remove
+		map.entities.remove(this);
+		
 		map.player = this;
 		lib = new ActionLibrary(this);
 	}
 	
+	// TODO: consider moving some of this data
 	public enum Ability{
 		BASIC (0),
 		SLASH (1),
@@ -123,9 +127,8 @@ public class Player extends Creature {
 	}
 	
 	public boolean enemiesNearby(){
-		// TODO: creature map
-		for(Entity e: map.entities){
-			if(e.awakeCheck()){
+		for(Creature c: map.creatures){
+			if(c.awakeCheck()){
 				return true;
 			}
 		}
@@ -163,7 +166,7 @@ public class Player extends Creature {
 	}
 	
 	public boolean lunge(Direction movedir, Direction attackdir){
-		return (move(movedir) && melee(attackdir,0.5));
+		return (move(movedir) && melee(getTarget(attackdir),0.5));
 	}
 	
 	public boolean melee(Creature target, double modifier){
@@ -181,10 +184,10 @@ public class Player extends Creature {
 		return false;
 	}
 	
-	public Entity targetAdjacent(Direction dir){
-		for(Entity i: map.entities){
-			if(isAdjacentTo(i.getPos()) && getDir(i.getPos()) ==  dir){
-				return i;
+	public Creature getTarget(Direction dir){
+		for(Creature c: map.creatures){
+			if( Direction.translate(getPos(), dir).equals(c.getPos()) ){
+				return c;
 			}
 		}
 		return null;
@@ -203,12 +206,12 @@ public class Player extends Creature {
 	}
 	
 	// TODO: implement
-	public <T extends Equippable> void equip(T item){
+	public <T extends Item & Equippable> void equip(T item){
 		// temp
 		item.equip(this);
 	}
 	
-	public <T extends Equippable> void unequip(T item){
+	public <T extends Item & Equippable> void unequip(T item){
 		item.unequip(this);
 	}
 	

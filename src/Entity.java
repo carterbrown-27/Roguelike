@@ -93,9 +93,12 @@ public class Entity extends GameObject {
 		return isFullOpen(p.x,p.y);
 	}
 	
-	@Deprecated
 	public boolean isInPlayerView() {
 		return inPlayerView;
+	}
+	
+	public void setInPlayerView(boolean val) {
+		this.inPlayerView = val;
 	}
 	
 	public boolean checkMove(Direction dir){
@@ -111,27 +114,25 @@ public class Entity extends GameObject {
 	}
 
 	public boolean isAdjacentTo(Point p){
+		return getAdjacentDir(p) != null;
+	}
+	
+	public Direction getAdjacentDir(Point p) {
 		for(Direction d: Direction.values()) {
 			if(p.equals(getTranslatedPos(d))) {
-				return true;
+				return d;
 			}
 		}
-		return false;
+		return null;
 	}
 	
 	public Point[] adjacentPositions(){
-		Point[] p = new Point[8];
-		int pos = 0;
-		for(int cx = x-1; cx<=x+1; cx++){
-			for(int cy = y-1; cy<=y+1; cy++){
-				if(cx == x && cy == y) continue;
-				p[pos] = new Point(x,y);
-				pos++;
-			}
+		Point[] p = new Point[Direction.values().length];
+		for(int i = 0; i < p.length; i++) {
+			p[i] = Direction.translate(getPos(), Direction.values()[i]);
 		}
 		return p;
 	}
-	
 	// TODO: keys that match floors, inv print keylist
 	// TODO: move this to Inv class
 }

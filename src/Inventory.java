@@ -3,8 +3,10 @@ import java.util.HashMap;
 
 public class Inventory {
 
-	private HashMap<Character,Item> inv = new HashMap<>();
+	// all items are in generalInventory, specifics in the subs.
+	private HashMap<Character,Item> generalInventory = new HashMap<>();
 	private HashMap<Integer,Integer> keys = new HashMap<>();
+	
 	private ArmourSet armourSet = new ArmourSet();
 
 	private char firstOpen = 'a';
@@ -14,19 +16,20 @@ public class Inventory {
 	}
 	
 	public Item getItem(Character c) {
-		return inv.get(c);
+		return generalInventory.get(c);
 	}
 	
+	
 	public boolean isEmpty(){
-		return inv.isEmpty();
+		return generalInventory.isEmpty();
 	}
 
 	public boolean isOneItem(){
-		return inv.size()==1;
+		return generalInventory.size()==1;
 	}
 	
 	public boolean containsUnidentified(){
-		for(Item i: inv.values()){
+		for(Item i: generalInventory.values()){
 			if(i.isUnknown() && !Main.player.isItemIdentified(i)){
 				return true;
 			}
@@ -36,7 +39,7 @@ public class Inventory {
 
 	public void pickUp(char c, Entity destination){
 		// TODO: rework key system
-		Item i = inv.remove(c);
+		Item i = generalInventory.remove(c);
 		if(SPECIAL){
 			if(KEY){
 				destination.pickupKey(i.floorFoundOn);
@@ -53,8 +56,8 @@ public class Inventory {
 			Main.appendText("Your Inventory:");
 		}
 		
-		for(char c: inv.keySet()){
-			Item i = inv.get(c);
+		for(char c: generalInventory.keySet()){
+			Item i = generalInventory.get(c);
 			Main.appendText(i.toString());
 		}
 	}
@@ -69,12 +72,9 @@ public class Inventory {
 
 
 	public BufferedImage drawPile(){
-		for(Item i: inv.values()){
-			if(POTION){
-				return Main.potionColours.get(i).image;
-			}else{
-				return i.getSprite();
-			}
+		// returns the first item, TODO: add visual pile indicator
+		for(Item i: generalInventory.values()){
+			return i.getSprite();
 		}
 		return null;
 	}
@@ -83,7 +83,7 @@ public class Inventory {
 	public char getItemTypeChar(Item t){
 		for(char c = 'a'; c <= 'z'; c++){
 			// TODO: fix
-			if(inv.containsKey(c) && inv.get(c).equals(t)){
+			if(generalInventory.containsKey(c) && generalInventory.get(c).equals(t)){
 				return c;
 			}
 		}
@@ -93,7 +93,7 @@ public class Inventory {
 	@Deprecated
 	public char getFirstItem(){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(inv.containsKey(c)){
+			if(generalInventory.containsKey(c)){
 				return c;
 			}
 		}
@@ -101,7 +101,7 @@ public class Inventory {
 	}
 	public void getFirstOpen(){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(!inv.containsKey(c)){
+			if(!generalInventory.containsKey(c)){
 				firstOpen = c;
 				return;
 			}
@@ -113,9 +113,9 @@ public class Inventory {
 		// stack items
 		if (i.isStackable()) {
 			// TODO handle better
-			for (Item t : inv.values()) {
+			for (Item t : generalInventory.values()) {
 				if (t.getDisplayName().equals(i.getDisplayName())){
-					t.amount+=i.amount;
+					t.changeAmount(i.getAmount());
 					return;
 				}
 			}
@@ -124,7 +124,7 @@ public class Inventory {
 		// if not added to stack
 		getFirstOpen();
 		if (firstOpen != '!') {
-			inv.put(firstOpen, i);
+			generalInventory.put(firstOpen, i);
 		} else {
 			Main.appendText("Inventory full.");
 			return;
@@ -133,9 +133,9 @@ public class Inventory {
 
 	// TODO: refactor, move
 	public void removeItem(char c){
-		inv.get(c).changeAmount(-1);
-		if(inv.get(c).getAmount() <= 0){
-			inv.remove(c);			
+		generalInventory.get(c).changeAmount(-1);
+		if(generalInventory.get(c).getAmount() <= 0){
+			generalInventory.remove(c);			
 		}
 	}
 	
@@ -151,31 +151,34 @@ public class Inventory {
 	}
 	
 	public boolean contains(char c) {
-		return inv.containsKey(c);
+		return generalInventory.containsKey(c);
 	}
 	
 	// TODO: replace
-	public <T extends Consumable> int getStackSize(T type){
-		int c = type.getCommonStackSize();
+	// public <T extends Item & Consumable> int getStackSize(T type){
 		// TODO: variation
-		return c;
-	}
+		// return type.commonStackSize();
+	// }
 	
 	public void dropAll(char c, Entity e){
-		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(inv.remove(c));
+		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(generalInventory.remove(c));
 	}
 
 	public void switchItem(char itemToMove, char destination){
-		if(inv.containsKey(itemToMove)){
-			if(inv.containsKey(destination)){ // if there's an item in the target spot
-				Item temp = inv.get(destination);
-				inv.replace(destination,inv.get(itemToMove));
-				inv.replace(itemToMove, temp); // switch the items
+		if(generalInventory.containsKey(itemToMove)){
+			if(generalInventory.containsKey(destination)){ // if there's an item in the target spot
+				Item temp = generalInventory.get(destination);
+				generalInventory.replace(destination,generalInventory.get(itemToMove));
+				generalInventory.replace(itemToMove, temp); // switch the items
 			}else{
-				inv.put(destination, inv.get(itemToMove));
-				inv.remove(itemToMove);
+				generalInventory.put(destination, generalInventory.get(itemToMove));
+				generalInventory.remove(itemToMove);
 			}
 		}
+	}
+	
+	public boolean hasKey(int floor) {
+		return keys.containsKey(floor);
 	}
 	
 	public void pickupKey(int floor){

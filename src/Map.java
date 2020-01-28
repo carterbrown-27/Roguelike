@@ -21,6 +21,9 @@ public class Map {
 	public int entityNumber = 0;
 	// public static Entity[][] entity_map = new Entity[height][width];
 	public HashSet<Entity> entities = new HashSet<>();
+	
+	// TODO: IMPORTANT: populate this set w/ all non-player creatures
+	public HashSet<Creature> creatures = new HashSet<>();
 
 	public Player player;
 
@@ -100,25 +103,32 @@ public class Map {
 		return false;
 	}
 	
-	// overload
 	public boolean isOpen(Point p){
 		return isOpen(p.x,p.y);
 	}
 
 	public boolean isFullOpen(int x, int y){
+		return isFullOpen(new Point(x,y)); 
+	}
+	
+	public boolean isFullOpen(Point p) {
 		for(Entity e: entities){
-			if(e.isPassable == false && e.x==x && e.y==y) return false;
+			if(e.isPassable == false && e.getPos().equals(p)) return false;
 		}
-		if(player.x == x && player.y == y) return false;
-		return isOpen(x,y);
+		if(player.getPos().equals(p)) return false;
+		return isOpen(p);
+	}
+	
+	public boolean isEmpty(Point p) {
+		for(Entity e: entities){
+			if(e.getPos().equals(p)) return false;
+		}
+		if(player.getPos().equals(p)) return false;
+		return isOpen(p);
 	}
 
 	public boolean isEmpty(int x, int y){
-		for(Entity e: entities){
-			if(e.x==x && e.y==y) return false;
-		}
-		if(player.x == x && player.y == y) return false;
-		return isOpen(x,y);
+		return isEmpty(new Point(x,y));
 	}
 
 	public void generateCaves(){
@@ -1352,15 +1362,14 @@ public class Map {
 
 	public void updateFOV(){
 		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.Luminosity);
-
-		for(Entity e: entities){
-			if(e.ai == null) continue;
-			if(e.isInPlayerView()){
-				e.isInPlayerView() = lightMap[e.getY()][e.getX()];
-				if(!e.isInPlayerView()) Main.appendText("The "+e.getName()+" is no longer in view.");
+		
+		for(Creature c: creatures){
+			if(c.isInPlayerView()){
+				c.setInPlayerView(lightMap[c.getY()][c.getX()]);
+				if(!c.isInPlayerView()) Main.appendText("The "+c.getName()+" is no longer in view.");
 			}else{
-				e.isInPlayerView() = lightMap[e.getY()][e.getX()];
-				if(e.isInPlayerView()) Main.appendText("A "+e.getName()+" moves into view.");
+				c.setInPlayerView(lightMap[c.getY()][c.getX()]);
+				if(c.isInPlayerView()) Main.appendText("A "+c.getName()+" moves into view.");
 			}
 		}
 		//		updateViewed();

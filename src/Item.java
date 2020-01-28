@@ -1,6 +1,6 @@
 // TODO: switch from json-simple to java-json.
-import org.json.simple.*;
-import org.json.simple.parser.JSONParser;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -234,6 +234,11 @@ public abstract class Item extends GameObject {
 		}
 	}
 
+	public static Item randomItem() {
+		// TODO: implement random item picking
+		return new Weapon("dagger");
+	}
+	
 	/** TEMPORARY **/
 	public static ItemType randomItemType(int level /*, LevelType type*/){
 
@@ -244,5 +249,9 @@ public abstract class Item extends GameObject {
 		} while (ItemType.values()[r].equals(ItemType.SPECIAL));
 
 		return ItemType.values()[r];
+	}
+	
+	public void drop(Entity from) {
+		// TODO: Implement
 	}
 }
