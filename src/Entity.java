@@ -4,13 +4,8 @@ import java.util.HashMap;
 
 public class Entity extends GameObject {
 	
-	// TODO: move all creature logic to creature class
+	// TODO (M) move all creature logic to creature class
 	private Point pos;
-	
-	@Deprecated
-	public int x;
-	@Deprecated
-	public int y;
 	@Deprecated
 	public Map map;
 
@@ -27,8 +22,9 @@ public class Entity extends GameObject {
 	Entity(String id, Point _pos){
 		// TODO: init by id
 		this.pos = _pos;
-		// TODO: eliminate
-		if(NOT_PLAYER){
+		
+		// TODO (X) Eliminate
+		if(!id.equals("player")){
 			// TODO: move map logic to Map.
 			name = map.addEntity(this);
 		}else{
@@ -48,12 +44,6 @@ public class Entity extends GameObject {
 		NORMAL;
 	}
 
-
-	public int getX(){ return pos.x; }
-	public int getY(){ return pos.y; }
-	public Point getPos(){ return pos; }
-	public String getName(){ return name; } 
-
 	// u:0,r:1,d:2,l:3
 	// ur: 4,rd: 5, dl: 6, lu: 7
 	public boolean move(Direction dir){
@@ -63,9 +53,11 @@ public class Entity extends GameObject {
 		}else{
 			sxs = false;
 		}
-		if(map.map[y][x] == 5){
-			map.map[y][x] = 7;
-			map.tileMap[y][x].setValue(7);
+		
+		// TODO (R) review
+		if(map.map[getY()][getX()] == 5){
+			map.map[getY()][getX()] = 7;
+			map.tileMap[getY()][getX()].setValue(7);
 
 			Main.appendText("The door creaks open.");
 		}
@@ -80,17 +72,21 @@ public class Entity extends GameObject {
 		return false;
 	}
 	
+	public boolean isOpen(Point p) {
+		return isOpen(p.x,p.y);
+	}
 
 	public boolean isFullOpen(int x, int y){
-		for(Entity e: map.entities){
-			if(!e.isPassable && e.getX()==x && e.getY()==y) return false;
-		}
-		if(map.player.x == x && map.player.y == y) return false;
-		return isOpen(x,y);
+		return isFullOpen(new Point(x,y));
+
 	}
 	
 	public boolean isFullOpen(Point p) {
-		return isFullOpen(p.x,p.y);
+		for(Entity e: map.entities){
+			if(!e.isPassable && p.equals(e.getPos())) return false;
+		}
+		if(p.equals(map.player.getPos())) return false;
+		return isOpen(p);
 	}
 	
 	public boolean isInPlayerView() {
@@ -135,4 +131,14 @@ public class Entity extends GameObject {
 	}
 	// TODO: keys that match floors, inv print keylist
 	// TODO: move this to Inv class
+	
+	// getters
+	public int getX(){ return pos.x; }
+	public int getY(){ return pos.y; }
+	public Point getPos(){ return pos; }
+	public String getName(){ return name; } 
+	
+	public void setPos(Point p) {
+		pos = p;
+	}
 }

@@ -40,10 +40,9 @@ public class Inventory {
 	public void pickUp(char c, Entity destination){
 		// TODO: rework key system
 		Item i = generalInventory.remove(c);
-		if(SPECIAL){
-			if(KEY){
-				destination.pickupKey(i.floorFoundOn);
-			}
+		if(i instanceof Key){
+			Key k = (Key) i;
+			destination.inv.pickupKey(k.getFloor());
 		}else{
 			destination.inv.addItem(i);			
 		}
@@ -62,15 +61,6 @@ public class Inventory {
 		}
 	}
 
-
-	public static boolean isVowelStart(String str){
-		if(str.length()==0) return false;
-		char c = str.charAt(0);
-		if(c=='a'||c=='i'||c=='e'||c=='o'||c=='u') return true;
-		return false;
-	}
-
-
 	public BufferedImage drawPile(){
 		// returns the first item, TODO: add visual pile indicator
 		for(Item i: generalInventory.values()){
@@ -79,10 +69,10 @@ public class Inventory {
 		return null;
 	}
 	
+	// TODO (X) Deprecate
 	@Deprecated
 	public char getItemTypeChar(Item t){
 		for(char c = 'a'; c <= 'z'; c++){
-			// TODO: fix
 			if(generalInventory.containsKey(c) && generalInventory.get(c).equals(t)){
 				return c;
 			}
@@ -131,7 +121,7 @@ public class Inventory {
 		}
 	}
 
-	// TODO: refactor, move
+	// TODO (F) refactor, move
 	public void removeItem(char c){
 		generalInventory.get(c).changeAmount(-1);
 		if(generalInventory.get(c).getAmount() <= 0){
@@ -140,13 +130,13 @@ public class Inventory {
 	}
 	
 	public void makeRandomInventory(int tier, int amount){
+		// random n from amt*66% to amt*133%.
 		double n = (double) amount*2/3 + (Main.rng.nextDouble() * (double) amount*2/3);
 		n = (int) ActionLibrary.round(n, 0);
 		
 		for(int x = 0; x < n; x++){
 			// TODO: change
-			Item.ItemType t = Item.randomItemType(tier);
-			addItem();
+			addItem(Item.randomItem(tier));
 		}
 	}
 	
@@ -154,7 +144,7 @@ public class Inventory {
 		return generalInventory.containsKey(c);
 	}
 	
-	// TODO: replace
+	// TODO (I) Replace
 	// public <T extends Item & Consumable> int getStackSize(T type){
 		// TODO: variation
 		// return type.commonStackSize();

@@ -1,4 +1,4 @@
-// TODO: JSON-ize
+// TODO (J) JSONize
 public enum Status {
 	RESTING		(0),
 	MIGHTY		(1),

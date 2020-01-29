@@ -8,15 +8,17 @@ public class ActionLibrary {
 	private Map map;
 	public Pathfinder.PointBFS pBFS;
 	public int distance;
-
-	public boolean isAI = true;
-
-	// TODO: migrate to Creature
+	
+	// TODO (M) migrate to Creature
 	ActionLibrary(Creature _c){
 		this.c = _c;
 		map = c.map;
-		player = map.player;
-		if(PLAYER) isAI = false;
+		// TODO (R) Refactor
+		if(c instanceof Player) {
+			player = (Player) c;
+		}else {
+			player = map.player;
+		}
 		pf.setEntity(c);
 		// System.out.println("updating path...");
 		// updatePath();
@@ -95,7 +97,7 @@ public class ActionLibrary {
 				return false;
 			}
 		}
-		// TODO: review functionality
+		// TODO (R) review functionality
 		return true;
 	}
 	
@@ -140,7 +142,7 @@ public class ActionLibrary {
 		 */
 
 		
-		// TODO: migrate
+		// TODO (M) Migrate
 		if (c.weapon!=null) {
 			double deltaS = c.getStrength() + c.weapon.getAccuracy() /* x skill */ - (c.weapon.getAccuracy() * 2);
 			
@@ -151,12 +153,13 @@ public class ActionLibrary {
 				return Math.min(Math.pow(deltaS, 2) * 0.0125 + 1.0 , 1.6);	
 			}
 		}else{
-			// TODO: terrible, get rid of this
-			if(!c.hasAI){
-				return 1.1;
-			}else{
-				return 1.0;
-			}
+			// TODO (X) terrible, get rid of this
+//			if(!c.hasAI){
+//				return 1.1;
+//			}else{
+//				return 1.0;
+//			}
+			return 1.0;
 		}
 	}
 

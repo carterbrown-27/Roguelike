@@ -24,19 +24,19 @@ public final class Weapon extends Item implements Equippable {
 	
 	@Override
 	public String[] listPrompts() {
-		// TODO: implement
+		// TODO (A) Implement
 		return new String[] {};
 	}
 	
 	@Override
 	public void equip(Entity e) {
-		// TODO Auto-generated method stub
+		// TODO (A) Implement
 		
 	}
 
 	@Override
 	public void unequip(Entity e) {
-		// TODO Auto-generated method stub
+		// TODO (A) Implement
 		
 	}
 	
@@ -44,6 +44,7 @@ public final class Weapon extends Item implements Equippable {
 	public void drop(Entity e) {
 		unequip(e);
 		super.drop(e);
+		// TODO (A) Implement
 		// drop to floor.
 	}
 	

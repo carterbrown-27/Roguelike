@@ -41,7 +41,7 @@ public class Missile extends Item implements Consumable, Equippable {
 	
 	@Override
 	public String[] listPrompts() {
-		// TODO: implement
+		// TODO (A) Implement
 		return new String[] {};
 	}
 

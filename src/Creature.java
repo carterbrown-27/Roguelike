@@ -40,6 +40,9 @@ public class Creature extends Entity {
 		super(id,p);
 	}
 	
+	Creature(int tier, Point p){
+		this(pickRandomType(tier),p);
+	}
 	// methods
 	
 	@Deprecated
@@ -81,7 +84,7 @@ public class Creature extends Entity {
 		// TODO: upgrade
 		if(awake) return true;
 		if(ai == null) return false;
-		// TODO add creature viewDis
+		// TODO (+) add creature viewDis
 		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.Luminosity); 
 		if(vision[Main.player.getY()][Main.player.getX()]){
 			awake = true;
@@ -90,8 +93,9 @@ public class Creature extends Entity {
 		return false;
 	}
 	
+	// TODO (F) Fix
 	public turnEnding takeTurn(){
-		waiting = false;
+		//waiting = false;
 		if(ai == null){
 			return turnEnding.NOTACREATURE; // not a creature
 		}
@@ -103,7 +107,7 @@ public class Creature extends Entity {
 				return turnEnding.DEAD; // dead
 			}
 			if(!ai.takeTurn()){
-				waiting = true;
+				// waiting = true;
 				return turnEnding.WAITING;
 			}
 		}
@@ -143,6 +147,11 @@ public class Creature extends Entity {
 		}else if(s.equals(Status.FLIGHT)){
 			flying = start;
 		}
+	}
+	
+	public static String pickRandomType(int tier) {
+		// TODO (A) Implement
+		return "";
 	}
 	
 	// GETTERS, SETTERS, MUTATORS

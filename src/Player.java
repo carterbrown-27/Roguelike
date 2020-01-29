@@ -26,7 +26,7 @@ public class Player extends Creature {
 		super("player", new Point(x,y));
 		map = _map;
 		
-		// TODO: remove
+		// TODO (X) Remove
 		map.entities.remove(this);
 		
 		map.player = this;
@@ -85,7 +85,7 @@ public class Player extends Creature {
 		if(ability.equals(Ability.BASIC)){
 			basic(dir);
 		}else if(ability.equals(Ability.SLASH)){
-			if(melee(dir,1.5)){
+			if(melee(getTarget(dir),1.5)){
 				changeSP(-Ability.SLASH.s);
 				Main.takeTurn();
 				deselect();
@@ -100,8 +100,7 @@ public class Player extends Creature {
 					Main.takeTurn();
 					deselect();
 				}else{
-					x = start.x;
-					y = start.y;
+					setPos(start);
 					deselect();
 					error();
 				}
@@ -116,7 +115,7 @@ public class Player extends Creature {
 	
 	public void basic(Direction dir){
 		if(!move(dir)){
-			if(melee(dir,1)){
+			if(melee(getTarget(dir),1)){
 				Main.takeTurn();
 			}else{
 
@@ -127,9 +126,12 @@ public class Player extends Creature {
 	}
 	
 	public boolean enemiesNearby(){
-		for(Creature c: map.creatures){
-			if(c.awakeCheck()){
-				return true;
+		for(Entity e: map.entities){
+			if(e instanceof Creature) {
+				Creature c = (Creature) e;
+				if(c.awakeCheck()){
+					return true;
+				}	
 			}
 		}
 		return false;
@@ -185,9 +187,12 @@ public class Player extends Creature {
 	}
 	
 	public Creature getTarget(Direction dir){
-		for(Creature c: map.creatures){
-			if( Direction.translate(getPos(), dir).equals(c.getPos()) ){
-				return c;
+		for(Entity e: map.entities){
+			if(e instanceof Creature) {
+				Creature c = (Creature) e;
+				if( Direction.translate(getPos(), dir).equals(c.getPos()) ){
+					return c;
+				}
 			}
 		}
 		return null;
@@ -205,7 +210,7 @@ public class Player extends Creature {
 		Main.takeTurn();
 	}
 	
-	// TODO: implement
+	// TODO (R) Review
 	public <T extends Item & Equippable> void equip(T item){
 		// temp
 		item.equip(this);

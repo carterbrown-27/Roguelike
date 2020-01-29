@@ -1,27 +1,24 @@
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-// TODO: extend Entity class, or deprecte entirely.
-
-@Deprecated
-public class StaticEntity {
+// TODO: deprecate entirely or move logic to new Interface: Interactable
+public class StaticEntity extends Entity {
 	
 	public SEType type;
-	public Inventory inv = new Inventory();
 	public boolean isLocked;
 	public int linkedKey;
-	public BufferedImage sprite;
 	
-	StaticEntity(SEType _type){
-		type = _type;
+	StaticEntity(String name, Point pos){
+		super(name, pos);
 		isLocked = type.isLocked;
-		sprite = type.spriteA;
+		this.setSprite(type.spriteA);
 		
 		if(type.hasInventory){
-			inv.makeRandomInventory(type.inventoryTierModifier + Main.cF, type.inventoryAmount);
+			inv.makeRandomInventory(type.inventoryTierModifier + Main.floorNumber, type.inventoryAmount);
 		}
 	}
 	
@@ -32,9 +29,9 @@ public class StaticEntity {
 		if(c=='g' && inv!=null){
 			
 		}else if(c=='o' && isLocked){
-			if(e.inv.hasKey(Main.cF)){
+			if(e.inv.hasKey(Main.floorNumber)){
 				isLocked = false;
-				e.inv.useKey(Main.cF);
+				e.inv.useKey(Main.floorNumber);
 				if(inv.isEmpty()){
 					Main.appendText("You open the "+type.name+" and find nothing.");
 				}else{
@@ -49,28 +46,15 @@ public class StaticEntity {
 		}
 	}
 	
+	// TODO (J) JSONize
+	@Deprecated
 	public enum SEType {
 		SILVER_CHEST	(0);
-
 
 		SEType(int t){
 			if(t==0){
 				silverChest();
 			}
-		}
-
-
-		public BufferedImage sourcedItems;
-
-		public BufferedImage subImage(int x, int y){
-			if(sourcedItems == null){
-				try {
-					sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
 		}
 
 		public BufferedImage spriteA;

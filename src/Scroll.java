@@ -16,7 +16,7 @@ public class Scroll extends Item implements Consumable {
 	
 	@Override
 	public String[] listPrompts() {
-		// TODO: implement
+		// TODO (A) Implement
 		return new String[] {};
 	}
 }

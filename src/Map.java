@@ -20,10 +20,9 @@ public class Map {
 	public static int smooths = 4;
 	public int entityNumber = 0;
 	// public static Entity[][] entity_map = new Entity[height][width];
-	public HashSet<Entity> entities = new HashSet<>();
 	
-	// TODO: IMPORTANT: populate this set w/ all non-player creatures
-	public HashSet<Creature> creatures = new HashSet<>();
+	// TODO (I) Populate w/ creatures.
+	public HashSet<Entity> entities = new HashSet<>();
 
 	public Player player;
 
@@ -94,6 +93,10 @@ public class Map {
 	public boolean isOnMap(int x, int y){
 		if(x>=width || y>= height || x<0 || y<0) return false;
 		return true;
+	}
+	
+	public boolean isOnMap(Point p) {
+		return isOnMap(p.x,p.y);
 	}
 
 	public boolean isOpen(int x, int y){
@@ -279,7 +282,7 @@ public class Map {
 				PointDir p = workingDoors.get(i);
 				// if door leads nowhere, fill it in
 				if(!isOpen(aheadTile(p))){
-					if(isOnMap(p.point.x,p.point.y)) map[p.point.y][p.point.x] = 1;
+					if(isOnMap(p.point)) map[p.point.y][p.point.x] = 1;
 					invalidDoors.add(workingDoors.get(i));
 					workingDoors.remove(i);
 					i--;
@@ -293,7 +296,7 @@ public class Map {
 //					}
 				}else{
 					// if door is not between two walls, destroy it
-					if(isOnMap(p.point.x,p.point.y)) map[p.point.y][p.point.x] = 1;
+					if(isOnMap(p.point)) map[p.point.y][p.point.x] = 1;
 					invalidDoors.add(workingDoors.get(i));
 					workingDoors.remove(i);
 					i--;
@@ -322,8 +325,8 @@ public class Map {
 		while(!obstructed && length<=5 && (Main.rng.nextInt(7)<=5 || length <=3)){
 			// TODO: fix obstruction detection.
 			Point temp = aheadTile(end);
-			if((!isOnMap(temp.x,temp.y) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
-				if(isOnMap(temp.x,temp.y)){
+			if((!isOnMap(temp) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
+				if(isOnMap(temp)){
 					doors.add(end);
 				}
 				obstructed = true;
@@ -1363,13 +1366,16 @@ public class Map {
 	public void updateFOV(){
 		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.Luminosity);
 		
-		for(Creature c: creatures){
-			if(c.isInPlayerView()){
-				c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-				if(!c.isInPlayerView()) Main.appendText("The "+c.getName()+" is no longer in view.");
-			}else{
-				c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-				if(c.isInPlayerView()) Main.appendText("A "+c.getName()+" moves into view.");
+		for(Entity e: entities){
+			if(e instanceof Creature) {
+				Creature c = (Creature) e;
+				if(c.isInPlayerView()){
+					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
+					if(!c.isInPlayerView()) Main.appendText("The "+c.getName()+" is no longer in view.");
+				}else{
+					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
+					if(c.isInPlayerView()) Main.appendText("A "+c.getName()+" moves into view.");
+				}
 			}
 		}
 		//		updateViewed();
@@ -1420,7 +1426,7 @@ public class Map {
 								Graphics tileG = image.getGraphics();
 								tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
 								Entity LEH = tileMap[y][x].lastEntityHere;
-								if(LEH!=null && isOnMap(LEH.x,LEH.y) && !lightMap[LEH.y][LEH.x]){
+								if(LEH!=null && isOnMap(LEH.getPos()) && !lightMap[LEH.getY()][LEH.getX()]){
 									tileG.drawImage(LEH.getSprite(), 0, 0, null);
 								}
 								tileG.dispose();

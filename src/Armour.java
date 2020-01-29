@@ -12,19 +12,19 @@ public final class Armour extends Item implements Equippable {
 
 	@Override
 	public void equip(Entity e) {
-		// TODO Auto-generated method stub
+		// TODO (A) Implement
 		
 	}
 
 	@Override
 	public void unequip(Entity e) {
-		// TODO Auto-generated method stub
+		// TODO (A) Implement
 		
 	}
 
 	@Override
 	public boolean isEquipped() {
-		// TODO Auto-generated method stub
+		// TODO (A) Implement
 		return equipped;
 	}
 }

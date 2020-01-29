@@ -1,18 +1,14 @@
-// TODO: switch from json-simple to java-json.
-import org.json.simple.JSONObject;
-import org.json.simple.parser.*;
-
+import org.json.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import javax.imageio.ImageIO;
-
+import java.util.logging.Logger;
 
 public abstract class Item extends GameObject {
 	private static Scroll[] scrolls;
 	private static Potion[] potions;
 	
 	private static JSONObject masterJSON;
-	private static boolean initialized;
+	// private static boolean initialized;
 	
 	private JSONObject supertypeData;
 	private JSONObject itemData;
@@ -26,32 +22,40 @@ public abstract class Item extends GameObject {
 	private char inventoryID = '?';
 
 	Item(String id){
+		typeName = id.toLowerCase();
 		// TODO: improve
 		if(masterJSON == null) {
 			try{
-				masterJSON = (JSONObject) (new JSONParser().parse(new FileReader("DATA/Items.json")));
+				JSONTokener in = new JSONTokener(new FileReader("DATA/Items.json"));
+				masterJSON = new JSONObject(in);
 			}catch(Exception e) {
 				e.printStackTrace();
 			};
 		}
 		
-		// TODO: init SuperType.
-		for(Object o: masterJSON.keySet()) {
-			JSONObject j = (JSONObject) masterJSON.get(o);
-			if(j.values().contains(id)) {
+		// TODO: init SuperType
+		for(String k: masterJSON.keySet()) {
+			JSONObject j = masterJSON.getJSONObject(k);
+			if(j.getJSONObject("list").has(typeName)) {
 				this.supertypeData = j;
-				
+				System.out.println(typeName+" found under " + k);
 				break;
 			}
 		}
 		
-		this.itemData = (JSONObject) supertypeData.get(id);
+		if(supertypeData == null) {
+			System.out.printf("no supertype found. check spelling of item \"%s\".\n", id);
+		}
+		
+		JSONObject itemList = supertypeData.getJSONObject("list");
+		this.itemData = itemList.getJSONObject(id);
 		
 		JSONObject spriteIndex = (JSONObject) getSpecValue("spriteIndex");
 		
-		this.setSprite((int) spriteIndex.get("x"), (int) spriteIndex.get("y"));
-		this.displayName = (String) itemData.getOrDefault("name","<none>");
-		this.description = (String) itemData.getOrDefault("description","<none>");
+		this.setSprite(spriteIndex.getInt("x"), spriteIndex.getInt("y"));
+		
+		this.displayName = itemData.optString("name");
+		this.description = itemData.optString("description");
 	}
 	
 	public String toString() {
@@ -84,13 +88,19 @@ public abstract class Item extends GameObject {
 	}
 
 	public static JSONObject getJSONbyID(String id) {
+		// TODO (A) Implement
 		JSONObject obj = new JSONObject();
 		return obj;
 	}
 	
 	// returns jsonobject if its found in the child of the item object, otherwise, return the default value.
 	public Object getSpecValue(String key){
-		return itemData.getOrDefault(key, supertypeData.get(key));
+		Object specific = itemData.opt(key);
+		if(specific != null) {
+			return specific;
+		}else {
+			return supertypeData.opt(key);
+		}
 	}
 	
 	public String getTypeName() {
@@ -117,11 +127,21 @@ public abstract class Item extends GameObject {
 	}
 	
 	public boolean isUnknown(){
-		return (boolean) getSpecValue("unknown");
+		Object o = getSpecValue("unknown");
+		if(o == null) {
+			return false;
+		}else{
+			return (boolean) o;
+		}
 	}
 
 	public boolean isStackable(){
-		return (boolean) getSpecValue("stackable");
+		Object o = getSpecValue("stackable");
+		if(o == null) {
+			return false;
+		}else{
+			return (boolean) o;
+		}
 	}
 	
 	public BufferedImage getSprite() {
@@ -133,6 +153,9 @@ public abstract class Item extends GameObject {
 	}
 	
 	public static Potion[] getPotions() {
+		if(potions == null) {
+			
+		}
 		return potions;
 	}
 	
@@ -141,7 +164,7 @@ public abstract class Item extends GameObject {
 	}
 
 
-	// TODO: move, refactor
+	// TODO (I) move, refactor
 //	public void quaff(Entity e, char c){
 //		boolean discover = true;
 //		if(discover && !Main.player.identifiedItems.containsKey(type)){
@@ -152,8 +175,8 @@ public abstract class Item extends GameObject {
 //		Main.takeTurn();
 //	}
 
-	// TODO: move, refactor
-//	public void read(Entity e, char c){
+	// TODO (I) move, refactor
+//	public void read(Entity e, char c){                                
 //		if(type.supertype.equals(Items.Item_Supertype.SCROLL)){
 //			boolean discover = true;
 //			if(type.equals(Items.SCR_ID)){
@@ -234,12 +257,12 @@ public abstract class Item extends GameObject {
 		}
 	}
 
-	public static Item randomItem() {
-		// TODO: implement random item picking
+	public static Item randomItem(int tier) {
+		// TODO (A) Implement
 		return new Weapon("dagger");
 	}
 	
-	/** TEMPORARY **/
+	// TODO (T) Temp
 	public static ItemType randomItemType(int level /*, LevelType type*/){
 
 		// pick any but a special item.
@@ -252,6 +275,6 @@ public abstract class Item extends GameObject {
 	}
 	
 	public void drop(Entity from) {
-		// TODO: Implement
+		// TODO (A) Implement
 	}
 }

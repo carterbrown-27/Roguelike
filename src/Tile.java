@@ -1,6 +1,6 @@
 import java.awt.image.BufferedImage;
 
-// TODO: overhaul
+// TODO (X) Overhaul
 public class Tile {
 
 	public enum Tile_Type{

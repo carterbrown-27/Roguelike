@@ -1,3 +1,4 @@
+// TODO: make more versatile/useful.
 public class RandomChart {
 	int[][] chart;
 	
