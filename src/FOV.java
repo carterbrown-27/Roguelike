@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class FOV {
 
 	/*** @SquidLib interpretation
-	 * thanks to them
+	 * thanks to them, link here:
 	 * <github link here> ***/
 
 	public enum DIAGONAL {
@@ -65,7 +65,7 @@ public class FOV {
 	/* this orientation
 	 * 
 	 * 	.	.	.	.	3
-	 * 		.	.	. 2
+	 * 		.	.	. 	2
 	 * 			.	.	1
 	 * 				@
 	 */

@@ -1,136 +1,268 @@
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+
 import javax.imageio.ImageIO;
 
-public enum Creature {
-	PLAYER (0),
-	RAT		 (1), 
-	BAT		 (2),
-	GOBLIN (3),
-	OOZE	 (4);
-//	SNAKE  (4),
-//	FROG	 (5),
-//	SLIME	 (6),
-//	SPIDER (7);
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+public class Creature extends Entity {
+
+	private static JSONObject masterJSON;
+	
+	private JSONObject creatureData;
 	
 	// fields
-	public BufferedImage sourcedItems;
+	private double HP = 1.0;
+	private double HP_max = 1; // 6 dmg = player with dagger
+	private double HP_regen = 1;
 	
-	public double STRENGTH = 1;
-	public double HP_MAX = 1; // 6 dmg = player with dagger
-	public double SP_MAX = 1;
-	public double SP_REGEN = 1;
-	public double SPEED = 1.0;
-	public double EVASIVENESS = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	private double SP;
+	private double SP_max = 1;
+	private double SP_regen = 1;
 	
+	private double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	private double strength = 1;
+	private double speed = 1.0;
+	private double satiation = 10; // TEMP
 	
-	public BufferedImage SPRITE;
-	public String NAME;
+	private ArmourSet armourSet = new ArmourSet();
 	
-	// attributes
-	public boolean hasAI = true;
+	private AI ai;
 	
-	public boolean isFlying = false;
-	public boolean isAmphibious = false;
+	@Deprecated
+	private boolean hasAI = true;
+	
+	private HashMap<Status,Integer> statuses = new HashMap<Status,Integer>();
+	
+	public Weapon weapon;
+	public Missile quivered;	
+	
+	// TODO: create data struct. - potentially extend Status (attribute)
+	private boolean flying = false;
+	private boolean amphibious = false;
+	
+	// TODO (A) Implement, read data from JSON.
+	// constructors
+	Creature(String id, Point p, Map map){
+		super(id,p,map);
+		initMasterJSON();
+		
+		// (R) Review, move some of this to entity potentially
+		creatureData = masterJSON.getJSONObject(id);
+		this.setName(creatureData.getString("name"));
+		JSONObject spriteIndex = creatureData.getJSONObject("spriteIndex");
+		super.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
+		
+		// creature specific
+		JSONObject HP_Data = creatureData.getJSONObject("HP");
+		this.HP_max = HP_Data.getDouble("max");
+		this.HP = HP_max;
+		this.HP_regen = HP_Data.getDouble("regenRate");
+	}
+	
+	Creature(int tier, Point p, Map map){
+		this(pickRandomType(tier),p,map);
+	}
 	// methods
 	
-	Creature(int type){
-		if(type==0){
-			createPlayer();
-		}else if(type==1){
-			createRat();
-		}else if(type==2){
-			createBat();
-		}else if(type==3){
-			createGoblin();
-		}else if(type==4){
-			createOoze();
-		}
-	}
-	
-	public static Creature randomType(){
-		return Creature.values()[Main.rng.nextInt(Creature.values().length)];
-	}
-	public BufferedImage subImage(int x, int y){
-		if(sourcedItems == null){
-			try {
-				sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-			} catch (IOException e) {
+	public static void initMasterJSON() {
+		if(masterJSON == null) {
+			try{
+				JSONTokener in = new JSONTokener(new FileReader("DATA/Creatures.json"));
+				masterJSON = new JSONObject(in);
+			}catch(Exception e) {
 				e.printStackTrace();
-			}
+			};
 		}
-		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
 	}
 	
-	private void createPlayer(){
-		NAME = "player";
-		SPRITE = subImage(2,6);
-		
-		STRENGTH = 2.5;
-		HP_MAX = 15;
-		SP_MAX = 4;
-		
-		EVASIVENESS = 1.0;
-		
-		hasAI = false;
-	}
-	
+	// TODO (V) Add rat to DEFAULT sprite sheet.
+	@Deprecated
 	private void createRat(){
-		NAME = "rat";
+		// TODO: edit sprites
 		try {
-			SPRITE = ImageIO.read(new File("imgs/rat.png"));
+			setSprite(ImageIO.read(new File("imgs/rat.png")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		STRENGTH = 2;
-		HP_MAX = 6;
-		SP_MAX = 3;
-		SPEED = 1;
-		EVASIVENESS = 0.8;
 	}
 	
-	private void createBat(){
-		NAME = "bat";
-		SPRITE = subImage(3,8);
-		
-		STRENGTH = 2;
-		HP_MAX = 4;
-		SP_MAX = 3;
-		SPEED = 0.8;
-		EVASIVENESS = 1.5;
-		
-		isFlying = true;
+	public void upkeep(){
+		satiation = Math.max(satiation-0.01,0);
+		for(Status s: getStatuses().keySet()){
+			if(s.upkeep){
+				// TODO (M) move this data elsewhere.
+				if(s.equals(Status.RESTING)){
+					HP += 0.5;
+				}else if(s.equals(Status.POISONED)){
+					HP--;
+				}
+				// TODO (R) Review: add static regen
+			}
+			getStatuses().replace(s, getStatuses().get(s)-1);
+			if(getStatuses().get(s) <= 0){
+				removeStatus(s);
+			}
+		}
 	}
 	
-	private void createGoblin(){
-		NAME = "goblin";
-		SPRITE = subImage(7,9);
-		
-		STRENGTH = 3;
-		HP_MAX = 14;
-		SP_MAX = 3;
-		SPEED = 1;
-		EVASIVENESS = 1.0;
+	public void endStep() {
+		// recover HP, SP
+		// hunger
+		// etc.
 	}
 	
-	private void createOoze(){
-		NAME = "ooze";
-		SPRITE = subImage(8,9);
-		
-		STRENGTH = 3;
-		HP_MAX = 10;
-		SP_MAX = 2;
-		SPEED = 1.2;
-		
-		EVASIVENESS = 0.9;
-		
-		isAmphibious = true; // TODO: invis while swimming
+	public boolean awakeCheck(){
+		// TODO: upgrade
+		if(awake) return true;
+		if(ai == null) return false;
+		// TODO (+) add creature viewDis
+		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.Luminosity); 
+		if(vision[Main.player.getY()][Main.player.getX()]){
+			awake = true;
+			return true;
+		}
+		return false;
 	}
 	
+	// TODO (F) Fix
+	public turnEnding takeTurn(){
+		//waiting = false;
+		if(ai == null){
+			return turnEnding.NOTACREATURE; // not a creature
+		}
+		if(awakeCheck()){
+			upkeep();
+
+			if (HP<0.05) {
+				Main.appendText("You kill the " + super.getName() + ".");
+				return turnEnding.DEAD; // dead
+			}
+			if(!ai.takeTurn()){
+				// waiting = true;
+				return turnEnding.WAITING;
+			}
+		}
+		return turnEnding.NORMAL; // not dead
+	}
 	
-//	private BufferedImage getSprite(String path){
-//		
-//	}
+	// TODO: instead of the branching, use polymorphism (Creature < Player)
+	public void addStatus(Status s){
+		if(!getStatuses().containsKey(s)){
+			toggle(s, true);
+			if(ai!=null){
+				Main.appendText(String.format("The %s is %s!", getName(), s.name));
+			}else{
+				Main.appendText(String.format("You are %s!", s.name));
+			}
+			getStatuses().put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+		}else{
+			getStatuses().replace(s, getStatuses().get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+		}
+	}
+
+	public void removeStatus(Status s){
+		toggle(s, false);
+		if(ai!=null){
+			Main.appendText("The "+getName()+" is no longer "+s.name+".");
+		}else{
+			Main.appendText("You are no longer "+s.name+".");
+		}
+		getStatuses().remove(s);
+	}
+
+	public void toggle(Status s, boolean start){
+		int mod = 1;
+		if(!start) mod = -1;
+		if(s.equals(Status.MIGHTY)){
+			strength += Math.max(5,strength/2)*mod;
+		}else if(s.equals(Status.FLIGHT)){
+			flying = start;
+		}
+	}
+	
+	public static String pickRandomType(int tier) {
+		// TODO (A) Implement
+		return "rat";
+	}
+	
+	// GETTERS, SETTERS, MUTATORS
+	
+	@Deprecated
+	public boolean isFlying() {
+		return flying;
+	}
+	
+	@Deprecated
+	public boolean isAmphibious() {
+		return amphibious;
+	}
+	
+	public double getHP() {
+		return HP;
+	}
+	
+	public void changeHP(double delta) {
+		setHP(getHP() + delta);
+	}
+	
+	public void setHP(double value) {
+		HP = value;
+		HP = ActionLibrary.round(HP, 1);
+		
+		if(HP <= 0) {
+			// die
+		}else if(HP > getHP_max()) {
+			HP = getHP_max();
+		}
+	}
+	
+	public double getSP() {
+		return SP;
+	}
+	
+	public void changeSP(double delta) {
+		setSP(getSP() + delta);
+	}
+	
+	public void setSP(double value) {
+		SP = value;
+		SP = ActionLibrary.round(SP, 1);
+		SP = Math.min(SP_max, SP);
+	}
+	
+	public double getEV() {
+		return EV;
+	}
+	
+	public double getStrength() {
+		return strength;
+	}
+	
+	// TODO (X) remove these, only allow immutable gets.
+	public HashMap<Status,Integer> getStatuses() {
+		return statuses;
+	}
+	
+	public ArmourSet getArmourSet() {
+		return armourSet;
+	}
+
+	public double getHP_max() {
+		return HP_max;
+	}
+
+	
+	public double getDefence() {
+		return armourSet.getDefence();
+	}
+	
+	public double getSatiation() {
+		return satiation;
+	}
 }

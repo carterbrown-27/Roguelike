@@ -1,0 +1,288 @@
+{
+	"Weapons" : {
+		"generalProperties" : {
+			"stackable" : false,
+			"unknown" : false,
+			"prompts" : {
+				"equipPrompt" : {
+					"char" : "w",
+					"text" : "(w)ield"
+				},
+				"unequipPrompt" : {
+					"char" : "u",
+					"text" : "(u)nwield"
+				}
+			}
+		},
+		
+		"list" : {
+			"dagger" : {
+				"name" : "dagger",
+				"spriteIndex" : {
+					"x" : 5,
+					"y" : 1
+				},
+				"tier" : 2,
+			
+				"type" : "short blade",
+				"damage" : 3.0,
+				"accuracy" : 6.5,
+				"weight" : 2.0,
+			
+				"description" : "A short metal blade that is efficient in short ranged combat."
+			},
+			
+			"hand axe" : {
+				"name" : "hand axe",
+				"spriteIndex" : {
+					"x" : 6,
+					"y" : 1
+				},
+				"tier" : 4,
+			
+				"type" : "axe",
+				"damage" : 9.0,
+				"accuracy" : 5.5,
+				"weight" : 6.0,
+			
+				"description" : "A small battleaxe that can be effectively weilded using one hand by stronger warriors."
+			},
+		
+			"club" : {
+				"name" : "club",
+				"spriteIndex" : {
+					"x" : 0,
+					"y" : 9
+				},
+				"tier" : 1,
+			
+				"type" : "bludgeon",
+				"damage" : 6.0,
+				"accuracy" : 4.5,
+				"weight" : 4.5,
+			
+				"description" : ""
+			},
+		
+			"spiked club" : {
+				"name" : "spiked club",
+				"spriteIndex" : {
+					"x" : 4,
+					"y" : 1
+				},
+				"tier" : 2,
+			
+				"type" : "bludgeon",
+				"damage" : 7.0,
+				"accuracy" : 4.5,
+				"weight" : 5.0,
+			
+				"description" : ""
+			}
+		}
+	},
+	
+	"Armour" : {
+		"generalProperties" : {
+			"stackable" : false,
+			"unknown" : false,
+		
+			"prompts" : {
+				"equipPrompt" : {
+					"char" : "p",
+					"text" : "(p)ut on"
+				},
+				"unequipPrompt" : {
+					"char" : "t",
+					"text" : "(t)ake off"
+				}
+			}
+		},
+		
+		"list" : {
+			"leather boots" : {
+				"name" : "pair of leather boots",
+				"spriteIndex" : {
+					"x" : 0,
+					"y" : 4
+				},
+				"tier" : 2,
+			
+				"type" : "boots",	
+				"defence": 1.5
+			}
+		}
+	},
+	
+	"Scrolls" : {
+		"generalProperties" : {
+			"stackable" : true,
+			"unknown" : true,
+			"prompts" : {
+				"use" : {
+					"char" : "r",
+					"text" : "(r)ead"
+				}
+			},
+		
+			"defaultSpriteIndex" : {
+				"x" : 0,
+				"y" : 3
+			},
+		
+			"defaultName" : "scroll"
+		},
+		
+		"list" : {
+		
+			"scroll of identification" : {
+				"name" : "scroll of Identify",
+				"tier" : 2,
+			
+				"effects" : {
+					"ID" : 1,
+					"NOISE" : 3,
+					"LIGHT" : 4
+				},
+				"selfUseMsg" : "Your pack glows with a blue light and you are overwhelmed with a fleeting knowledge.",
+				"otherUseMsg" : "",
+				"failureMsg" : "You have nothing in your pack to identify!"
+			},
+		
+			"scroll of teleportation" : {
+				"name" : "scroll of Teleportation",
+				"tier" : 2,
+			
+				"effects" : {
+					"TELEPORT" : null,
+					"DIZZY" : 5,
+					"NOISE" : 7
+				},
+				"selfUseMsg" : "You are swept up by a whirlwind. Your surroundings seem different.",
+				"otherUseMsg" : "You hear a loud noise. The %s vanishes."
+			}
+		}
+	},
+	
+	"Potions" : {
+		"generalProperties" : {
+			"stackable" : true,
+			"unknown" : true,
+		
+			"prompts" : {
+				"use" : {
+					"char" : "q",
+					"text" : "(q)uaff"
+				}
+			},
+	
+			"defaultSpriteIndex" : {
+				"x" : 2,
+				"y" : 2
+			},
+			"defaultName" : "potion"
+		},
+		
+		"list" : {
+			"potion of healing" : {
+				"name" : "scroll of Healing",
+				"tier" : 2,		
+			
+				"effects" : {
+					"HP_CHANGE" : 30
+				},
+				
+				"selfUseMsg" : "You feel rejuvenated.",
+				"otherUseMsg" : "The %s appears to be in much better health."
+			},
+		
+			"potion of might" : {
+				"name" : "scroll of Might",
+				"tier" : 2,
+			
+				"effects" : {
+					"MIGHT" : 10
+				},
+				
+				"selfUseMsg" : "Your body shudders with newfound strength!",
+				"otherUseMsg" : "The %s's body shudders with newfound strength."
+			},
+		
+			"potion of flight" : {
+				"name" : "scroll of Flight",
+				"tier" : 2,
+			
+				"effects" : {
+					"FLIGHT" : 10
+				},
+				
+				"selfUseMsg" : "You feel your feet leave the ground!",
+				"otherUseMsg" : "The %s raises into the air."
+			}
+		}
+	},
+	
+	"Missiles" : {
+		"generalProperties" : {
+			"stackable" : true,
+			"unknown" : false,
+		
+			"prompts" : {
+				
+			}
+		},
+		
+		"list" : {
+			"throwing dart" : {
+				"name" : "throwing dart",
+				"spriteIndex" : {
+					"x" : 8,
+					"y" : 1
+				},
+				"tier" : 1,
+			
+				"damage" : 2.0,
+				"commonStack" : 5
+			}
+		}
+	},
+	
+	"Food" : {
+		"generalProperties" : {
+			"stackable" : true,
+			"unknown" : false,
+		
+			"prompts" : {
+				"use" : {
+					"char" : "e",
+					"text" : "(e)at"
+				}
+			}
+		},
+		
+		"list" : {
+			"bread" : {
+				"name" : "bread ration",
+				"spriteIndex" : {
+					"x" : 5,
+					"y" : 5
+				},
+				"tier" : 1,
+			
+				"foodValue" : 10
+			}
+		}
+	},
+	
+	"Special" : {
+		"list" : {
+			"silver key" : {
+				"name" : "silver key",
+				"spriteIndex" : {
+					"x" : 4,
+					"y" : 0
+				}
+			}
+		}
+	}
+}	

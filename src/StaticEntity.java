@@ -1,24 +1,27 @@
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class StaticEntity {
+// TODO: deprecate entirely or move logic to new Interface: Interactable
+public class StaticEntity extends Entity {
 	
 	public SEType type;
-	public Inventory inv = new Inventory();
 	public boolean isLocked;
 	public int linkedKey;
-	public BufferedImage sprite;
 	
-	StaticEntity(SEType _type){
-		type = _type;
+	StaticEntity(String name, Point pos, Map map){
+		super(name, pos, map);
+		
+		// TODO (X) Delete
+		type = SEType.SILVER_CHEST;
 		isLocked = type.isLocked;
-		sprite = type.spriteA;
+		this.setSprite(type.spriteA);
 		
 		if(type.hasInventory){
-			inv.makeRandomInventory(type.inventoryTierModifier + Main.cF, type.inventoryAmount);
+			inv.makeRandomInventory(type.inventoryTierModifier + Main.floorNumber, type.inventoryAmount);
 		}
 	}
 	
@@ -29,9 +32,9 @@ public class StaticEntity {
 		if(c=='g' && inv!=null){
 			
 		}else if(c=='o' && isLocked){
-			if(e.inv.keys.containsKey(Main.cF)){
+			if(e.inv.hasKey(Main.floorNumber)){
 				isLocked = false;
-				e.useKey(Main.cF);
+				e.inv.useKey(Main.floorNumber);
 				if(inv.isEmpty()){
 					Main.appendText("You open the "+type.name+" and find nothing.");
 				}else{
@@ -46,28 +49,15 @@ public class StaticEntity {
 		}
 	}
 	
+	// TODO (J) JSONize
+	@Deprecated
 	public enum SEType {
 		SILVER_CHEST	(0);
-
 
 		SEType(int t){
 			if(t==0){
 				silverChest();
 			}
-		}
-
-
-		public BufferedImage sourcedItems;
-
-		public BufferedImage subImage(int x, int y){
-			if(sourcedItems == null){
-				try {
-					sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
 		}
 
 		public BufferedImage spriteA;
@@ -82,12 +72,12 @@ public class StaticEntity {
 		public double HP;
 		public boolean indestructible;
 
-		// TODO: more fields
+		// TODO (R) Review: more fields
 
 		public void silverChest(){
 			name = "silver chest";
-			spriteA = subImage(5,0);
-			spriteB = subImage(6,0);
+			spriteA = subImage(GameObject.SpriteSource.DEFAULT,5,0);
+			spriteB = subImage(GameObject.SpriteSource.DEFAULT,6,0);
 			indestructible = true;
 			
 			// TODO: plan out tier sys

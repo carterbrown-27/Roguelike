@@ -1,8 +1,8 @@
 import java.awt.image.BufferedImage;
 
+// TODO (X) Overhaul
 public class Tile {
 
-	// TODO: fully implement new systems into main
 	public enum Tile_Type{
 		FLOOR					(0),
 		WALL					(1),

@@ -4,7 +4,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
 
-
+@Deprecated
 public class GUI extends JFrame {
 
 	/**

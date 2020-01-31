@@ -3,22 +3,34 @@ import java.util.HashMap;
 
 public class Inventory {
 
-	HashMap<Character,Item> inv = new HashMap<Character,Item>();
-	HashMap<Integer,Integer> keys = new HashMap<Integer,Integer>();
+	// all items are in generalInventory, specifics in the subs.
+	private HashMap<Character,Item> generalInventory = new HashMap<>();
+	private HashMap<Integer,Integer> keys = new HashMap<>();
+	
+	private ArmourSet armourSet = new ArmourSet();
 
-	char firstOpen = 'a';
-
+	private char firstOpen = 'a';
+	
+	Inventory(){
+		
+	}
+	
+	public Item getItem(Character c) {
+		return generalInventory.get(c);
+	}
+	
+	
 	public boolean isEmpty(){
-		return inv.isEmpty();
+		return generalInventory.isEmpty();
 	}
 
 	public boolean isOneItem(){
-		return inv.size()==1;
+		return generalInventory.size()==1;
 	}
 	
 	public boolean containsUnidentified(){
-		for(Item i: inv.values()){
-			if(i.isUnknown() && !Main.player.identifiedItems.containsKey(i.type)){
+		for(Item i: generalInventory.values()){
+			if(i.isUnknown() && !Main.player.isItemIdentified(i)){
 				return true;
 			}
 		}
@@ -26,16 +38,11 @@ public class Inventory {
 	}
 
 	public void pickUp(char c, Entity destination){
-		Item i;
-		if(isOneItem()){
-			i = inv.remove(getFirstItem());
-		}else{
-			i = inv.remove(c);
-		}
-		if(i.type.supertype.equals(Item.Items.Item_Supertype.SPECIAL)){
-			if(i.isInClass(Item.Items.keys)){
-				destination.pickupKey(i.floorFoundOn);
-			}
+		// TODO (R) rework key system
+		Item i = generalInventory.remove(c);
+		if(i instanceof Key){
+			Key k = (Key) i;
+			destination.inv.pickupKey(k.getFloor());
 		}else{
 			destination.inv.addItem(i);			
 		}
@@ -47,62 +54,36 @@ public class Inventory {
 		}else{
 			Main.appendText("Your Inventory:");
 		}
-		for(char c: inv.keySet()){
-			Item i = inv.get(c);
-			String quantity;
-			if(i.amount==1){
-				if(isVowelStart(i.getDisplayName())){
-					quantity = "an";
-				}else{
-					quantity = "a";
-				}
-			}else{
-				quantity = String.valueOf(i.amount);
-			}
-
-			String line = "";
-			line+= c+" - "+quantity+" "+i.getDisplayName();
-			
-			if(i.weilded) line+= " (weilded)";
-			if(i.quivered) line+= " (quivered)";
-			if(i.worn) line+= " (worn)" ;
-			Main.appendText(line);
-
+		
+		for(char c: generalInventory.keySet()){
+			Item i = generalInventory.get(c);
+			Main.appendText(i.toString());
 		}
 	}
 
-
-	public boolean isVowelStart(String str){
-		if(str.length()==0) return false;
-		char c = str.charAt(0);
-		if(c=='a'||c=='i'||c=='e'||c=='o'||c=='u') return true;
-		return false;
-	}
-
-
 	public BufferedImage drawPile(){
-		for(Item i: inv.values()){
-			if(i.type.supertype.equals(Item.Items.Item_Supertype.POTION)){
-				return Main.potionColours.get(i.type).image;
-			}else{
-				return i.sprite;
-			}
+		// returns the first item, TODO (+) add visual pile indicator
+		for(Item i: generalInventory.values()){
+			return i.getSprite();
 		}
 		return null;
 	}
 	
-	public char getItemTypeChar(Item.Items t){
+	// TODO (X) Deprecate
+	@Deprecated
+	public char getItemTypeChar(Item t){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(inv.containsKey(c) && inv.get(c).type.equals(t)){
+			if(generalInventory.containsKey(c) && generalInventory.get(c).equals(t)){
 				return c;
 			}
 		}
 		return '!';
 	}
 
+	@Deprecated
 	public char getFirstItem(){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(inv.containsKey(c)){
+			if(generalInventory.containsKey(c)){
 				return c;
 			}
 		}
@@ -110,7 +91,7 @@ public class Inventory {
 	}
 	public void getFirstOpen(){
 		for(char c = 'a'; c <= 'z'; c++){
-			if(!inv.containsKey(c)){
+			if(!generalInventory.containsKey(c)){
 				firstOpen = c;
 				return;
 			}
@@ -118,12 +99,13 @@ public class Inventory {
 		firstOpen = '!';
 	}
 
-	public void addItem(Item i){
+	public <T extends Item> void addItem(T i){
 		// stack items
 		if (i.isStackable()) {
-			for (Item t : inv.values()) {
-				if (t.name.equals(i.name)){
-					t.amount+=i.amount;
+			// TODO (F) handle better
+			for (Item t : generalInventory.values()) {
+				if (t.getDisplayName().equals(i.getDisplayName())){
+					t.changeAmount(i.getAmount());
 					return;
 				}
 			}
@@ -132,49 +114,76 @@ public class Inventory {
 		// if not added to stack
 		getFirstOpen();
 		if (firstOpen != '!') {
-			inv.put(firstOpen, i);
+			generalInventory.put(firstOpen, i);
 		} else {
 			Main.appendText("Inventory full.");
 			return;
 		}
 	}
 
+	// TODO (F) refactor, move
 	public void removeItem(char c){
-		inv.get(c).amount--;
-		if(inv.get(c).amount <= 0){
-			inv.remove(c);			
+		generalInventory.get(c).changeAmount(-1);
+		if(generalInventory.get(c).getAmount() <= 0){
+			generalInventory.remove(c);			
 		}
 	}
 	
 	public void makeRandomInventory(int tier, int amount){
-		double n = (double) amount*2/3 + Main.rng.nextDouble()*(double) amount*2/3;
+		// random n from amt*66% to amt*133%.
+		double n = (double) amount*2/3 + (Main.rng.nextDouble() * (double) amount*2/3);
 		n = (int) ActionLibrary.round(n, 0);
 		
 		for(int x = 0; x < n; x++){
-			Item.Items t = Item.Items.randomItemType(tier);
-			addItem(new Item (t,getStackSize(t),Main.cF));
+			// TODO (R) Review
+			addItem(Item.randomItem(tier));
 		}
 	}
 	
-	public int getStackSize(Item.Items type){
-		int c = type.commonStackSize;
-		// TODO: variation
-		return c;
+	public boolean contains(char c) {
+		return generalInventory.containsKey(c);
 	}
 	
+	// TODO (I) Replace
+	// public <T extends Item & Consumable> int getStackSize(T type){
+		// TODO: variation
+		// return type.commonStackSize();
+	// }
+	
 	public void dropAll(char c, Entity e){
-		e.map.tileMap[e.y][e.x].inventory.addItem(inv.remove(c));
+		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(generalInventory.remove(c));
 	}
 
 	public void switchItem(char itemToMove, char destination){
-		if(inv.containsKey(itemToMove)){
-			if(inv.containsKey(destination)){ // if there's an item in the target spot
-				Item temp = inv.get(destination);
-				inv.replace(destination,inv.get(itemToMove));
-				inv.replace(itemToMove, temp); // switch the items
+		if(generalInventory.containsKey(itemToMove)){
+			if(generalInventory.containsKey(destination)){ // if there's an item in the target spot
+				Item temp = generalInventory.get(destination);
+				generalInventory.replace(destination,generalInventory.get(itemToMove));
+				generalInventory.replace(itemToMove, temp); // switch the items
 			}else{
-				inv.put(destination, inv.get(itemToMove));
-				inv.remove(itemToMove);
+				generalInventory.put(destination, generalInventory.get(itemToMove));
+				generalInventory.remove(itemToMove);
+			}
+		}
+	}
+	
+	public boolean hasKey(int floor) {
+		return keys.containsKey(floor);
+	}
+	
+	public void pickupKey(int floor){
+		if(keys.containsKey(floor)){
+			keys.replace(floor,keys.get(floor)+1);
+		}else{
+			keys.put(floor,1);
+		}
+	}
+	
+	public void useKey(int floor){
+		if(keys.containsKey(floor)){
+			keys.replace(floor,keys.get(floor)-1);
+			if(keys.get(floor) <= 0){
+				keys.remove(floor);
 			}
 		}
 	}

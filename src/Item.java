@@ -1,511 +1,265 @@
-import java.awt.Point;
+import org.json.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import java.io.*;
+import java.util.logging.Logger;
 
+public abstract class Item extends GameObject {
+	private static JSONObject masterJSON;
+	// private static boolean initialized;
+	
+	private JSONObject supertypeData;
+	private JSONObject itemData;
+	
+	private ItemType superType;
+	private String typeName;
+	private String displayName;
+	private String description;
+	private int amount;
+	
+	private char inventoryID = '?';
 
-public class Item{
-
-	/* fields */
-	/**TODO turn this into json**/
-	/* An item refers to a stack of items of the same exact type
-	 * stackable types: MISSILE SCROLL POTION FOOD
-	 * multiple item stacks can occupy the same spot on the grid
-	 */
-
-
-	Item(Items type, int amount, int floor){
-		this.type = type;
-		this.amount = amount;
-		this.floorFoundOn = floor;
-
-		this.name = type.name;
-		this.sprite = type.sprite;
-	}
-
-	public static BufferedImage subImage(int x, int y){
-		if(sourcedItems==null){
-			try {
-				sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
+	Item(String id){
+		typeName = id.toLowerCase();
+		// TODO: improve
+		initMasterJSON();
+		// TODO: init SuperType
+		for(String k: masterJSON.keySet()) {
+			JSONObject j = masterJSON.getJSONObject(k);
+			if(j.getJSONObject("list").has(typeName)) {
+				this.supertypeData = j;
+				System.out.println(typeName+" found under " + k);
+				break;
 			}
 		}
-		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
-	}
-
-	public static BufferedImage subImagePotion(int x, int y){
-		if(potionImages==null){
-			try {
-				potionImages = ImageIO.read(new File("imgs/potions.png"));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		
+		if(supertypeData == null) {
+			System.out.printf("no supertype found. check spelling of item \"%s\".\n", id);
 		}
-		return potionImages.getSubimage(x*24+x, y*24+y, 24, 24);
+		
+		JSONObject itemList = supertypeData.getJSONObject("list");
+		this.itemData = itemList.getJSONObject(typeName);
+		
+		JSONObject spriteIndex = (JSONObject) getSpecValue("spriteIndex");
+		
+		this.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
+		
+		this.displayName = itemData.optString("name");
+		this.description = itemData.optString("description");
+	}
+	
+	public String toString() {
+// 		TODO: (A) Implement
+//		String quantity;
+//		if(this.amount==1){
+//			if(Inventory.isVowelStart(this.getDisplayName())){
+//				quantity = "an";
+//			}else{
+//				quantity = "a";
+//			}
+//		}else{
+//			quantity = String.valueOf(this.amount);
+//		}
+
+		// String line = String.format("%s - %s %s", this.inventoryID, quantity, this.getDisplayName());
+
+		//if(this.wielded) line+= " (weilded)";
+		//if(this.quivered) line+= " (quivered)";
+		//if(this.worn) line+= " (worn)" ;
+
+		return String.format("%s - %s", this.inventoryID, this.getDisplayName());
+	}
+	
+	public String[] listPrompts() {
+		 return new String[] {
+			"(d)rop",
+			"(r)eassign",
+			"(ESC) exit"
+		};
+	}
+	
+	public static void initMasterJSON() {
+		if(masterJSON == null) {
+			try{
+				JSONTokener in = new JSONTokener(new FileReader("DATA/Items.json"));
+				masterJSON = new JSONObject(in);
+			}catch(Exception e) {
+				e.printStackTrace();
+			};
+		}
+	}
+	
+	public static JSONObject getJSONbyID(String id) {
+		// TODO (A) Implement
+		JSONObject obj = new JSONObject();
+		return obj;
+	}
+	
+	// returns jsonobject if its found in the child of the item object, otherwise, return the default value.
+	public Object getSpecValue(String key){
+		Object specific = itemData.opt(key);
+		if(specific != null) {
+			return specific;
+		}else {
+			return supertypeData.opt(key);
+		}
+	}
+	
+	public String getTypeName() {
+		return typeName;
+	}
+	
+	public String getDescription() {
+		return this.description;
+	}
+	
+	public int getAmount() {
+		return amount;
+	}
+	
+	public void setAmount(int amt) {
+		this.amount = amt;
 	}
 
+	public void changeAmount(int amt) {
+		this.amount += amt;
+		if(this.amount < 0) {
+			this.amount = 0;
+		}
+	}
+	
 	public boolean isUnknown(){
-		return type.isUnknown();
+		Object o = getSpecValue("unknown");
+		if(o == null) {
+			return false;
+		}else{
+			return (boolean) o;
+		}
 	}
 
 	public boolean isStackable(){
-		return type.supertype.isStackable;
-	}
-
-	public boolean isInClass(Items[] cl){
-		for(Items t: cl){
-			if(type.equals(t)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void quaff(Entity e, char c){
-		if(type.supertype.equals(Items.Item_Supertype.POTION)){
-			boolean discover = false;
-			if(type.equals(Items.POT_HEAL)){
-				e.HP = e.creature.HP_MAX; // TODO: replace creature.hp_max with dynamic max
-				if(!e.creature.hasAI){
-					Main.appendText("You feel rejuvenated.");
-				}else{
-					Main.appendText("The "+e.creature.NAME+" appears to be in much better health.");
-				}
-				discover = true;
-			}else if(type.equals(Items.POT_MIGHT)){
-				if(!e.creature.hasAI){
-					Main.appendText("Your body shudders with newfound strength!");
-					e.addStatus(Entity.Status.MIGHTY);
-					Main.refreshStats();
-				}else{
-					e.addStatus(Entity.Status.MIGHTY);
-					Main.appendText("The "+e.creature.NAME+"'s body shudders with newfound strength.");
-				}
-				discover = true;
-			}else if(type.equals(Items.POT_FLIGHT)){
-				if(!e.creature.hasAI){
-					Main.appendText("You feel your feet leave the ground!");
-					e.addStatus(Entity.Status.FLIGHT);
-					Main.refreshStats();
-				}else{
-					e.addStatus(Entity.Status.FLIGHT);
-					Main.appendText("The "+e.creature.NAME+"raises into the air.");
-				}
-			}
-			if(discover && !Main.player.identifiedItems.containsKey(type)){
-				identify();
-			}
-			e.inv.removeItem(c);
-			Main.refreshText();
-			Main.takeTurn();
-		}
-	}
-
-	public void read(Entity e, char c){
-		if(type.supertype.equals(Items.Item_Supertype.SCROLL)){
-			boolean discover = true;
-			if(type.equals(Items.SCR_ID)){
-				if(!e.creature.hasAI){
-					Main.appendText("Your pack glows blue and you are\noverwhelmed with a fleeting knowledge.");
-					if(!Main.player.identifiedItems.containsKey(type)){
-						identify();
-					}
-					discover = false;
-					e.inv.removeItem(c);
-					if(e.inv.containsUnidentified()){
-						Main.appendText("Identify what?");
-						e.inv.printContents(false);
-						Main.pickItem = true;
-						Main.identify = true;
-					}else{
-						Main.appendText("There is nothing in your pack to identify!");
-					}
-				}else{
-					Main.appendText("");
-				}
-			}else if(type.equals(Items.SCR_TELE)){
-				Point p = e.map.randomEmptySpace();
-				e.x = p.x;
-				e.y = p.y;
-
-				if(!e.creature.hasAI){
-					Main.appendText("You spin quickly and then abruptly stop.\nYour surroundings look different.");
-				}else{
-					Main.appendText("The "+e.creature.NAME+" vanishes with a loud thunk.");
-				}
-				e.inv.removeItem(c);
-			}
-
-			if(discover && !Main.player.identifiedItems.containsKey(type)){
-				identify();
-			}
-
-			Main.refreshText();
-			Main.takeTurn();
+		Object o = getSpecValue("stackable");
+		if(o == null) {
+			return false;
+		}else{
+			return (boolean) o;
 		}
 	}
 	
-	public void eat(Entity e, char c){
-		if(type.supertype!=Items.Item_Supertype.FOOD) return;
-		
-		String descriptor;
-		if(type.foodValue >= 10){
-			descriptor = "great!";
-		}else if(type.foodValue >= 5){
-			descriptor = "good.";
-		}else if(false){
-			descriptor = "off.";
-		}else{
-			descriptor = "fine.";
-		}
-		
-		e.SAT += type.foodValue; // TODO: cap
-		e.inv.removeItem(c);
-		
-		Main.appendText("That "+type.name+" tasted "+descriptor);
-		Main.refreshText();
-		Main.takeTurn();
-		
+	public BufferedImage getSprite() {
+		return super.getSprite();
 	}
+	
+	public ItemType getSuperType() {
+		return superType;
+	}
+	
+	// TODO (I) move, refactor
+//	public void quaff(Entity e, char c){
+//		boolean discover = true;
+//		if(discover && !Main.player.identifiedItems.containsKey(type)){
+//			identify();
+//		}
+//		e.inv.removeItem(c);
+//		Main.refreshText();
+//		Main.takeTurn();
+//	}
 
-	public void identify(){
-		Main.player.identifiedItems.put(type, type.name);
-		Main.appendText("It was a "+type.name+".");
-	}
+	// TODO (I) move, refactor
+//	public void read(Entity e, char c){                                
+//		if(type.supertype.equals(Items.Item_Supertype.SCROLL)){
+//			boolean discover = true;
+//			if(type.equals(Items.SCR_ID)){
+//				e.inv.removeItem(c);
+//				if(e.inv.containsUnidentified()){
+//					Main.appendText("Identify what?");
+//					e.inv.printContents(false);
+//					Main.pickItem = true;
+//					Main.identify = true;
+//				}else{
+//					Main.appendText("There is nothing in your pack to identify!");
+//				}
+//			}else if(type.equals(Items.SCR_TELE)){
+//				Point p = e.map.randomEmptySpace();
+//				e.x = p.x;
+//				e.y = p.y;
+//
+//				if(!e.creature.hasAI){
+//					Main.appendText("You spin quickly and then abruptly stop.\nYour surroundings look different.");
+//				}else{
+//					Main.appendText("The "+e.creature.NAME+" vanishes with a loud thunk.");
+//				}
+//				e.inv.removeItem(c);
+//			}
+//
+//			if(discover && !Main.player.identifiedItems.containsKey(type)){
+//				identify();
+//			}
+//
+//			Main.refreshText();
+//			Main.takeTurn();
+//		}
+//	}
+
+//	public void eat(Entity e, char c){
+//		if(type.supertype!=Items.Item_Supertype.FOOD) return;
+//
+//		String descriptor;
+//		if(type.foodValue >= 10){
+//			descriptor = "great!";
+//		}else if(type.foodValue >= 5){
+//			descriptor = "good.";
+//		}else if(false){
+//			descriptor = "off.";
+//		}else{
+//			descriptor = "fine.";
+//		}
+//
+//		e.SAT += type.foodValue; // xTODO: cap
+//		e.inv.removeItem(c);
+//
+//		Main.appendText("That "+type.name+" tasted "+descriptor);
+//		Main.refreshText();
+//		Main.takeTurn();
+//
+//	}
 
 	public String getDisplayName(){
-		if(!isUnknown() || Main.player.identifiedItems.containsKey(type)){
-			return name;
-		}else if(type.supertype.equals(Items.Item_Supertype.SCROLL) || type.supertype.equals(Items.Item_Supertype.POTION)){
-			return Main.randomNames.get(type);
+		return displayName;
+	}
+
+	public static enum ItemType {
+		WEAPON ("Weapons"),
+		ARMOUR ("Armour"),
+		POTION ("Potions"),
+		SCROLL ("Scrolls"),
+		MISSILE ("Missiles"),
+		SPECIAL ("Special");
+		
+		String name;
+
+		ItemType(String _name){
+			this.name = _name;
 		}
-		return "";
+	}
+
+	public static Item randomItem(int tier) {
+		// TODO (A) Implement
+		return new Weapon("dagger");
 	}
 	
-	// weapon
-	public boolean weilded = false;
+	// TODO (T) Temp
+	public static ItemType randomItemType(int level /*, LevelType type*/){
 
-	// armour/rings/amulets
-	public boolean worn = false;
+		// pick any but a special item.
+		int r;
+		do{
+			r = Main.rng.nextInt(ItemType.values().length);
+		} while (ItemType.values()[r].equals(ItemType.SPECIAL));
 
-	// projectiles
-	public boolean quivered = false;
-
-	public Items type;
-	public int amount = 1;
-	public String name;
-	private static BufferedImage potionImages;
-	private static BufferedImage sourcedItems;
-
-	public BufferedImage sprite;
-	public int floorFoundOn;
-
-	boolean isStackable = true;
-
+		return ItemType.values()[r];
+	}
 	
-	// TODO: REPLACE STATS WITH TSV
-	public enum Items {
-
-		DAGGER		(0),
-		HAND_AXE	(1),
-		CLUB			(2),
-		SPKD_CLUB (3),
-
-		LTR_BOOTS	(10),
-
-		DART			(20),
-		
-		SCR_ID		(30),
-		SCR_TELE	(31),
-
-		POT_HEAL	(40),
-		POT_MIGHT	(41),
-		POT_FLIGHT(42),
-
-		BREAD			(50),
-		
-		SLVR_KEY	(60);
-		
-
-		Items(int itemNo){
-			if(itemNo == 0){
-				dagger();
-			}else if(itemNo == 1){
-				axe();
-			}else if(itemNo == 2){
-				club();
-			}else if(itemNo == 3){
-				spiked_club();
-			}else if(itemNo == 10){
-				leatherBoots();
-			}else if(itemNo == 20){
-				dart();
-			}else if(itemNo == 30){
-				scrollOfIdentify();
-			}else if(itemNo == 31){
-				scrollOfTeleportation();
-			}else if(itemNo == 40){
-				potionOfHealing();
-			}else if(itemNo == 41){
-				potionOfMight();
-			}else if(itemNo == 42){
-				potionOfFlight();
-			}else if(itemNo == 50){
-				bread();
-			}else if(itemNo == 60){
-				silverKey();
-			}
-		}
-		
-
-		/** item classes **/
-		public static final Items[] scrolls = {SCR_ID,SCR_TELE};
-		public static final Items[] potions = {POT_HEAL,POT_MIGHT,POT_FLIGHT};
-		public static final Items[] keys = {SLVR_KEY};
-
-		public static enum potionColours{
-			RED		 		 (0),
-			ORANGE 		 (1),
-			GREEN	 		 (2),
-			BLUE 	 		 (3),
-			VIOLET 		 (4),
-			PINK	 		 (5),
-			MAHOGANY 	 (6),
-			AQUAMARINE (7),
-			GOLDEN 		 (8),
-			SILVER 		 (9),
-			CHARCOAL 	 (10),
-			BROWN  		 (11);
-
-			potionColours(int n){
-				colour = colours[n];
-				image = images[n];
-			}
-
-			public String getName(int i){
-				return colours[i];
-			}
-			public BufferedImage getImage(int i){
-				return images[i];
-			}
-
-			public String colour;
-			public BufferedImage image;
-
-			public String[] colours = {"red","orange","green","blue","violet","pink",
-					"mahogany","aquamarine","golden","silver","charcoal","brown"};
-
-			public BufferedImage[] images = {subImagePotion(0,0),subImagePotion(0,1),subImagePotion(2,0),subImagePotion(1,0),subImagePotion(3,0),subImagePotion(4,1),
-					subImagePotion(5,1), subImagePotion(2,1),subImagePotion(4,0),subImagePotion(1,1),subImagePotion(5,0),subImagePotion(3,1)};
-		}
-
-		public static final Items[] helmets = {};
-		public static final Items[] chestplates = {};
-		public static final Items[] greaves = {};
-		public static final Items[] boots = {LTR_BOOTS};
-		public static final Items[] gloves = {};
-		public static final Items[] rings = {};
-		public static final Items[] amulets = {};
-
-		public static enum Item_Supertype{
-
-			WEAPON (0),
-			ARMOUR (1),
-			MISSILE(2),
-			SCROLL (3),
-			POTION (4),
-			FOOD	 (5),
-			SPECIAL(6); // not in player inventory ie (key, gold)
-
-			boolean isStackable = true;
-			boolean isUnknown = false;
-			Item_Supertype(int i){
-				if(i==0||i==1){
-					isStackable = false;
-				}
-				if(i==3||i==4){
-					isUnknown = true;
-				}
-			}
-		}
-
-		Item_Supertype supertype;
-
-		String name;
-		BufferedImage sprite;
-		int tier;
-		String description = "<description>";
-		int commonStackSize = 1;
-
-		// weapon/missile
-		double baseDamage;
-		double baseAccuracy;
-		// armour
-		double baseDefense;
-
-		double weight; // at this strength, penalty is removed, like a log scale
-
-		// food
-		double foodValue;
-		
-		// TODO: item tiers & balanced generation
-		// TODO: change item methods into json or other data storage method.
-		
-		/** TEMPORARY **/
-		public static Items randomItemType(int level /*, LevelType type*/){
-			
-			// pick any but a special item.
-			int r;
-			do{
-				r = Main.rng.nextInt(Items.values().length);
-			} while (Items.values()[r].supertype.equals(Item_Supertype.SPECIAL));
-			
-			return Items.values()[r];
-		}
-
-		public boolean isUnknown(){
-			return supertype.isUnknown;
-		}
-
-		public void dagger(){
-			supertype = Item_Supertype.WEAPON;
-			name = "dagger";
-			sprite = subImage(5,1);
-
-			baseDamage = 3.0;
-			baseAccuracy = 6.5;
-			weight = 2;
-
-			tier = 2;
-
-			description = "A short metal blade that is effective\nin short ranged combat." +
-					"Due to its compactness,\nit also serves as an adequate throwing weapon.";
-		}
-
-		public void axe(){
-			supertype = Item_Supertype.WEAPON;
-			name = "hand axe";
-			sprite = subImage(6,1);
-
-			baseDamage = 9.0;
-			baseAccuracy = 5.5;
-			weight = 6.0;
-
-			tier = 4;
-
-			description = "A small battleaxe that can be effectively\nweilded using one hand by stronger warriors.";
-		}
-
-		public void club(){
-			supertype = Item_Supertype.WEAPON;
-			name = "club";
-			sprite = subImage(0,9);
-
-			baseDamage = 6.0;
-			baseAccuracy = 4.5;
-			weight = 4.5;
-
-			tier = 1;
-		}	
-
-		public void spiked_club(){
-			supertype = Item_Supertype.WEAPON;
-			name = "spiked club";
-			sprite = subImage(4,1);
-
-			baseDamage = 7.0;
-			baseAccuracy = 4.5;
-			weight = 5.0;
-
-			tier = 2;
-		}
-
-		public void leatherBoots(){
-			supertype = Item_Supertype.ARMOUR;
-			name = "pair of leather boots";
-			sprite = subImage(0,4);
-
-			baseDefense = 1.5;
-			tier = 2;
-		}
-
-		/** evokables/consumables **/
-
-
-		public void dart(){
-			supertype = Item_Supertype.MISSILE;
-			name = "throwing dart";
-			sprite = subImage(8,1);
-			
-			tier = 1;
-			commonStackSize = 5;
-		}
-		
-		/** SCROLLS **/
-
-		public void scrollOfIdentify(){
-			supertype = Item_Supertype.SCROLL;
-			name = "scroll of Identify";
-			sprite = subImage(0,3);
-
-			tier = 2;
-		}
-
-		public void scrollOfTeleportation(){
-			supertype = Item_Supertype.SCROLL;
-			name = "scroll of Teleportation";
-			sprite = subImage(0,3);
-
-			tier = 2;
-		}
-
-
-		/** POTIONS **/
-
-		public void potionOfHealing(){
-			supertype = Item_Supertype.POTION;
-			name = "potion of Healing";
-			sprite = subImage(2,2);
-
-			tier = 3;
-		}
-
-		public void potionOfMight(){
-			supertype = Item_Supertype.POTION;
-			name = "potion of Might";
-			sprite = subImage(2,2);
-
-			tier = 2;
-		}
-		
-		public void potionOfFlight(){
-			supertype = Item_Supertype.POTION;
-			name = "potion of Flight";
-			sprite = subImage(2,2);
-			
-			tier = 2;
-		}
-
-		/** FOOD **/
-
-		public void bread(){
-			supertype = Item_Supertype.FOOD;
-			name = "bread ration";
-			sprite = subImage(5,5);
-
-			foodValue = 10;
-			tier = 1;
-		}
-		
-		/** KEYS **/
-		
-		public void silverKey(){
-			supertype = Item_Supertype.SPECIAL;
-			name = "silver key";
-			sprite = subImage(4,0);
-			
-		}
+	public void drop(Entity from) {
+		// TODO (A) Implement
 	}
 }

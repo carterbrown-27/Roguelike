@@ -1,27 +1,23 @@
 public class AI {
 	public Pathfinder p = new Pathfinder();
-	public Entity e;
+	public Creature c;
 	public int t = 0;
 	public ActionLibrary lib;
-	public Entity player;
+	public Player player;
 
-	AI(Entity e){
+	AI(Creature _c){
 		System.out.println("configuring AI...");
-		this.e = e;
-		this.lib = new ActionLibrary(this.e);
-		player = e.map.player;
+		this.c = _c;
+		this.lib = new ActionLibrary(this.c);
+		player = Main.player;
 		System.out.println("done.");
 	}
 
 	public boolean takeTurn(){
-		boolean waiting = false;
-		if(true /*e.creature.equals(Creature.RAT)*/){
-			waiting = basic();
-		}
-
-		// end of ai selection
-		e.SP = Math.min(e.SP + e.creature.SP_REGEN, e.creature.SP_MAX);
-
+		c.upkeep();
+		// TODO (+) add AI
+		boolean waiting = basic();
+		c.endStep();
 		return waiting;
 	}
 
@@ -31,7 +27,7 @@ public class AI {
 	// 1 is sucess
 	// 2 is fail
 	public boolean basic(){
-		if(e.isAdjacentTo(player.getPos())){
+		if(c.isAdjacentTo(player.getPos())){
 //			if (e.map.isSandwich(e.getX(), e.getY())) {
 //				for (Entity e2 : e.map.entities.values()) {
 //					if (e.isAdjacentTo(e2.getPos())) {
@@ -59,12 +55,12 @@ public class AI {
 //			}
 			
 			if(lib.melee(player,1)){
-				Main.appendText("The "+e.creature.NAME+" hits you!");
+				Main.appendText("The "+c.getName()+" hits you!");
 			}else{
-				Main.appendText("The "+e.creature.NAME+" misses you.");				
+				Main.appendText("The "+c.getName()+" misses you.");				
 			}
 			return true;
-		}else if(lib.distance == 2 && e.SP >= 3){
+		}else if(lib.distance == 2 && c.getSP() >= 3){
 			lib.lunge();
 			return true;
 		}else{
