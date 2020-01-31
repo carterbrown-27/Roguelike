@@ -16,11 +16,10 @@ public class StringHelper {
 	
 	public String randomName(){
 
-		int length = rng.nextInt(5)+4;
-		char[] vowels = {'a','e','i','o','u'};
-
-		char[] ctv = {'r','h','w','l','y','n'};
-		char[] consonants = {'b','c','d','f','g','j','k','l','m','p','r','v','z','s','t','n','w'};
+		int length = rng.nextInt(6)+4;
+		char[] vowels = {'a','a','e','e','i','i','o','o','u'};
+		char[] ctv = {'r','r','n','t','s','l','y','b','j'};
+		char[] consonants = {'b','c','d','f','g','h','j','j','k','k','l','m','p','r','v','s','t','n','w','z','z'};
 
 		// String[] pairs = {"ld","st","pr","qu","sh"};
 
@@ -28,13 +27,13 @@ public class StringHelper {
 		int prev = -1;
 
 		while(name.length() < length){
-			if((name.length() == length-1 && prev == 2) || prev == 3 || (prev == 2 && rng.nextBoolean())
-					|| (prev == 0 && rng.nextBoolean() && rng.nextBoolean()) || (prev==-1 && rng.nextBoolean())){
+			if((name.length() == length-1 && prev == 2 && rng.nextInt(4)+1 > 1) || prev == 3 || (prev == 2 && rng.nextBoolean())
+					|| (prev == 0 && rng.nextInt(4)+1 == 4) || (prev==-1 && rng.nextInt(5)+1 >= 4)){
 
 				name+=vowels[rng.nextInt(vowels.length)];
 				prev = 0;
 			}else{
-				if(prev==2 || (prev==-1 && rng.nextBoolean())){
+				if((prev==2 && rng.nextInt(5)+1 >= 2) || (prev==-1 && rng.nextBoolean())){
 					name+=ctv[rng.nextInt(ctv.length)];
 
 					prev = 3;

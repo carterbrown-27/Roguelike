@@ -39,7 +39,10 @@ public abstract class Item extends GameObject {
 		JSONObject itemList = supertypeData.getJSONObject("list");
 		this.itemData = itemList.getJSONObject(typeName);
 		
-		JSONObject spriteIndex = (JSONObject) getSpecValue("spriteIndex");
+		JSONObject spriteIndex = itemData.optJSONObject("spriteIndex");
+		if(spriteIndex == null) {
+			spriteIndex = supertypeData.getJSONObject("generalProperties").getJSONObject("defaultSpriteIndex");
+		}
 		
 		this.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
 		
@@ -244,7 +247,7 @@ public abstract class Item extends GameObject {
 
 	public static Item randomItem(int tier) {
 		// TODO (A) Implement
-		return new Weapon("dagger");
+		return Main.rng.nextBoolean() ? new Scroll("scroll of teleportation"): new Scroll("scroll of identification");
 	}
 	
 	// TODO (T) Temp

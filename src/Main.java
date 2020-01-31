@@ -27,7 +27,7 @@ public class Main {
 	public static int ticks = 0;
 
 	public static double lastPress = System.currentTimeMillis();
-	public static double interval = 100;
+	public static double interval = 70; // 70ms input interval.
 
 	public static boolean itemPickup = false;
 	public static boolean inventoryScreen = false;
@@ -104,7 +104,7 @@ public class Main {
 					System.out.println("valid press");
 					lastPress = System.currentTimeMillis();
 					if(!itemPickup && !inventoryScreen){
-						System.out.println("flag 1");
+						// System.out.println("flag 1");
 						txt.clear(); // TODO (T) Temp
 						refreshText();
 					}
@@ -376,7 +376,7 @@ public class Main {
 			Point t;
 			do{
 				t = currentMap.randomOpenSpace();				
-				// make sure mobs aren't within 3 N.Y. Distance of player.
+				// make sure mobs aren't within 3 tiles of player.
 			}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
 
 			System.out.println("point picked");
@@ -390,7 +390,7 @@ public class Main {
 			Point t = currentMap.randomOpenSpace();
 			Item.ItemType ty = Item.randomItemType(floorNumber);
 			System.out.println("adding "+ty);
-			currentMap.tileMap[t.y][t.x].inventory.addItem(new Weapon("Dagger"));
+			currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(1));
 		}
 
 		int chests = rng.nextInt(2)+1;
@@ -434,12 +434,12 @@ public class Main {
 		floorNumber = floor;
 		currentMap = floors.get(floorNumber);
 		Point startPoint= currentMap.getPosition(2);
+		
 		// TODO: update for multiple stairs
 		if(!down) startPoint= currentMap.getPosition(3);
 		player.map = currentMap;
-		currentMap.player = player;
 		player.setPos(startPoint);
-		// floors.get(currentFloor).player = player;
+		currentMap.player = player;
 
 		if(isNew){
 
@@ -488,6 +488,7 @@ public class Main {
 		// gui.run();
 
 		JFrame frame = new JFrame();
+		// TODO (X) Overhaul GUI.
 		JFrame_HEIGHT = img.getHeight()+42;
 		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1600);
 

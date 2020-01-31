@@ -59,10 +59,21 @@ public class Creature extends Entity {
 		super.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
 		
 		// creature specific
+		
+		this.strength = creatureData.getDouble("strength");
+		this.EV = creatureData.getDouble("evasiveness");
+		this.speed = creatureData.getDouble("speed");
+		
 		JSONObject HP_Data = creatureData.getJSONObject("HP");
 		this.HP_max = HP_Data.getDouble("max");
 		this.HP = HP_max;
 		this.HP_regen = HP_Data.getDouble("regenRate");
+		
+		JSONObject SP_Data = creatureData.getJSONObject("SP");
+		this.SP_max = SP_Data.getDouble("max");
+		this.SP = SP_max;
+		this.SP_regen = SP_Data.getDouble("regenRate");
+
 	}
 	
 	Creature(int tier, Point p, Map map){
@@ -188,7 +199,7 @@ public class Creature extends Entity {
 	
 	public static String pickRandomType(int tier) {
 		// TODO (A) Implement
-		return "rat";
+		return Main.rng.nextBoolean() ? "rat" : "bat";
 	}
 	
 	// GETTERS, SETTERS, MUTATORS

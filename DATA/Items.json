@@ -136,7 +136,7 @@
 		"list" : {
 		
 			"scroll of identification" : {
-				"name" : "scroll of Identify",
+				"name" : "Scroll of Identify",
 				"tier" : 2,
 			
 				"effects" : {
@@ -150,7 +150,7 @@
 			},
 		
 			"scroll of teleportation" : {
-				"name" : "scroll of Teleportation",
+				"name" : "Scroll of Teleportation",
 				"tier" : 2,
 			
 				"effects" : {
@@ -185,7 +185,7 @@
 		
 		"list" : {
 			"potion of healing" : {
-				"name" : "scroll of Healing",
+				"name" : "Potion of Healing",
 				"tier" : 2,		
 			
 				"effects" : {
@@ -197,7 +197,7 @@
 			},
 		
 			"potion of might" : {
-				"name" : "scroll of Might",
+				"name" : "Potion of Might",
 				"tier" : 2,
 			
 				"effects" : {
@@ -209,7 +209,7 @@
 			},
 		
 			"potion of flight" : {
-				"name" : "scroll of Flight",
+				"name" : "Potion of Flight",
 				"tier" : 2,
 			
 				"effects" : {

@@ -18,7 +18,6 @@ public class Map {
 	public int[][] foreground;
 
 	public static int smooths = 4;
-	public int entityNumber = 0;
 	// public static Entity[][] entity_map = new Entity[height][width];
 	
 	// TODO (I) Populate w/ creatures.
@@ -1315,12 +1314,8 @@ public class Map {
 	}
 
 	// returns unique name
-	public String addEntity(Entity entity){
-		String name = entity.getName()+"/"+entityNumber;
+	public void addEntity(Entity entity){
 		entities.add(entity);
-		entityNumber++;
-		System.out.println(name);
-		return name;
 	}
 
 	// prints map to console

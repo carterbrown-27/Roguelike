@@ -14,7 +14,6 @@ public class Pathfinder {
 	private Point end;
 	
 	public static class PointBFS{
-		// TODO: privatize?
 		public Point point;
 		private PointBFS parent;
 	
