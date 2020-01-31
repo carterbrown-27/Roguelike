@@ -23,7 +23,7 @@ public class Player extends Creature {
 	private Set<String> identifiedItems = new HashSet<>();
 	
 	Player(int x, int y, Map _map){
-		super("player", new Point(x,y));
+		super("player", new Point(x,y),_map);
 		map = _map;
 		
 		// TODO (X) Remove
@@ -38,7 +38,8 @@ public class Player extends Creature {
 		BASIC (0),
 		SLASH (1),
 		LUNGE (2);
-		/* TODO: PARRY: if you would be hit by a non-magic attack instead take no damage
+		/* TODO (R) Review: PARRY
+		 * if you would be hit by a non-magic attack instead take no damage
 		 * and hit back for slash damage (guarantee hit) only works if the attack is under
 		 * "x" damage. projectiles means no hit-back only block
 		 * else: ?

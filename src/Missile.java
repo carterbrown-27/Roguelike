@@ -10,7 +10,7 @@ public class Missile extends Item implements Consumable, Equippable {
 	}
 	
 	Missile(String id){
-		// TODO: replace 1 with stack size.
+		// TODO (+) replace 1 with stack size.
 		this(id,1);
 	}
 	

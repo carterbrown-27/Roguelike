@@ -47,8 +47,4 @@ public class StringHelper {
 		}
 		return name;
 	}
-	
-	public String randomScrollName() {
-		return (randomName()+" "+randomName()).toUpperCase();
-	}
 }

@@ -323,7 +323,7 @@ public class Map {
 		PointDir end = door;
 		boolean obstructed = false;
 		while(!obstructed && length<=5 && (Main.rng.nextInt(7)<=5 || length <=3)){
-			// TODO: fix obstruction detection.
+			// TODO (F) fix obstruction detection.
 			Point temp = aheadTile(end);
 			if((!isOnMap(temp) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
 				if(isOnMap(temp)){
@@ -515,7 +515,7 @@ public class Map {
 				works = true;
 				setBounds();
 
-				// TODO: rework system so that room is generated first, then offsets are found, and doors are placed etc
+				// TODO (R) rework system so that room is generated first, then offsets are found, and doors are placed etc
 				if(roomType.equals(RoomType.PRECON)){
 					boolean offsetWorks = false;
 					int OFFSET_ATTEMPTS = 20;
@@ -773,9 +773,10 @@ public class Map {
 		char[][] room;
 		public void buildPrecon(){
 
-			// TODO: allow for rotation.
-			// TODO: add chests, keys, item spawns / monster spawns
-			// TODO: add extra info for rooms; rarity, ool gen level etc
+			// TODO (+) add chests, keys, item spawns / monster spawns
+			// TODO (+) add extra info for rooms; rarity, ool gen level etc
+			// TODO (J) JSONize
+			// TODO (R) Review: allow for rotation.
 			int ow = type.precons.get(precon_id)[0].length;
 			int oh = type.precons.get(precon_id).length;
 			room = new char[oh][ow];
@@ -796,7 +797,7 @@ public class Map {
 			for(int cy = 0; cy < th; cy++){
 				for(int cx = 0; cx < tw; cx++){;
 				Point p = new Point(cx,cy);
-				// TODO: add non-edge doors
+				// TODO (+) add non-edge doors
 				if(room[cy][cx]== 'D'){
 					if(!hitD){
 						hitD = true;

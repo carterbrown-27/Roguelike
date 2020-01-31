@@ -12,8 +12,11 @@ public class StaticEntity extends Entity {
 	public boolean isLocked;
 	public int linkedKey;
 	
-	StaticEntity(String name, Point pos){
-		super(name, pos);
+	StaticEntity(String name, Point pos, Map map){
+		super(name, pos, map);
+		
+		// TODO (X) Delete
+		type = SEType.SILVER_CHEST;
 		isLocked = type.isLocked;
 		this.setSprite(type.spriteA);
 		
@@ -69,12 +72,12 @@ public class StaticEntity extends Entity {
 		public double HP;
 		public boolean indestructible;
 
-		// TODO: more fields
+		// TODO (R) Review: more fields
 
 		public void silverChest(){
 			name = "silver chest";
-			spriteA = subImage(5,0);
-			spriteB = subImage(6,0);
+			spriteA = subImage(GameObject.SpriteSource.DEFAULT,5,0);
+			spriteB = subImage(GameObject.SpriteSource.DEFAULT,6,0);
 			indestructible = true;
 			
 			// TODO: plan out tier sys

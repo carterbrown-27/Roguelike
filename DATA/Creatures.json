@@ -1,5 +1,5 @@
 {
-	"Player" : {
+	"player" : {
 		"name" : "Player",
 		"spriteIndex" : {
 			"x" : 2,
@@ -23,11 +23,11 @@
 		}
 	},
 	
-	"Rat" : {
+	"rat" : {
 		"name" : "Rat",
 		"spriteIndex" : {
-			"x" : -1,
-			"y" : -1
+			"x" : 4,
+			"y" : 9
 		},
 		
 		"strength" : 2,
@@ -47,7 +47,7 @@
 		}
 	},
 	
-	"Bat" : {
+	"bat" : {
 		"name" : "Bat",
 		"spriteIndex" : {
 			"x" : 3,
@@ -71,7 +71,7 @@
 		}
 	},
 	
-	"Goblin" : {
+	"goblin" : {
 		"name" : "Goblin",
 		"spriteIndex" : {
 			"x" : 7,
@@ -95,7 +95,7 @@
 		}
 	},
 	
-	"Blue Ooze" : {
+	"blue ooze" : {
 		"name" : "Blue Ooze",
 		"spriteIndex" : {
 			"x" : 8,

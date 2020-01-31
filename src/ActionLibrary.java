@@ -13,7 +13,8 @@ public class ActionLibrary {
 	ActionLibrary(Creature _c){
 		this.c = _c;
 		map = c.map;
-		// TODO (R) Refactor
+		
+		// TODO (F) Refactor
 		if(c instanceof Player) {
 			player = (Player) c;
 		}else {

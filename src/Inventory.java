@@ -38,7 +38,7 @@ public class Inventory {
 	}
 
 	public void pickUp(char c, Entity destination){
-		// TODO: rework key system
+		// TODO (R) rework key system
 		Item i = generalInventory.remove(c);
 		if(i instanceof Key){
 			Key k = (Key) i;
@@ -62,7 +62,7 @@ public class Inventory {
 	}
 
 	public BufferedImage drawPile(){
-		// returns the first item, TODO: add visual pile indicator
+		// returns the first item, TODO (+) add visual pile indicator
 		for(Item i: generalInventory.values()){
 			return i.getSprite();
 		}
@@ -102,7 +102,7 @@ public class Inventory {
 	public <T extends Item> void addItem(T i){
 		// stack items
 		if (i.isStackable()) {
-			// TODO handle better
+			// TODO (F) handle better
 			for (Item t : generalInventory.values()) {
 				if (t.getDisplayName().equals(i.getDisplayName())){
 					t.changeAmount(i.getAmount());
@@ -135,7 +135,7 @@ public class Inventory {
 		n = (int) ActionLibrary.round(n, 0);
 		
 		for(int x = 0; x < n; x++){
-			// TODO: change
+			// TODO (R) Review
 			addItem(Item.randomItem(tier));
 		}
 	}

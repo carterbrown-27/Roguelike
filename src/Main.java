@@ -48,7 +48,7 @@ public class Main {
 	public static Map gen;
 
 	public static Map currentMap;
-	
+
 	public static int floorNumber;
 	public static Point ropePoint;
 
@@ -58,13 +58,10 @@ public class Main {
 
 	public static int seed;
 
-	public static HashMap<String,String> randomNames = new HashMap<>();
-	public static HashMap<String,Potion.PotionColours> potionColours = new HashMap<>();	
-
 	public static int JFrame_WIDTH = 1500;
 	public static int JFrame_HEIGHT = 1000;
 	public static JPanel consolePanel = new JPanel();
-	
+
 	public static StringHelper stringHelper;
 
 	public static void main(String[] args){
@@ -93,21 +90,26 @@ public class Main {
 		frame.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
+				System.out.println("key pressed "+KeyEvent.getKeyText(e.getKeyCode()));
 				if(!running){
+					System.out.println("not running.");
 					if(e.getKeyCode() == KeyEvent.VK_SPACE){
 						// restart
 						startGame();
 					}
 					return;
 				}
-				
+
 				if (System.currentTimeMillis()-lastPress>=interval) {
+					System.out.println("valid press");
 					lastPress = System.currentTimeMillis();
 					if(!itemPickup && !inventoryScreen){
+						System.out.println("flag 1");
 						txt.clear(); // TODO (T) Temp
 						refreshText();
 					}
 					if(itemPickup){
+						System.out.println("item Pickup");
 						for (char c = 'a'; c <= 'z'; c++) {
 							if(currentInventory==null){
 								currentInventory = currentMap.tileMap[player.getY()][player.getX()].inventory;
@@ -127,6 +129,7 @@ public class Main {
 						}
 
 					}else if(inventoryScreen){
+						System.out.println("inventory screen");
 						txt.clear();
 						refreshText();
 						boolean selected = false;
@@ -147,196 +150,198 @@ public class Main {
 							selectedItem = c;
 						}
 						if(selected) itemScreen = true;
-					}
-					inventoryScreen = false;
-				}else if(itemScreen){
-					char c = selectedItem;
-					Item i = player.inv.getItem(c);
+						inventoryScreen = false;
+					}else if(itemScreen){
+						System.out.println("item screen");
+						char c = selectedItem;
+						Item i = player.inv.getItem(c);
 
-					// TODO: fix all of this.
-					if(e.getKeyChar() == 'd'){
-						i.drop(player);
-						
-						// player.inv.dropAll(c, player);
-					}
+						// TODO (F) fix all of this.
+						if(e.getKeyChar() == 'd'){
+							i.drop(player);
 
-					if(i instanceof Equippable){
-						Equippable eq = (Equippable) i;
-						// TODO (A) Implement
-					}
-
-					if(i instanceof Consumable){
-						Consumable cnsm = (Consumable) i;
-						// TODO (A) Implement
-					}
-
-					itemScreen = false;
-					refreshStats();
-				}else if(pickItem){
-					boolean flag = false;
-					for (char c = 'a'; c <= 'z'; c++) {
-						if (e.getKeyChar() == c && player.inv.contains(c)) {
-							Item i = player.inv.getItem(c);
-							if(identify && !player.isItemIdentified(i)){
-								flag = true;
-								player.identify(i);
-								identify = false;
-							}else if(enchant){
-								flag = true;
-								enchant = false;
-							}
-						}
-					}
-					if(!flag){
-						appendText(e.getKeyChar()+" is not a valid option.");
-					}else{
-						pickItem = false;
-					}
-
-
-					/** DIRECTIONALS **/
-				}else if (directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown()) != null) {
-					Direction dir = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
-					if(aimScreen){
-						Point p = dir.p;
-						targetPos.x += p.x;
-						targetPos.y += p.y;
-						// TODO: aim visuals && los check
-
-					}else{								
-						player.act_adj(dir);
-					}
-
-
-				}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
-					if(aimScreen){
-						ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
-
-						boolean f = true;
-						for(Point p: line){
-							if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
-								continue;
-							}
-
-							if(!currentMap.isFullOpen(p.x, p.y)){
-								f = false;
-								break;
-							}
-						}
-						if(f){
-							// valid target
-							appendTextRF("valid target");
-						}else{
-							appendTextRF("invalid target");
+							// player.inv.dropAll(c, player);
 						}
 
-						aimScreen = false;
-						return;
-					}
-					if(currentMap.valueAt(player.getPos()) == 3){
-						if(floors.size()<=floorNumber+1){
-							newFloor();
-						}else{
-							changeFloor(floorNumber+1,true,false);
+						if(i instanceof Equippable){
+							Equippable eq = (Equippable) i;
+							// TODO (A) Implement
 						}
-					}else if(currentMap.valueAt(player.getPos()) == 2 && floorNumber > 0){
-						// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
-						changeFloor(floorNumber-1,false,false);
-					}
-					appendText("Current Floor: "+floorNumber);
 
-				} else if(e.getKeyCode() == KeyEvent.VK_P){
-					currentMap.printMap();
+						if(i instanceof Consumable){
+							Consumable cnsm = (Consumable) i;
+							// TODO (A) Implement
+						}
 
-				} else if(e.getKeyCode() == KeyEvent.VK_T){
-					aimScreen = !aimScreen;
-					targetPos = player.getPos();
-
-				} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
-					// open attack selections
-					// area.append("space.\n");
-					// if already open attack
-				} else if(e.getKeyCode() == KeyEvent.VK_G){
-					// get
-					Inventory tileInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
-					Inventory selectedInv = null;
-
-
-					// TODO: fix CHESTS
-					if(tileInv.isEmpty()){
-						for(Entity n: currentMap.entities){
-							if(n instanceof StaticEntity) {
-								StaticEntity se = (StaticEntity) n;
-								if(se.getPos().equals(player.getPos())){
-									if(!se.isLocked){
-										selectedInv = se.inv;
-										appendText("Pick up what?");
-									}else{											
-										appendText("It's locked.");
-										return;
-									}
-									// n.SE.interact(player,'g');
-									break;
+						itemScreen = false;
+						refreshStats();
+					}else if(pickItem){
+						System.out.println("pickItem screen");
+						boolean flag = false;
+						for (char c = 'a'; c <= 'z'; c++) {
+							if (e.getKeyChar() == c && player.inv.contains(c)) {
+								Item i = player.inv.getItem(c);
+								if(identify && !player.isItemIdentified(i)){
+									flag = true;
+									player.identify(i);
+									identify = false;
+								}else if(enchant){
+									flag = true;
+									enchant = false;
 								}
 							}
 						}
-					}else{
-						selectedInv = tileInv;
-					}
+						if(!flag){
+							appendText(e.getKeyChar()+" is not a valid option.");
+						}else{
+							pickItem = false;
+						}
 
-					if(selectedInv == null || selectedInv.isEmpty()){
-						appendText("There is nothing here.");
-						return;
-					}
 
-					if(selectedInv.isOneItem()){
-						player.pickUp(selectedInv.getFirstItem(),selectedInv);
-					}else if(!selectedInv.isEmpty()){
-						itemPickup = true;
-						currentInventory = selectedInv;
-						appendText("Pick up what?");
-					}
+						/* DIRECTIONALS */
+					}else if (directionValue(e.getKeyCode(),e.isControlDown(),e.isShiftDown()) != null) {
+						System.out.println("movement");
+						Direction dir = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
+						if(aimScreen){
+							targetPos = Direction.translate(targetPos,dir);
+							// TODO: aim visuals & L.O.S check
 
-				}else if(e.getKeyCode() == KeyEvent.VK_I){
-					player.inv.printContents(false);
+						}else{								
+							player.act_adj(dir);
+						}
 
-					if(!player.inv.isEmpty()) inventoryScreen = true;
-					
-				// TODO: interactable checks handled by Interactable interface
-				}else if(e.getKeyCode() == KeyEvent.VK_O){
-					for(Entity n: currentMap.entities) {
-						if(n instanceof StaticEntity) {
-							StaticEntity se = (StaticEntity) n;
-							if(se.getPos().equals(player.getPos())){
-								se.interact(player,'o');
+
+					}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
+						if(aimScreen){
+							ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
+
+							boolean f = true;
+							for(Point p: line){
+								if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
+									continue;
+								}
+
+								if(!currentMap.isFullOpen(p.x, p.y)){
+									f = false;
+									break;
+								}
+							}
+							if(f){
+								// valid target
+								appendTextRF("valid target");
+							}else{
+								appendTextRF("invalid target");
+							}
+
+							aimScreen = false;
+							return;
+						}
+						if(currentMap.valueAt(player.getPos()) == 3){
+							if(floors.size()<=floorNumber+1){
+								newFloor();
+							}else{
+								changeFloor(floorNumber+1,true,false);
+							}
+						}else if(currentMap.valueAt(player.getPos()) == 2 && floorNumber > 0){
+							// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
+							changeFloor(floorNumber-1,false,false);
+						}
+						appendText("Current Floor: "+floorNumber);
+
+					} else if(e.getKeyCode() == KeyEvent.VK_P){
+						currentMap.printMap();
+
+					} else if(e.getKeyCode() == KeyEvent.VK_T){
+						aimScreen = !aimScreen;
+						targetPos = player.getPos();
+
+					} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
+						// open attack selections
+						// area.append("space.\n");
+						// if already open attack
+					} else if(e.getKeyCode() == KeyEvent.VK_G){
+						// get
+						Inventory tileInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
+						Inventory selectedInv = null;
+
+
+						// TODO (F) fix CHESTS
+						if(tileInv.isEmpty()){
+							for(Entity n: currentMap.entities){
+								if(n instanceof StaticEntity) {
+									StaticEntity se = (StaticEntity) n;
+									if(se.getPos().equals(player.getPos())){
+										if(!se.isLocked){
+											selectedInv = se.inv;
+											appendText("Pick up what?");
+										}else{											
+											appendText("It's locked.");
+											return;
+										}
+										// n.SE.interact(player,'g');
+										break;
+									}
+								}
+							}
+						}else{
+							selectedInv = tileInv;
+						}
+
+						if(selectedInv == null || selectedInv.isEmpty()){
+							appendText("There is nothing here.");
+							return;
+						}
+
+						if(selectedInv.isOneItem()){
+							player.pickUp(selectedInv.getFirstItem(),selectedInv);
+						}else if(!selectedInv.isEmpty()){
+							itemPickup = true;
+							currentInventory = selectedInv;
+							appendText("Pick up what?");
+						}
+
+					}else if(e.getKeyCode() == KeyEvent.VK_I){
+						player.inv.printContents(false);
+
+						if(!player.inv.isEmpty()) inventoryScreen = true;
+
+						// TODO: interactable checks handled by Interactable interface
+					}else if(e.getKeyCode() == KeyEvent.VK_O){
+						for(Entity n: currentMap.entities) {
+							if(n instanceof StaticEntity) {
+								StaticEntity se = (StaticEntity) n;
+								if(se.getPos().equals(player.getPos())){
+									se.interact(player,'o');
+								}
 							}
 						}
-					}
-				}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
-					txt.clear();
-					refreshText();
-				}else if(e.getKeyCode() == KeyEvent.VK_5){
-					player.startRest();
+					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
+						txt.clear();
+						refreshText();
+					}else if(e.getKeyCode() == KeyEvent.VK_5){
+						player.startRest();
 
-				}else if(e.getKeyCode() == KeyEvent.VK_X){
-					// TODO: overview
+					}else if(e.getKeyCode() == KeyEvent.VK_X){
+						// TODO: overview
 
-				}else{
-					for(Player.Ability a: Player.Ability.values()){
-						if(e.getKeyCode() == a.k){
-							if(player.getSP() >= a.s){
-								player.select(a);
-								appendText(a.name);
-							}else{
-								appendText("Not enough stamina (stamina!).");
-								player.deselect();
+					}else{
+						for(Player.Ability a: Player.Ability.values()){
+							if(e.getKeyCode() == a.k){
+								if(player.getSP() >= a.s){
+									player.select(a);
+									appendText(a.name);
+								}else{
+									appendText("Not enough stamina (stamina!).");
+									player.deselect();
+								}
+								break;
 							}
-							break;
 						}
 					}
 				}
-			}
+			}	
 		});
+
 		// System.out.println(ropePoint.toString());
 		refreshFrame(render(ropePoint.x,ropePoint.y));
 	}
@@ -349,7 +354,7 @@ public class Main {
 
 		floors.put(floorNumber, new Map(MAP_H,MAP_W,MAP_FILL));
 		currentMap = floors.get(floorNumber);
-		
+
 		ropePoint = currentMap.getPosition(2);
 
 		System.out.println("@@@ gen = "+(System.currentTimeMillis()-time)+"ms @@@");
@@ -365,27 +370,18 @@ public class Main {
 		player.inv.addItem(darts);
 		player.equip(darts);
 
-		// TODO: init Item.Scrolls & Item.Potions
-		for(Scroll i: Item.getScrolls()){
-			randomNames.put(i.getTypeName(), "scroll(s) labeled "+stringHelper.randomScrollName());
-		}
-		
-		for(Potion i: Item.getPotions()){
-			randomNames.put(i.getTypeName(), randomPotionName(i));
-		}
-
 		// (temporary) populate level with mobs
 		int mobs = rng.nextInt(8)+16;
 		for (int i = 0; i < mobs; i++) {
 			Point t;
 			do{
 				t = currentMap.randomOpenSpace();				
-			// make sure mobs aren't within 3 N.Y. Distance of player.
+				// make sure mobs aren't within 3 N.Y. Distance of player.
 			}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
 
 			System.out.println("point picked");
 			// TODO: tierCalculation.
-			new Creature(floorNumber,t);
+			new Creature(floorNumber,t,currentMap);
 			System.out.println("Entity Added.");
 		}
 
@@ -404,7 +400,7 @@ public class Main {
 			currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key",floorNumber));
 			t = currentMap.randomEmptySpace();
 
-			currentMap.entities.add(new StaticEntity("chest", t));
+			currentMap.entities.add(new StaticEntity("chest", t, currentMap));
 		}
 
 		try{
@@ -447,16 +443,16 @@ public class Main {
 
 		if(isNew){
 
-			/** TEMPORARY **/
+			// TODO (T) Temp
 			Point t;
 			int mobs = (rng.nextInt(6)+10)*(floorNumber+1);
 			for (int i = 0; i < mobs; i++) {
 				do{
 					t = currentMap.randomOpenSpace();				
 				}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
-				
-				// TODO: tierCalculation
-				new Creature(1, t);
+
+				// TODO (+) tierCalculation
+				new Creature(1, t, currentMap);
 			}
 
 			int items = rng.nextInt(6)+8;
@@ -464,7 +460,7 @@ public class Main {
 				t = currentMap.randomOpenSpace();
 				System.out.println("adding item #"+i);
 
-				// TODO: refactor & reimplement
+				// TODO (F) refactor & reimplement
 				currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(1));
 			}
 
@@ -474,10 +470,10 @@ public class Main {
 				System.out.println("adding Chest/Key pair");
 				currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key",floorNumber));
 				t = currentMap.randomEmptySpace();
-				currentMap.addEntity(new StaticEntity("Silver Chest",t));
+				currentMap.addEntity(new StaticEntity("Silver Chest",t,currentMap));
 			}
 		}
-		
+
 		try{
 			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(floorNumber)+"-t"+System.currentTimeMillis()+".png");
 			ImageIO.write(currentMap.renderMap(), "png", output);
@@ -494,7 +490,7 @@ public class Main {
 		JFrame frame = new JFrame();
 		JFrame_HEIGHT = img.getHeight()+42;
 		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1600);
-		
+
 		// TODO: use different icon for game.
 		frame.setIconImage(player.getSprite());
 
@@ -612,7 +608,7 @@ public class Main {
 	}
 
 	public static void blackOverlay(){
-		// TODO: load file into memory
+		// TODO (F) load file into memory
 		try{
 			refreshFrame(ImageIO.read(new File("imgs/descendingOverlay.png")));
 		}catch(Exception e){
@@ -631,6 +627,7 @@ public class Main {
 		return dimg;
 	}
 
+	@Deprecated
 	public static void advanceTicks(int _ticks){
 		ticks++;
 		Point pos = player.getPos();
@@ -646,16 +643,14 @@ public class Main {
 			floorInv.printContents(true);
 		}
 
-		// double playerHP = player.HP;
-		// TODO: move max to e
 		player.upkeep();
-		
+
 		ArrayList<Creature> dead = new ArrayList<>();
 
 		// int[] order = floors.get(currentFloor).getEntityPriority();
 		// for(int i: order){
 		Queue<Creature> creatureQueue = new LinkedList<>();
-		
+
 		for(Entity e: currentMap.entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
@@ -665,25 +660,25 @@ public class Main {
 		}
 
 		// TODO (X) Overhaul
-		while(!creatureQueue.isEmpty()){
-			Creature c = creatureQueue.remove();
-			// TODO: add mob sleep/detection stuff
-			// Entity e = floors.get(currentFloor).entities.get(i);
-			Entity.turnEnding ending = c.takeTurn();
-			System.out.println(c.getName()+" takes a turn.");
-			if(ending.equals(Entity.turnEnding.DEAD)){
-				// TODO (R) Review
-				c.setPos(new Point(-1,-1));
-				dead.add(c);
-			}else if(ending.equals(Entity.turnEnding.WAITING)){
-				System.out.println(c.getName()+" is waiting.");
-				if(!allWaiting(creatureQueue)){
-					creatureQueue.add(c);
-				}else{
-					
-				}
-			}
-		}
+		//		while(!creatureQueue.isEmpty()){
+		//			Creature c = creatureQueue.remove();
+		//			// TODO (+) add mob sleep/detection stuff
+		//			// Entity e = floors.get(currentFloor).entities.get(i);
+		//			Entity.turnEnding ending = c.takeTurn();
+		//			System.out.println(c.getName()+" takes a turn.");
+		//			if(ending.equals(Entity.turnEnding.DEAD)){
+		//				// TODO (R) Review
+		//				c.setPos(new Point(-1,-1));
+		//				dead.add(c);
+		//			}else if(ending.equals(Entity.turnEnding.WAITING)){
+		//				System.out.println(c.getName()+" is waiting.");
+		//				if(!allWaiting(creatureQueue)){
+		//					creatureQueue.add(c);
+		//				}else{
+		//
+		//				}
+		//			}
+		//		}
 
 		for(Creature c: dead){
 			c.die();
@@ -714,29 +709,8 @@ public class Main {
 		return img;
 	}
 
-	// TODO: move to Potion Class?
-	public static String randomPotionName(Potion p){
-		String descriptor = "";
-		if(rng.nextBoolean()){
-			descriptor = Potion.getRandomDescriptor();
-		}
-		
-		String colour = "";
-		int r;
-		do{
-			r = rng.nextInt(Potion.PotionColours.colours.length);
-		}
-		// makes sure this colour hasn't been chosen before.
-		while(potionColours.containsValue(Potion.PotionColours.values()[r]));
-		
-		colour = Potion.PotionColours.colours[r];
-
-		potionColours.put(p.getTypeName(), Potion.PotionColours.values()[r]);
-
-		return String.format("%s%s%s potion", descriptor, descriptor.length() > 0 ? " " : "", colour);
-	}
-
 	public static Direction directionValue(int keyCode, boolean controlDown, boolean shiftDown){
+		System.out.println("dir check");
 		if (keyCode == KeyEvent.VK_K || keyCode == KeyEvent.VK_UP) {
 			return Direction.UP;
 		} else if (keyCode == KeyEvent.VK_H || keyCode == KeyEvent.VK_LEFT) {
@@ -755,7 +729,7 @@ public class Main {
 			}else if(shiftDown){
 				return Direction.UP_RIGHT;
 			}else{
-				return Direction.DOWN_RIGHT;
+				return Direction.RIGHT;
 			}
 		}else if(keyCode == KeyEvent.VK_Y){
 			return Direction.UP_LEFT;

@@ -1,28 +1,29 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
 public abstract class GameObject {
-	private static BufferedImage sourcedItems;
+	private static HashMap<SpriteSource,BufferedImage> imageSources = new HashMap<>();
 	private BufferedImage sprite;
 
 	GameObject(){
 		init();
 	}
 
-	protected static BufferedImage getSourcedItems() {
-		return sourcedItems;
+	protected static BufferedImage getSource(SpriteSource source) {
+		return imageSources.get(source);
 	}
 
-	protected static BufferedImage subImage(int x, int y){
-		init();
-		return sourcedItems.getSubimage(x*24+x, y*24+y, 24, 24);
+	// TODO (+) optimize, frontload all loading and subimaging.
+	protected static BufferedImage subImage(SpriteSource source, int x, int y){
+		return getSource(source).getSubimage(x*24+x, y*24+y, 24, 24);
 	}
 	
 	private static void init() {
-		if(sourcedItems==null) loadImages();
+		loadImages();
 	}
 	
 	public BufferedImage getSprite() {
@@ -33,15 +34,31 @@ public abstract class GameObject {
 		this.sprite = _sprite;
 	}
 	
-	public void setSprite(int x, int y) {
-		this.setSprite(subImage(x,y));
+	public void setSprite(SpriteSource source, int x, int y) {
+		this.setSprite(subImage(source,x,y));
 	}
 
 	private static void loadImages() {
-		try {
-			sourcedItems = ImageIO.read(new File("imgs/sourcedItems.png"));
-		} catch (IOException e) {
-			e.printStackTrace();
+		for(SpriteSource src: SpriteSource.values()) {
+			if(!imageSources.containsKey(src)) {
+				try {
+					imageSources.put(src,ImageIO.read(new File(src.fileLocation)));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	public static enum SpriteSource {
+		DEFAULT ("sourcedItems.png");
+		
+		private static final String path = "imgs/";
+		public String fileLocation;
+		
+		SpriteSource(String fileName){
+			this.fileLocation = path + fileName;
 		}
 	}
 }

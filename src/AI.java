@@ -15,7 +15,7 @@ public class AI {
 
 	public boolean takeTurn(){
 		c.upkeep();
-		// TODO: add AI
+		// TODO (+) add AI
 		boolean waiting = basic();
 		c.endStep();
 		return waiting;

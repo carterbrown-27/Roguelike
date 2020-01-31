@@ -9,10 +9,10 @@ public final class Weapon extends Item implements Equippable {
 		// TODO: weapon init here:
 	}
 	
+	// TODO (+) add a dmg calculation here (maybe)
 	public double getDamage() {
 		return damage;
 	}
-	// TODO: add a dmg calculation here (maybe)
 	
 	public double getAccuracy() {
 		return accuracy;

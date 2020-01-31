@@ -1,21 +1,32 @@
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 public class Creature extends Entity {
 
+	private static JSONObject masterJSON;
+	
+	private JSONObject creatureData;
+	
 	// fields
-	private double HP;
+	private double HP = 1.0;
 	private double HP_max = 1; // 6 dmg = player with dagger
+	private double HP_regen = 1;
+	
 	private double SP;
-	private double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
-	private double strength = 1;
 	private double SP_max = 1;
 	private double SP_regen = 1;
+	
+	private double EV = 1.0; // MAX = 1.5 percent, 1.0 = 50/50 to dodge attack of same acc
+	private double strength = 1;
 	private double speed = 1.0;
 	private double satiation = 10; // TEMP
 	
@@ -35,16 +46,42 @@ public class Creature extends Entity {
 	private boolean flying = false;
 	private boolean amphibious = false;
 	
+	// TODO (A) Implement, read data from JSON.
 	// constructors
-	Creature(String id, Point p){
-		super(id,p);
+	Creature(String id, Point p, Map map){
+		super(id,p,map);
+		initMasterJSON();
+		
+		// (R) Review, move some of this to entity potentially
+		creatureData = masterJSON.getJSONObject(id);
+		this.setName(creatureData.getString("name"));
+		JSONObject spriteIndex = creatureData.getJSONObject("spriteIndex");
+		super.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
+		
+		// creature specific
+		JSONObject HP_Data = creatureData.getJSONObject("HP");
+		this.HP_max = HP_Data.getDouble("max");
+		this.HP = HP_max;
+		this.HP_regen = HP_Data.getDouble("regenRate");
 	}
 	
-	Creature(int tier, Point p){
-		this(pickRandomType(tier),p);
+	Creature(int tier, Point p, Map map){
+		this(pickRandomType(tier),p,map);
 	}
 	// methods
 	
+	public static void initMasterJSON() {
+		if(masterJSON == null) {
+			try{
+				JSONTokener in = new JSONTokener(new FileReader("DATA/Creatures.json"));
+				masterJSON = new JSONObject(in);
+			}catch(Exception e) {
+				e.printStackTrace();
+			};
+		}
+	}
+	
+	// TODO (V) Add rat to DEFAULT sprite sheet.
 	@Deprecated
 	private void createRat(){
 		// TODO: edit sprites
@@ -59,13 +96,13 @@ public class Creature extends Entity {
 		satiation = Math.max(satiation-0.01,0);
 		for(Status s: getStatuses().keySet()){
 			if(s.upkeep){
-				// TODO: move this data elsewhere.
+				// TODO (M) move this data elsewhere.
 				if(s.equals(Status.RESTING)){
 					HP += 0.5;
 				}else if(s.equals(Status.POISONED)){
 					HP--;
 				}
-				// TODO: add static regen
+				// TODO (R) Review: add static regen
 			}
 			getStatuses().replace(s, getStatuses().get(s)-1);
 			if(getStatuses().get(s) <= 0){
@@ -151,7 +188,7 @@ public class Creature extends Entity {
 	
 	public static String pickRandomType(int tier) {
 		// TODO (A) Implement
-		return "";
+		return "rat";
 	}
 	
 	// GETTERS, SETTERS, MUTATORS
@@ -207,7 +244,7 @@ public class Creature extends Entity {
 		return strength;
 	}
 	
-	// TODO: remove these, only allow immutable gets.
+	// TODO (X) remove these, only allow immutable gets.
 	public HashMap<Status,Integer> getStatuses() {
 		return statuses;
 	}

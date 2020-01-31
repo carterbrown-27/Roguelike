@@ -4,9 +4,6 @@ import java.io.*;
 import java.util.logging.Logger;
 
 public abstract class Item extends GameObject {
-	private static Scroll[] scrolls;
-	private static Potion[] potions;
-	
 	private static JSONObject masterJSON;
 	// private static boolean initialized;
 	
@@ -24,15 +21,7 @@ public abstract class Item extends GameObject {
 	Item(String id){
 		typeName = id.toLowerCase();
 		// TODO: improve
-		if(masterJSON == null) {
-			try{
-				JSONTokener in = new JSONTokener(new FileReader("DATA/Items.json"));
-				masterJSON = new JSONObject(in);
-			}catch(Exception e) {
-				e.printStackTrace();
-			};
-		}
-		
+		initMasterJSON();
 		// TODO: init SuperType
 		for(String k: masterJSON.keySet()) {
 			JSONObject j = masterJSON.getJSONObject(k);
@@ -48,17 +37,18 @@ public abstract class Item extends GameObject {
 		}
 		
 		JSONObject itemList = supertypeData.getJSONObject("list");
-		this.itemData = itemList.getJSONObject(id);
+		this.itemData = itemList.getJSONObject(typeName);
 		
 		JSONObject spriteIndex = (JSONObject) getSpecValue("spriteIndex");
 		
-		this.setSprite(spriteIndex.getInt("x"), spriteIndex.getInt("y"));
+		this.setSprite(GameObject.SpriteSource.DEFAULT, spriteIndex.getInt("x"), spriteIndex.getInt("y"));
 		
 		this.displayName = itemData.optString("name");
 		this.description = itemData.optString("description");
 	}
 	
 	public String toString() {
+// 		TODO: (A) Implement
 //		String quantity;
 //		if(this.amount==1){
 //			if(Inventory.isVowelStart(this.getDisplayName())){
@@ -86,7 +76,18 @@ public abstract class Item extends GameObject {
 			"(ESC) exit"
 		};
 	}
-
+	
+	public static void initMasterJSON() {
+		if(masterJSON == null) {
+			try{
+				JSONTokener in = new JSONTokener(new FileReader("DATA/Items.json"));
+				masterJSON = new JSONObject(in);
+			}catch(Exception e) {
+				e.printStackTrace();
+			};
+		}
+	}
+	
 	public static JSONObject getJSONbyID(String id) {
 		// TODO (A) Implement
 		JSONObject obj = new JSONObject();
@@ -152,18 +153,6 @@ public abstract class Item extends GameObject {
 		return superType;
 	}
 	
-	public static Potion[] getPotions() {
-		if(potions == null) {
-			
-		}
-		return potions;
-	}
-	
-	public static Scroll[] getScrolls() {
-		return scrolls;
-	}
-
-
 	// TODO (I) move, refactor
 //	public void quaff(Entity e, char c){
 //		boolean discover = true;
@@ -225,7 +214,7 @@ public abstract class Item extends GameObject {
 //			descriptor = "fine.";
 //		}
 //
-//		e.SAT += type.foodValue; // TODO: cap
+//		e.SAT += type.foodValue; // xTODO: cap
 //		e.inv.removeItem(c);
 //
 //		Main.appendText("That "+type.name+" tasted "+descriptor);
@@ -233,13 +222,9 @@ public abstract class Item extends GameObject {
 //		Main.takeTurn();
 //
 //	}
-	
+
 	public String getDisplayName(){
-		if(!isUnknown() || Main.player.isItemIdentified(this)){
-			return displayName;
-		}else {
-			return Main.randomNames.getOrDefault((typeName),"<random name not found>");
-		}
+		return displayName;
 	}
 
 	public static enum ItemType {

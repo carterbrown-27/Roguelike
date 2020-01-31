@@ -19,17 +19,19 @@ public class Entity extends GameObject {
 	public FOV fov = new FOV();
 	public boolean isPassable = false;
 
-	Entity(String id, Point _pos){
+	Entity(String id, Point _pos, Map _map){
+		// TODO (I) Implement
+		super();
 		// TODO: init by id
 		this.pos = _pos;
+		this.map = _map;
 		
 		// TODO (X) Eliminate
 		if(!id.equals("player")){
-			// TODO: move map logic to Map.
-			name = map.addEntity(this);
-		}else{
-			name = "player"; 
+			// TODO (M) move map logic to Map.
+			map.addEntity(this);
 		}
+		name = id.toLowerCase();
 	}
 	
 	public void die(){
@@ -129,14 +131,18 @@ public class Entity extends GameObject {
 		}
 		return p;
 	}
-	// TODO: keys that match floors, inv print keylist
-	// TODO: move this to Inv class
+	// TODO (A) Implement: keys that match floors, inv print keylist
+	// TODO (M) move this to Inv class
 	
 	// getters
 	public int getX(){ return pos.x; }
 	public int getY(){ return pos.y; }
 	public Point getPos(){ return pos; }
 	public String getName(){ return name; } 
+	
+	public void setName(String _name) {
+		this.name = _name;
+	}
 	
 	public void setPos(Point p) {
 		pos = p;

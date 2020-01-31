@@ -100,7 +100,7 @@ public class Pathfinder {
 //			return false;
 //		}
 		
-		// TODO: fix collision checking, maybe flesh out Tile class
+		// TODO (F) fix collision checking, maybe flesh out Tile class
 		if(map[check.y][check.x] != 1 && (map[check.y][check.x] != 2 || (c!=null && (c.isFlying() || c.isAmphibious() ))) &&
 				(map[check.y][check.x] != 3 || (c!=null && c.isFlying() ))) return true;
 		return false;
