@@ -2,7 +2,7 @@
 
 Working on a [roguelike](http://www.roguebasin.com/index.php?title=Main_Page) from scratch in java as a hobby.
 
-Artwork based on tilesets from [Arachne](https://forums.tigsource.com/index.php?topic=14166.0)
+Artwork is original/modified tilesets from [Arachne](https://forums.tigsource.com/index.php?topic=14166.0)
 ([CC non-commercial license](https://creativecommons.org/licenses/by-nc-sa/4.0/))
 
 FOV Algorithm is an interpretation from [SquidLib](https://github.com/SquidPony/SquidLib)
