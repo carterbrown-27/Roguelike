@@ -1,6 +1,7 @@
 import org.json.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public abstract class Item extends GameObject {
@@ -182,19 +183,34 @@ public abstract class Item extends GameObject {
 	public String getDisplayName(){
 		return displayName;
 	}
+	
+	public static <E extends Item> Item createItemByID(Class<E> _class, String id) {
+		try {
+			return (Item) _class.getDeclaredConstructor(String.class).newInstance(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	// TODO (R) Review, is this good practice? resolve unchecked errors.
+	private static final Class[] itemClasses = {Weapon.class,Armour.class,Potion.class,Scroll.class,Missile.class,Item.class};
+	private static final String[] itemTypeNames = {"Weapons","Armour","Potions","Scrolls","Missiles","Special"};
 
 	public static enum ItemType {
-		WEAPON ("Weapons"),
-		ARMOUR ("Armour"),
-		POTION ("Potions"),
-		SCROLL ("Scrolls"),
-		MISSILE ("Missiles"),
-		SPECIAL ("Special");
+		WEAPON (0),
+		ARMOUR (1),
+		POTION (2),
+		SCROLL (3),
+		MISSILE (4),
+		SPECIAL (5);
 		
 		String name;
+		Class<? extends Item> _class;
 
-		ItemType(String _name){
-			this.name = _name;
+		ItemType(int n){
+			this.name = itemTypeNames[n];
+			this._class = itemClasses[n];
 		}
 	}
 
@@ -209,26 +225,9 @@ public abstract class Item extends GameObject {
 		List<String> ids = getAllItemIDs(type, tier);
 		String id = ids.get(Main.rng.nextInt(ids.size()));
 		
-		return createItemByID(type,id);
+		return createItemByID(type._class,id);
 	}
 	
-	// TODO (R) Review (ugly, but it works).
-	// maybe use Class generics
-	public static Item createItemByID(ItemType type, String id) {
-		if(type == ItemType.WEAPON) {
-			return new Weapon(id);
-		}else if(type == ItemType.ARMOUR) {
-			return new Armour(id);
-		}else if(type == ItemType.SCROLL) {
-			return new Scroll(id);
-		}else if(type == ItemType.POTION) {
-			return new Potion(id);
-		}else if(type == ItemType.MISSILE) {
-			return new Missile(id);
-		}
-		
-		return null;
-	}
 	
 	public static List<String> getAllItemIDs(ItemType type){
 		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
