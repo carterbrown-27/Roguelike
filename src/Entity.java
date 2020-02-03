@@ -18,6 +18,10 @@ public class Entity extends GameObject {
 	public boolean awake = false;
 	public FOV fov = new FOV();
 	public boolean isPassable = false;
+	
+	private double HP = 1.0;
+	private double HP_max = 1; // 6 dmg = player with dagger
+	private boolean indestructible = false;
 
 	Entity(String id, Point _pos, Map _map){
 		// TODO (I) Implement
@@ -140,11 +144,38 @@ public class Entity extends GameObject {
 	public Point getPos(){ return pos; }
 	public String getName(){ return name; } 
 	
+	public double getHP() {
+		return HP;
+	}
+	
+	public void changeHP(double delta) {
+		setHP(getHP() + delta);
+	}
+	
+	public void setHP(double value) {
+		HP = value;
+		HP = ActionLibrary.round(HP, 1);
+		
+		if(HP <= 0) {
+			// die
+		}else if(HP > getHP_max()) {
+			HP = getHP_max();
+		}
+	}
+	
+	public double getHP_max() {
+		return HP_max;
+	}
+	
 	public void setName(String _name) {
 		this.name = _name;
 	}
 	
 	public void setPos(Point p) {
 		pos = p;
+	}
+
+	public void setHP_max(double hP_max) {
+		HP_max = hP_max;
 	}
 }

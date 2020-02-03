@@ -4,6 +4,8 @@ public final class Armour extends Item implements Equippable {
 	
 	Armour(String id) {
 		super(id);
+		super.addPrompt('T', "(t)ake off");
+		super.addPrompt('P', "(p)ut on");
 	}
 	
 	public double getDefence() {

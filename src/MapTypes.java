@@ -3,13 +3,14 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
 
+// TODO (R) Replace & (J) JSONize this data.
 public enum MapTypes {
 	UNDERCITY ("undercity");
 	
 	public final String PATH = "imgs/";
 	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
 	
-	public final String TILEMAP = "sourcedTileset_v2.0.png";
+	public final String TILEMAP = "sourcedTileset_v2.1.png";
 	public final String ITEMS = "sourcedItems.png";
 	
 	public char[] foreground_characters = {' ','H'};

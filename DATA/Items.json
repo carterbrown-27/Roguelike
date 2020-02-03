@@ -2,17 +2,7 @@
 	"Weapons" : {
 		"generalProperties" : {
 			"stackable" : false,
-			"unknown" : false,
-			"prompts" : {
-				"equipPrompt" : {
-					"char" : "w",
-					"text" : "(w)ield"
-				},
-				"unequipPrompt" : {
-					"char" : "u",
-					"text" : "(u)nwield"
-				}
-			}
+			"unknown" : false
 		},
 		
 		"list" : {
@@ -22,7 +12,7 @@
 					"x" : 5,
 					"y" : 1
 				},
-				"tier" : 2,
+				"tier" : 1,
 			
 				"type" : "short blade",
 				"damage" : 3.0,
@@ -38,7 +28,7 @@
 					"x" : 6,
 					"y" : 1
 				},
-				"tier" : 4,
+				"tier" : 3,
 			
 				"type" : "axe",
 				"damage" : 9.0,
@@ -85,18 +75,7 @@
 	"Armour" : {
 		"generalProperties" : {
 			"stackable" : false,
-			"unknown" : false,
-		
-			"prompts" : {
-				"equipPrompt" : {
-					"char" : "p",
-					"text" : "(p)ut on"
-				},
-				"unequipPrompt" : {
-					"char" : "t",
-					"text" : "(t)ake off"
-				}
-			}
+			"unknown" : false
 		},
 		
 		"list" : {
@@ -106,7 +85,7 @@
 					"x" : 0,
 					"y" : 4
 				},
-				"tier" : 2,
+				"tier" : 1,
 			
 				"type" : "boots",	
 				"defence": 1.5
@@ -118,12 +97,6 @@
 		"generalProperties" : {
 			"stackable" : true,
 			"unknown" : true,
-			"prompts" : {
-				"use" : {
-					"char" : "r",
-					"text" : "(r)ead"
-				}
-			},
 		
 			"defaultSpriteIndex" : {
 				"x" : 0,
@@ -140,7 +113,7 @@
 				"tier" : 2,
 			
 				"effects" : {
-					"ID" : 1,
+					"ID" : true,
 					"NOISE" : 3,
 					"LIGHT" : 4
 				},
@@ -154,7 +127,7 @@
 				"tier" : 2,
 			
 				"effects" : {
-					"TELEPORT" : null,
+					"TELEPORT" : true,
 					"DIZZY" : 5,
 					"NOISE" : 7
 				},
@@ -170,10 +143,7 @@
 			"unknown" : true,
 		
 			"prompts" : {
-				"use" : {
-					"char" : "q",
-					"text" : "(q)uaff"
-				}
+				"q" : "(q)uaff"
 			},
 	
 			"defaultSpriteIndex" : {
@@ -253,10 +223,7 @@
 			"unknown" : false,
 		
 			"prompts" : {
-				"use" : {
-					"char" : "e",
-					"text" : "(e)at"
-				}
+				"e" : "(e)at"
 			}
 		},
 		

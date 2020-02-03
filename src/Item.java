@@ -1,7 +1,7 @@
 import org.json.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.logging.Logger;
+import java.util.*;
 
 public abstract class Item extends GameObject {
 	private static JSONObject masterJSON;
@@ -12,16 +12,20 @@ public abstract class Item extends GameObject {
 	
 	private ItemType superType;
 	private String typeName;
-	private String displayName;
-	private String description;
+	private String displayName = "<name>";
+	private String description = "<description>";
 	private int amount = 1;
+	
+	private LinkedHashMap<Character,String> actions = new LinkedHashMap<>();
 	
 	private char inventoryID = '?';
 
 	Item(String id){
 		typeName = id.toLowerCase();
+
 		// TODO: improve
 		initMasterJSON();
+		initBasicPrompts();
 		// TODO: init SuperType
 		for(String k: masterJSON.keySet()) {
 			JSONObject j = masterJSON.getJSONObject(k);
@@ -75,12 +79,27 @@ public abstract class Item extends GameObject {
 		return quantity;
 	}
 	
-	public String[] listPrompts() {
-		 return new String[] {
-			"(d)rop",
-			"(r)eassign",
-			"(ESC) exit"
-		};
+	public boolean actionsContains(char c) {
+		return actions.containsKey(c);
+	}
+	
+	public void initBasicPrompts() {
+		// reverse order.
+		addPrompt('A', "re(a)ssign");
+		addPrompt('D', "(d)rop");
+		// ESC is handled differently, see main.		
+	}
+	
+	public List<String> listPrompts() {
+		ArrayList<String> result = new ArrayList<>();
+		actions.forEach((c,t) -> result.add(c+ " - " + t));
+		Collections.reverse(result);
+		result.add("ESC - exit");
+		return result;
+	}
+	
+	public void addPrompt(char c, String s) {
+		actions.put(c,s);
 	}
 	
 	public static void initMasterJSON() {
@@ -159,6 +178,116 @@ public abstract class Item extends GameObject {
 	public ItemType getSuperType() {
 		return superType;
 	}
+
+	public String getDisplayName(){
+		return displayName;
+	}
+
+	public static enum ItemType {
+		WEAPON ("Weapons"),
+		ARMOUR ("Armour"),
+		POTION ("Potions"),
+		SCROLL ("Scrolls"),
+		MISSILE ("Missiles"),
+		SPECIAL ("Special");
+		
+		String name;
+
+		ItemType(String _name){
+			this.name = _name;
+		}
+	}
+
+	public static Item randomItem(int tierMean) {
+		// TODO (A) Implement
+		// TODO (+) More Sophisticated Random Calculations.
+		float plusMinus = 1/3f * tierMean;
+		int tier = (int) ((Main.rng.nextFloat()*2*plusMinus) + tierMean - plusMinus);
+		
+		ItemType type = randomItemType(0);
+		
+		List<String> ids = getAllItemIDs(type, tier);
+		String id = ids.get(Main.rng.nextInt(ids.size()));
+		
+		return createItemByID(type,id);
+	}
+	
+	// TODO (R) Review (ugly, but it works).
+	// maybe use Class generics
+	public static Item createItemByID(ItemType type, String id) {
+		if(type == ItemType.WEAPON) {
+			return new Weapon(id);
+		}else if(type == ItemType.ARMOUR) {
+			return new Armour(id);
+		}else if(type == ItemType.SCROLL) {
+			return new Scroll(id);
+		}else if(type == ItemType.POTION) {
+			return new Potion(id);
+		}else if(type == ItemType.MISSILE) {
+			return new Missile(id);
+		}
+		
+		return null;
+	}
+	
+	public static List<String> getAllItemIDs(ItemType type){
+		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
+		return new ArrayList<String>(itemListObj.keySet());
+	}
+	
+	public static List<String> getAllItemIDs(ItemType type, int tier){
+		tier = Math.max(tier, 1);
+		
+		List<String> items = getAllItemIDs(type);
+		List<String> result = new ArrayList<>();
+		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
+		
+		// decrease to 0.
+		do {
+			for(String id: items) {
+				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
+					result.add(id);
+				}
+			}
+			tier--;
+		} while(result.isEmpty() && tier > 0);
+		
+		// then go up
+		while(result.isEmpty() && tier <= 5) {
+			for(String id: items) {
+				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
+					result.add(id);
+				}
+			}
+			tier++;
+		}
+		
+		return result;
+	}
+	
+	// TODO (T) Temp
+	public static ItemType randomItemType(int level /*, LevelType type*/){
+
+		// pick any but a special item.
+		int r;
+		do{
+			r = Main.rng.nextInt(ItemType.values().length);
+		} while (ItemType.values()[r].equals(ItemType.SPECIAL));
+
+		return ItemType.values()[r];
+	}
+	
+	public void drop(Entity from) {
+		// TODO (A) Implement
+	}
+	
+	public void setInventoryID(char c) {
+		this.inventoryID = c;
+	}
+
+	public char getInventoryID() {
+		return inventoryID;
+	}
 	
 	// TODO (I) move, refactor
 //	public void quaff(Entity e, char c){
@@ -229,52 +358,4 @@ public abstract class Item extends GameObject {
 //		Main.takeTurn();
 //
 //	}
-
-	public String getDisplayName(){
-		return displayName;
-	}
-
-	public static enum ItemType {
-		WEAPON ("Weapons"),
-		ARMOUR ("Armour"),
-		POTION ("Potions"),
-		SCROLL ("Scrolls"),
-		MISSILE ("Missiles"),
-		SPECIAL ("Special");
-		
-		String name;
-
-		ItemType(String _name){
-			this.name = _name;
-		}
-	}
-
-	public static Item randomItem(int tier) {
-		// TODO (A) Implement
-		return Main.rng.nextBoolean() ? new Scroll("scroll of teleportation"): new Scroll("scroll of identification");
-	}
-	
-	// TODO (T) Temp
-	public static ItemType randomItemType(int level /*, LevelType type*/){
-
-		// pick any but a special item.
-		int r;
-		do{
-			r = Main.rng.nextInt(ItemType.values().length);
-		} while (ItemType.values()[r].equals(ItemType.SPECIAL));
-
-		return ItemType.values()[r];
-	}
-	
-	public void drop(Entity from) {
-		// TODO (A) Implement
-	}
-	
-	public void setInventoryID(char c) {
-		this.inventoryID = c;
-	}
-
-	public char getInventoryID() {
-		return inventoryID;
-	}
 }

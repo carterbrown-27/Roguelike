@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.List;
 
 public class Missile extends Item implements Consumable, Equippable {
 	private boolean equipped;
@@ -6,6 +7,7 @@ public class Missile extends Item implements Consumable, Equippable {
 	
 	Missile(String id, int _amount){
 		super(id);
+		super.addPrompt('O', "thr(o)w");
 		this.setAmount(_amount);
 	}
 	
@@ -37,12 +39,6 @@ public class Missile extends Item implements Consumable, Equippable {
 	@Override
 	public void use(Entity e) {
 		
-	}
-	
-	@Override
-	public String[] listPrompts() {
-		// TODO (A) Implement
-		return new String[] {};
 	}
 
 	@Override

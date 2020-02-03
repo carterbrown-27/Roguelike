@@ -1,3 +1,5 @@
+import java.util.List;
+
 public final class Weapon extends Item implements Equippable {
 	private boolean equipped = false;
 	double damage;
@@ -6,6 +8,10 @@ public final class Weapon extends Item implements Equippable {
 	
 	Weapon(String id){
 		super(id);
+		
+		// TODO (A) introduce logic to see if it is weilded/not.
+		super.addPrompt('U', "(u)nwield");
+		super.addPrompt('W', "(w)ield");
 		// TODO: weapon init here:
 	}
 	
@@ -20,12 +26,6 @@ public final class Weapon extends Item implements Equippable {
 	
 	public double getWeight() {
 		return weight;
-	}
-	
-	@Override
-	public String[] listPrompts() {
-		// TODO (A) Implement
-		return new String[] {};
 	}
 	
 	@Override

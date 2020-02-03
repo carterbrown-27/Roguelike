@@ -23,6 +23,7 @@ public class Main {
 	private static JPanel panel = new JPanel();
 
 	public static Player player;
+	public static String playerName = "Player Name";
 
 	public static int ticks = 0;
 
@@ -61,11 +62,11 @@ public class Main {
 	public static JPanel consolePanel = new JPanel();
 
 	public static StringHelper stringHelper;
-	
+
 	public static Font f = new Font("Serif",Font.BOLD,20);
 	public static JTextArea area = new JTextArea();
 	public static JTextArea stats = new JTextArea();
-	
+
 	public static ArrayList<String> txt = new ArrayList<String>();
 	public static final int rows = 15;
 
@@ -113,14 +114,14 @@ public class Main {
 						txt.clear(); // TODO (T) Temp
 						refreshText();
 					}
-					
+
 					// TODO (R) Review
 					if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 						itemPickup = false;
 						itemScreen = false;
 						pickItem = false;
 						inventoryScreen = false;
-						
+
 					} else if(itemPickup){
 						System.out.println("item Pickup");
 						for (char c = 'a'; c <= 'z'; c++) {
@@ -153,31 +154,69 @@ public class Main {
 							// TODO (R) Review
 							Item i = player.inv.getItem(c);
 
-							appendText(c+" - "+i.getDisplayName()+" selected.");
+							appendText(i+" selected.");
 							appendText(i.getDescription());
 
-							String[] prompts = i.listPrompts();
-							for(String s: prompts) {
+							for(String s: i.listPrompts()) {
 								appendText(s);
 							}
+
 							selectedItem = c;
 						}
+
 						if(selected) itemScreen = true;
 						inventoryScreen = false;
+
 					}else if(itemScreen){
 						System.out.println("item screen");
 						char c = selectedItem;
 						Item i = player.inv.getItem(c);
 
-						// TODO (F) fix all of this.
-						if(e.getKeyChar() == 'd'){
-							i.drop(player);
+						char keyChar = e.getKeyChar();
 
-							// player.inv.dropAll(c, player);
+						if(!Character.isAlphabetic(keyChar) || !i.actionsContains(Character.toUpperCase(keyChar))) {
+							appendText(keyChar + " is not an option.");
+							return;
+						}
+						
+						keyChar = Character.toUpperCase(keyChar);
+
+						// NOTE: letters for actions must be unique across all items
+
+						// TODO (A) Implement
+						
+						// any item
+						switch(keyChar) {
+
+						case 'D' : {
+							i.drop(player);
+							break;
+						}
+						
+						case 'A' : {
+							// reassign
+							break;
+						}
+						
 						}
 
 						if(i instanceof Equippable){
 							Equippable eq = (Equippable) i;
+							
+							// TODO: differentiate
+							switch(keyChar) {
+
+							case 'W' : {
+								eq.equip(player);
+								break;
+							}
+							
+							case 'P' : {
+								eq.equip(player);
+								break;
+							}
+							
+							}
 							// TODO (A) Implement
 						}
 
@@ -561,7 +600,8 @@ public class Main {
 		stats.setFont(f);
 		stats.setText("");
 
-		stats.append("  <Player Name>\t\t                     .\n\n");
+		// TODO (R) Refactor
+		stats.append("  "+playerName+"\t\t                     .\n\n");
 		stats.append("  HP: "+player.getHP()+"\n");
 		stats.append("  SP: "+player.getSP()+"\n");
 		stats.append("  STR: "+player.getStrength()+"\n");
@@ -672,25 +712,25 @@ public class Main {
 		}
 
 		// TODO (X) Overhaul
-//		while(!creatureQueue.isEmpty()){
-//			Creature c = creatureQueue.remove();
-//			// TODO (+) add mob sleep/detection stuff
-//			// Entity e = floors.get(currentFloor).entities.get(i);
-//			Entity.turnEnding ending = c.takeTurn();
-//			System.out.println(c.getName()+" takes a turn.");
-//			if(ending.equals(Entity.turnEnding.DEAD)){
-//				// TODO (R) Review
-//				c.setPos(new Point(-1,-1));
-//				dead.add(c);
-//			}else if(ending.equals(Entity.turnEnding.WAITING)){
-//				System.out.println(c.getName()+" is waiting.");
-//				if(!allWaiting(creatureQueue)){
-//					creatureQueue.add(c);
-//				}else{
-//
-//				}
-//			}
-//		}
+		//		while(!creatureQueue.isEmpty()){
+		//			Creature c = creatureQueue.remove();
+		//			// TODO (+) add mob sleep/detection stuff
+		//			// Entity e = floors.get(currentFloor).entities.get(i);
+		//			Entity.turnEnding ending = c.takeTurn();
+		//			System.out.println(c.getName()+" takes a turn.");
+		//			if(ending.equals(Entity.turnEnding.DEAD)){
+		//				// TODO (R) Review
+		//				c.setPos(new Point(-1,-1));
+		//				dead.add(c);
+		//			}else if(ending.equals(Entity.turnEnding.WAITING)){
+		//				System.out.println(c.getName()+" is waiting.");
+		//				if(!allWaiting(creatureQueue)){
+		//					creatureQueue.add(c);
+		//				}else{
+		//
+		//				}
+		//			}
+		//		}
 
 		for(Creature c: dead){
 			c.die();

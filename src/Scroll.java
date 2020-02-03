@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.List;
 
 public class Scroll extends Item implements Consumable {
 	private static StringHelper stringHelper;
@@ -7,6 +8,7 @@ public class Scroll extends Item implements Consumable {
 	
 	Scroll(String id, int _amount){
 		super(id);
+		super.addPrompt('R', "(r)ead");      
 		this.setAmount(_amount);
 		
 		if(stringHelper == null) stringHelper = new StringHelper(Main.rng);
@@ -31,18 +33,21 @@ public class Scroll extends Item implements Consumable {
 	}
 	
 	@Override
-	public String[] listPrompts() {
-		// TODO (A) Implement
-		return new String[] {};
-	}
-	
-	@Override
 	public String getDisplayName() {
 		if(Main.player.isItemIdentified(this)){
 			return super.getDisplayName();
 		}else {
 			return fakeName;
 		}
+	}
+	
+	@Override
+	public String getDescription() {
+		if(Main.player.isItemIdentified(this)){
+			return super.getDescription();
+		}else {
+			return "An unknown scroll.";
+		}		
 	}
 	
 	public static String randomScrollName(String realName) {

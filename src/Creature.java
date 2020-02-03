@@ -17,8 +17,7 @@ public class Creature extends Entity {
 	private JSONObject creatureData;
 	
 	// fields
-	private double HP = 1.0;
-	private double HP_max = 1; // 6 dmg = player with dagger
+
 	private double HP_regen = 1;
 	
 	private double SP;
@@ -65,8 +64,8 @@ public class Creature extends Entity {
 		this.speed = creatureData.getDouble("speed");
 		
 		JSONObject HP_Data = creatureData.getJSONObject("HP");
-		this.HP_max = HP_Data.getDouble("max");
-		this.HP = HP_max;
+		super.setHP_max(HP_Data.getDouble("max"));
+		super.setHP(super.getHP_max());
 		this.HP_regen = HP_Data.getDouble("regenRate");
 		
 		JSONObject SP_Data = creatureData.getJSONObject("SP");
@@ -109,9 +108,9 @@ public class Creature extends Entity {
 			if(s.upkeep){
 				// TODO (M) move this data elsewhere.
 				if(s.equals(Status.RESTING)){
-					HP += 0.5;
+					changeHP(+0.5);
 				}else if(s.equals(Status.POISONED)){
-					HP--;
+					changeHP(-1);
 				}
 				// TODO (R) Review: add static regen
 			}
@@ -149,8 +148,9 @@ public class Creature extends Entity {
 		}
 		if(awakeCheck()){
 			upkeep();
-
-			if (HP<0.05) {
+			
+			// TODO (R) Refactor
+			if (getHP()<0.05) {
 				Main.appendText("You kill the " + super.getName() + ".");
 				return turnEnding.DEAD; // dead
 			}
@@ -213,26 +213,7 @@ public class Creature extends Entity {
 	public boolean isAmphibious() {
 		return amphibious;
 	}
-	
-	public double getHP() {
-		return HP;
-	}
-	
-	public void changeHP(double delta) {
-		setHP(getHP() + delta);
-	}
-	
-	public void setHP(double value) {
-		HP = value;
-		HP = ActionLibrary.round(HP, 1);
-		
-		if(HP <= 0) {
-			// die
-		}else if(HP > getHP_max()) {
-			HP = getHP_max();
-		}
-	}
-	
+
 	public double getSP() {
 		return SP;
 	}
@@ -263,11 +244,6 @@ public class Creature extends Entity {
 	public ArmourSet getArmourSet() {
 		return armourSet;
 	}
-
-	public double getHP_max() {
-		return HP_max;
-	}
-
 	
 	public double getDefence() {
 		return armourSet.getDefence();
