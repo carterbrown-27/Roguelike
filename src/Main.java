@@ -33,23 +33,21 @@ public class Main {
 	public static boolean inventoryScreen = false;
 	public static boolean itemScreen = false;
 	public static boolean pickItem = false;
+	public static boolean aimScreen = false;
 
 	public static Point targetPos;
-	public static boolean aimScreen = false;
 
 	public static boolean identify = false;
 	public static boolean enchant = false;
-
-	public static Inventory currentInventory;
 
 	public static char selectedItem;
 
 	public static HashMap<Integer,Map> floors = new HashMap<>();
 	public static Map gen;
 
-	public static Map currentMap;
-
 	public static int floorNumber;
+	public static Map currentMap;
+	public static Inventory currentInventory;
 	public static Point ropePoint;
 
 	public static final int MAP_H = 60;
@@ -63,6 +61,13 @@ public class Main {
 	public static JPanel consolePanel = new JPanel();
 
 	public static StringHelper stringHelper;
+	
+	public static Font f = new Font("Serif",Font.BOLD,20);
+	public static JTextArea area = new JTextArea();
+	public static JTextArea stats = new JTextArea();
+	
+	public static ArrayList<String> txt = new ArrayList<String>();
+	public static final int rows = 15;
 
 	public static void main(String[] args){
 
@@ -108,7 +113,15 @@ public class Main {
 						txt.clear(); // TODO (T) Temp
 						refreshText();
 					}
-					if(itemPickup){
+					
+					// TODO (R) Review
+					if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						itemPickup = false;
+						itemScreen = false;
+						pickItem = false;
+						inventoryScreen = false;
+						
+					} else if(itemPickup){
 						System.out.println("item Pickup");
 						for (char c = 'a'; c <= 'z'; c++) {
 							if(currentInventory==null){
@@ -434,7 +447,7 @@ public class Main {
 		floorNumber = floor;
 		currentMap = floors.get(floorNumber);
 		Point startPoint= currentMap.getPosition(2);
-		
+
 		// TODO: update for multiple stairs
 		if(!down) startPoint= currentMap.getPosition(3);
 		player.map = currentMap;
@@ -523,11 +536,6 @@ public class Main {
 		return frame;
 	}
 
-	public static Font f = new Font("Serif",Font.BOLD,20);
-	public static JTextArea area = new JTextArea();
-	public static JTextArea stats = new JTextArea();
-	public static ArrayList<String> txt = new ArrayList<String>();
-
 	public static void refreshFrame(BufferedImage render) {
 		panel.removeAll();
 		JLabel picLabel = new JLabel(new ImageIcon(render));
@@ -595,7 +603,6 @@ public class Main {
 		refreshText();
 	}
 
-	public static final int rows = 15;
 	public static void refreshText(){
 		area.setText("");
 		while (txt.size()>rows){
@@ -656,30 +663,34 @@ public class Main {
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
 				c.awakeCheck();
-				if(c.awake) creatureQueue.add(c);
+				// TODO (T) TEMP
+				if(c.getHP() <= 0) {
+					dead.add(c);
+				}
+				else if(c.awake) creatureQueue.add(c);
 			}
 		}
 
 		// TODO (X) Overhaul
-		//		while(!creatureQueue.isEmpty()){
-		//			Creature c = creatureQueue.remove();
-		//			// TODO (+) add mob sleep/detection stuff
-		//			// Entity e = floors.get(currentFloor).entities.get(i);
-		//			Entity.turnEnding ending = c.takeTurn();
-		//			System.out.println(c.getName()+" takes a turn.");
-		//			if(ending.equals(Entity.turnEnding.DEAD)){
-		//				// TODO (R) Review
-		//				c.setPos(new Point(-1,-1));
-		//				dead.add(c);
-		//			}else if(ending.equals(Entity.turnEnding.WAITING)){
-		//				System.out.println(c.getName()+" is waiting.");
-		//				if(!allWaiting(creatureQueue)){
-		//					creatureQueue.add(c);
-		//				}else{
-		//
-		//				}
-		//			}
-		//		}
+//		while(!creatureQueue.isEmpty()){
+//			Creature c = creatureQueue.remove();
+//			// TODO (+) add mob sleep/detection stuff
+//			// Entity e = floors.get(currentFloor).entities.get(i);
+//			Entity.turnEnding ending = c.takeTurn();
+//			System.out.println(c.getName()+" takes a turn.");
+//			if(ending.equals(Entity.turnEnding.DEAD)){
+//				// TODO (R) Review
+//				c.setPos(new Point(-1,-1));
+//				dead.add(c);
+//			}else if(ending.equals(Entity.turnEnding.WAITING)){
+//				System.out.println(c.getName()+" is waiting.");
+//				if(!allWaiting(creatureQueue)){
+//					creatureQueue.add(c);
+//				}else{
+//
+//				}
+//			}
+//		}
 
 		for(Creature c: dead){
 			c.die();

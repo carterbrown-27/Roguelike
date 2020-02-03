@@ -64,7 +64,7 @@
 			"regenRate" : 1.0
 		},
 		"speed" : 0.8,
-		"evasiveness" : 1.5,
+		"evasiveness" : 1.3,
 		
 		"properties" : {
 			"flying" : true

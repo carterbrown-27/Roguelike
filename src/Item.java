@@ -14,7 +14,7 @@ public abstract class Item extends GameObject {
 	private String typeName;
 	private String displayName;
 	private String description;
-	private int amount;
+	private int amount = 1;
 	
 	private char inventoryID = '?';
 
@@ -51,25 +51,28 @@ public abstract class Item extends GameObject {
 	}
 	
 	public String toString() {
-// 		TODO: (A) Implement
-//		String quantity;
-//		if(this.amount==1){
-//			if(Inventory.isVowelStart(this.getDisplayName())){
-//				quantity = "an";
-//			}else{
-//				quantity = "a";
-//			}
-//		}else{
-//			quantity = String.valueOf(this.amount);
-//		}
-
-		// String line = String.format("%s - %s %s", this.inventoryID, quantity, this.getDisplayName());
-
+// 		TODO: (A) Implement properly
 		//if(this.wielded) line+= " (weilded)";
 		//if(this.quivered) line+= " (quivered)";
 		//if(this.worn) line+= " (worn)" ;
 
-		return String.format("%s - %s", this.inventoryID, this.getDisplayName());
+		// String.format("%s - %s", this.inventoryID, this.getDisplayName())
+		return String.format("%s - %s %s", this.getInventoryID(), this.getQuantityString(), this.getDisplayName());
+	}
+	
+	public String getQuantityString() {
+		String quantity;
+		if(this.amount==1){
+			if(StringHelper.isVowelStart(this.getDisplayName())){
+				quantity = "an";
+			}else{
+				quantity = "a";
+			}
+		}else{
+			quantity = String.valueOf(this.amount);
+		}
+		
+		return quantity;
 	}
 	
 	public String[] listPrompts() {
@@ -139,6 +142,7 @@ public abstract class Item extends GameObject {
 		}
 	}
 
+	// TODO: (R) Fix
 	public boolean isStackable(){
 		Object o = getSpecValue("stackable");
 		if(o == null) {
@@ -264,5 +268,13 @@ public abstract class Item extends GameObject {
 	
 	public void drop(Entity from) {
 		// TODO (A) Implement
+	}
+	
+	public void setInventoryID(char c) {
+		this.inventoryID = c;
+	}
+
+	public char getInventoryID() {
+		return inventoryID;
 	}
 }

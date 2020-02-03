@@ -99,8 +99,8 @@ public class Inventory {
 		firstOpen = '!';
 	}
 
+	// TODO: (A) Implement stacking
 	public <T extends Item> void addItem(T i){
-		// stack items
 		if (i.isStackable()) {
 			// TODO (F) handle better
 			for (Item t : generalInventory.values()) {
@@ -115,6 +115,7 @@ public class Inventory {
 		getFirstOpen();
 		if (firstOpen != '!') {
 			generalInventory.put(firstOpen, i);
+			i.setInventoryID(firstOpen);
 		} else {
 			Main.appendText("Inventory full.");
 			return;

@@ -11,13 +11,13 @@ public final class Armour extends Item implements Equippable {
 	}
 
 	@Override
-	public void equip(Entity e) {
+	public void equip(Creature c) {
 		// TODO (A) Implement
 		
 	}
 
 	@Override
-	public void unequip(Entity e) {
+	public void unequip(Creature c) {
 		// TODO (A) Implement
 		
 	}

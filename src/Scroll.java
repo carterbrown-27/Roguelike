@@ -18,6 +18,14 @@ public class Scroll extends Item implements Consumable {
 	}
 	
 	@Override
+	public String toString() {
+		String name = getDisplayName();
+		String quantity = super.getQuantityString() + (!Main.player.isItemIdentified(this) ? " scroll(s) reading" : "");
+		
+		return String.format("%s - %s %s",super.getInventoryID(), quantity, name);
+	}
+	
+	@Override
 	public void use(Entity e) {
 		
 	}
@@ -44,5 +52,11 @@ public class Scroll extends Item implements Consumable {
 		String name = (stringHelper.randomName()+" "+stringHelper.randomName()).toUpperCase();
 		scrollNames.put(realName, name);
 		return name;
+	}
+	
+	// TODO (T) TEMP
+	@Override
+	public boolean isStackable() {
+		return true;
 	}
 }

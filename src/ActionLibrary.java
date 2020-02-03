@@ -148,6 +148,7 @@ public class ActionLibrary {
 			double deltaS = c.getStrength() + c.weapon.getAccuracy() /* x skill */ - (c.weapon.getAccuracy() * 2);
 			
 			// calculations, move these?
+			// TODO (R) Review
 			if (deltaS < 0){
 				return Math.min(Math.max(Math.pow(deltaS, 2) * (-1) * 0.025 + 1.0 , 0.1), 1.51);	
 			}else{		

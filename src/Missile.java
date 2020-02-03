@@ -15,12 +15,12 @@ public class Missile extends Item implements Consumable, Equippable {
 	}
 	
 	@Override
-	public void equip(Entity e) {
+	public void equip(Creature c) {
 		
 	}
 	
 	@Override
-	public void unequip(Entity e) {
+	public void unequip(Creature c) {
 		
 	}
 	

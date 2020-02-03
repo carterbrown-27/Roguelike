@@ -29,20 +29,21 @@ public final class Weapon extends Item implements Equippable {
 	}
 	
 	@Override
-	public void equip(Entity e) {
+	public void equip(Creature c) {
 		// TODO (A) Implement
-		
+		c.weapon = this;
 	}
 
 	@Override
-	public void unequip(Entity e) {
+	public void unequip(Creature c) {
 		// TODO (A) Implement
-		
+		c.weapon = null;
 	}
 	
 	@Override
 	public void drop(Entity e) {
-		unequip(e);
+		// TODO (T) TEMP
+		if(e instanceof Creature) unequip((Creature) e);
 		super.drop(e);
 		// TODO (A) Implement
 		// drop to floor.

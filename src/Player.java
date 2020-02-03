@@ -4,17 +4,12 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Player extends Creature {
-	public BufferedImage img;
-	public Map map;
-	
 	public int ViewDistance = 5;
 	public int Luminosity = 4;
 	
 	public Ability ability = Ability.BASIC;
-	public int step = 0;
 
-	public ActionLibrary lib;
-	
+	public ActionLibrary lib;	
 	public boolean resting = false;
 	
 	private ArrayList<Direction> dirs = new ArrayList<>();
@@ -74,7 +69,6 @@ public class Player extends Creature {
 	
 	public void select(Ability a){
 		dirs.clear();
-		step = 0;
 		this.ability = a;
 	}
 	

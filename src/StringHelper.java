@@ -28,7 +28,7 @@ public class StringHelper {
 
 		while(name.length() < length){
 			if((name.length() == length-1 && prev == 2 && rng.nextInt(4)+1 > 1) || prev == 3 || (prev == 2 && rng.nextBoolean())
-					|| (prev == 0 && rng.nextInt(4)+1 == 4) || (prev==-1 && rng.nextInt(5)+1 >= 4)){
+					|| (prev == 0 && rng.nextInt(5)+1 == 5) || (prev==-1 && rng.nextInt(5)+1 >= 4)){
 
 				name+=vowels[rng.nextInt(vowels.length)];
 				prev = 0;
