@@ -174,12 +174,10 @@ public class Main {
 
 						char keyChar = e.getKeyChar();
 
-						if(!Character.isAlphabetic(keyChar) || !i.actionsContains(Character.toUpperCase(keyChar))) {
+						if(!Character.isAlphabetic(keyChar) || !i.actionsContains(keyChar)) {
 							appendText(keyChar + " is not an option.");
 							return;
 						}
-						
-						keyChar = Character.toUpperCase(keyChar);
 
 						// NOTE: letters for actions must be unique across all items
 
@@ -188,12 +186,12 @@ public class Main {
 						// any item
 						switch(keyChar) {
 
-						case 'D' : {
+						case 'd' : {
 							i.drop(player);
 							break;
 						}
 						
-						case 'A' : {
+						case 'a' : {
 							// reassign
 							break;
 						}
@@ -206,13 +204,27 @@ public class Main {
 							// TODO: differentiate
 							switch(keyChar) {
 
-							case 'W' : {
+							case 'w' : {
+								appendText("You wield your "+i.getDisplayName());
 								eq.equip(player);
 								break;
 							}
 							
-							case 'P' : {
+							case 'p' : {
+								appendText("You put on your "+i.getDisplayName());
 								eq.equip(player);
+								break;
+							}
+							
+							case 'u' : {
+								appendText("You unwield your "+i.getDisplayName());
+								eq.unequip(player);
+								break;
+							}
+							
+							case 't' : {
+								appendText("You take off your "+i.getDisplayName());
+								eq.unequip(player);
 								break;
 							}
 							
@@ -223,6 +235,23 @@ public class Main {
 						if(i instanceof Consumable){
 							Consumable cnsm = (Consumable) i;
 							// TODO (A) Implement
+							switch(keyChar) {
+							
+							case 'r' : {
+								// read effect
+								appendText("");
+								cnsm.use(player);
+								break;
+							}
+							
+							case 'q' : {
+								// quaff effect
+								appendText("");
+								cnsm.use(player);
+								break;
+							}
+							
+							}
 						}
 
 						itemScreen = false;
@@ -512,8 +541,8 @@ public class Main {
 				t = currentMap.randomOpenSpace();
 				System.out.println("adding item #"+i);
 
-				// TODO (F) refactor & reimplement
-				currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(1));
+				// TODO (F) refactor & reimplement tier: floorNumber
+				currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(floorNumber+1));
 			}
 
 			int chests = rng.nextInt(2)+1;
@@ -605,7 +634,8 @@ public class Main {
 		stats.append("  HP: "+player.getHP()+"\n");
 		stats.append("  SP: "+player.getSP()+"\n");
 		stats.append("  STR: "+player.getStrength()+"\n");
-		stats.append("  SAT: "+ActionLibrary.round(player.getSatiation(),1)+"\n");
+		stats.append("  DEF: "+player.getArmourSet().getDefence()+"\n");
+		stats.append("  SAT: "+ActionLibrary.round(player.getSAT(),1)+"\n");
 
 		if(player.weapon != null){			
 			stats.append("  Weapon: "+player.weapon.getDisplayName());

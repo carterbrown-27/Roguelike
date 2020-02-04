@@ -80,14 +80,22 @@ public abstract class Item extends GameObject {
 		return quantity;
 	}
 	
+	protected JSONObject getMasterJSON() {
+		return masterJSON;
+	}
+	
+	protected JSONObject getItemData() {
+		return itemData;
+	}
+	
 	public boolean actionsContains(char c) {
 		return actions.containsKey(c);
 	}
 	
 	public void initBasicPrompts() {
 		// reverse order.
-		addPrompt('A', "re(a)ssign");
-		addPrompt('D', "(d)rop");
+		addPrompt('a', "re(a)ssign");
+		addPrompt('d', "(d)rop");
 		// ESC is handled differently, see main.		
 	}
 	
@@ -184,18 +192,10 @@ public abstract class Item extends GameObject {
 		return displayName;
 	}
 	
-	public static <E extends Item> Item createItemByID(Class<E> _class, String id) {
-		try {
-			return (Item) _class.getDeclaredConstructor(String.class).newInstance(id);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	// TODO (R) Review, is this good practice? resolve unchecked errors.
-	private static final Class[] itemClasses = {Weapon.class,Armour.class,Potion.class,Scroll.class,Missile.class,Item.class};
-	private static final String[] itemTypeNames = {"Weapons","Armour","Potions","Scrolls","Missiles","Special"};
+	// TODO (R) Review, is this good practice? resolve unchecked warnings.
+	// TODO (A) Implement food
+	private static final Class[] itemClasses = {Weapon.class,Armour.class,Potion.class,Scroll.class,Missile.class,Food.class,Item.class};
+	private static final String[] itemTypeNames = {"Weapons","Armour","Potions","Scrolls","Missiles","Food","Special"};
 
 	public static enum ItemType {
 		WEAPON (0),
@@ -203,7 +203,8 @@ public abstract class Item extends GameObject {
 		POTION (2),
 		SCROLL (3),
 		MISSILE (4),
-		SPECIAL (5);
+		FOOD (5),
+		SPECIAL(6);
 		
 		String name;
 		Class<? extends Item> _class;
@@ -211,6 +212,15 @@ public abstract class Item extends GameObject {
 		ItemType(int n){
 			this.name = itemTypeNames[n];
 			this._class = itemClasses[n];
+		}
+	}
+	
+	public static <E extends Item> Item createItemByID(Class<E> _class, String id) {
+		try {
+			return (Item) _class.getDeclaredConstructor(String.class).newInstance(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 

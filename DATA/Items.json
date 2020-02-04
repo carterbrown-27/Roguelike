@@ -87,7 +87,7 @@
 				},
 				"tier" : 1,
 			
-				"type" : "boots",	
+				"slot" : "feet",	
 				"defence": 1.5
 			}
 		}

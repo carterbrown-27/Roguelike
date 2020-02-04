@@ -32,7 +32,7 @@ public class Potion extends Item implements Consumable {
 	// Master Constructor
 	Potion(String id, int _amount){
 		super(id);
-		super.addPrompt('Q', "(q)uaff");
+		super.addPrompt('q', "(q)uaff");
 		
 		// seed this rng.
 		if(rng == null) rng = new Random(Main.rng.nextInt());
@@ -47,6 +47,12 @@ public class Potion extends Item implements Consumable {
 		this(id,1);
 	}
 
+	public String toString() {
+		// handle plurals here potion(s) of ... vs 3 <colour> potion(s)
+		return String.format("%s - %s %s%s", this.getInventoryID(), this.getQuantityString(), this.getDisplayName());
+	}
+	
+	
 	// Not inside enum because of static field instantiation order.
 	public static final String[] colourNames = {"red","orange","green","blue","violet","pink","mahogany",
 			"aquamarine","golden","silver","charcoal","brown"};
@@ -158,7 +164,13 @@ public class Potion extends Item implements Consumable {
 	}
 	
 	@Override
-	public void use(Entity e) {
+	public void use(Creature c) {
 
+	}
+	
+	// TODO (T) TEMP
+	@Override
+	public boolean isStackable() {
+		return true;
 	}
 }

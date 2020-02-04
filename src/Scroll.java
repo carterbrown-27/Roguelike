@@ -8,7 +8,7 @@ public class Scroll extends Item implements Consumable {
 	
 	Scroll(String id, int _amount){
 		super(id);
-		super.addPrompt('R', "(r)ead");      
+		super.addPrompt('r', "(r)ead");      
 		this.setAmount(_amount);
 		
 		if(stringHelper == null) stringHelper = new StringHelper(Main.rng);
@@ -28,7 +28,7 @@ public class Scroll extends Item implements Consumable {
 	}
 	
 	@Override
-	public void use(Entity e) {
+	public void use(Creature c) {
 		
 	}
 	

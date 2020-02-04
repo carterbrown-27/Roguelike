@@ -10,8 +10,8 @@ public final class Weapon extends Item implements Equippable {
 		super(id);
 		
 		// TODO (A) introduce logic to see if it is weilded/not.
-		super.addPrompt('U', "(u)nwield");
-		super.addPrompt('W', "(w)ield");
+		super.addPrompt('u', "(u)nwield");
+		super.addPrompt('w', "(w)ield");
 		// TODO: weapon init here:
 	}
 	

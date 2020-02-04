@@ -1,6 +1,6 @@
 public interface Consumable {
 	
-	public void use(Entity e);
+	public void use(Creature c);
 	
 	public int getAmount();
 	

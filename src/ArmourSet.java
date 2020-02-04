@@ -34,6 +34,18 @@ public class ArmourSet {
 		return null;
 	}
 	
+	public void takeOff(String slot) {
+		armourMap.replace(slot, null);
+	}
+	
+	// removes all of armour (though this should not matter)
+	public void takeOff(Armour a) {
+		for(String s: armourMap.keySet()) {
+			Armour b = armourMap.get(s);
+			if(b != null && b.equals(a)) armourMap.replace(s, null);
+		}
+	}
+	
 	public double getDefence() {
 		double def = 0;
 		for(Armour a: armourMap.values()) {

@@ -8,7 +8,7 @@ public class Key extends Item implements Consumable {
 	}
 	
 	@Override
-	public void use(Entity e) {
+	public void use(Creature c) {
 		// TODO (A) Implement
 		// open()
 	}

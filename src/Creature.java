@@ -249,7 +249,11 @@ public class Creature extends Entity {
 		return armourSet.getDefence();
 	}
 	
-	public double getSatiation() {
+	public double getSAT() {
 		return satiation;
+	}
+	
+	public void changeSAT(double amt) {
+		satiation += amt;
 	}
 }

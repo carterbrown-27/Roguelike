@@ -1,13 +1,14 @@
 import java.awt.Point;
 import java.util.List;
 
+// TODO (*) consider making this not consumable, just make all items throwable, with this overriding superclass properties.
 public class Missile extends Item implements Consumable, Equippable {
 	private boolean equipped;
 	private int amount;
 	
 	Missile(String id, int _amount){
 		super(id);
-		super.addPrompt('O', "thr(o)w");
+		super.addPrompt('o', "thr(o)w");
 		this.setAmount(_amount);
 	}
 	
@@ -31,13 +32,13 @@ public class Missile extends Item implements Consumable, Equippable {
 		return this.equipped;
 	}
 	
-	public void throwThis(Entity e, Point target) {
+	public void throwThis(Creature c, Point target) {
 		// throwing logic
-		use(e);
+		use(c);
 	}
 	
 	@Override
-	public void use(Entity e) {
+	public void use(Creature c) {
 		
 	}
 
