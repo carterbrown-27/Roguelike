@@ -103,6 +103,7 @@ public class Entity extends GameObject {
 		this.inPlayerView = val;
 	}
 	
+	// TODO: override with status (e.g. flying) check in Creature.
 	public boolean checkMove(Direction dir){
 		Point translated = getTranslatedPos(dir);
 		return isFullOpen(translated);

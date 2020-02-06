@@ -7,6 +7,10 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import org.json.JSONObject;
+
+/** Represents a Potion. Potions have a random effect, which uniquely correspond to a random potion colour. Potions apply Statuses to entities that quaff them.
+ */
 public class Potion extends Item implements Consumable {
 	
 	private static Random rng;
@@ -14,6 +18,9 @@ public class Potion extends Item implements Consumable {
 	private static HashMap<String,PotionColour> potionColours = new HashMap<>();
 	private static BufferedImage potionImages;
 	
+	// string = name of effect, integer = potency (i.e. hp regained, duration, tier of effect, etc).
+	// TODO (R) Review, potentially add Effect Class that describes functionality, tier, duration, etc. --> HashSet
+	private HashMap<String,Integer> effects = new HashMap<>();
 	private String fakeName;
 	
 	public static final String[] descriptors = {
@@ -39,6 +46,13 @@ public class Potion extends Item implements Consumable {
 		this.setAmount(_amount);
 		this.fakeName = randomPotionName(this.getTypeName());
 		
+		JSONObject effectData = super.getItemData().getJSONObject("effects");
+		
+		for(String k: effectData.keySet()) {
+			Integer v = effectData.getInt(k);
+			effects.put(k, v);
+		}
+		
 		super.setSprite(potionColours.get(this.getTypeName()).image);
 		// randomPotionName inits the colour. TODO (R) Review
 	}
@@ -47,11 +61,10 @@ public class Potion extends Item implements Consumable {
 		this(id,1);
 	}
 
-	public String toString() {
-		// handle plurals here potion(s) of ... vs 3 <colour> potion(s)
-		return String.format("%s - %s %s%s", this.getInventoryID(), this.getQuantityString(), this.getDisplayName());
-	}
-	
+//	public String toString() {
+//		// handle plurals here potion(s) of ... vs 3 <colour> potion(s)
+//		return String.format("%s - %s %s%s", this.getInventoryID(), this.getQuantityString(), this.getDisplayName());
+//	}
 	
 	// Not inside enum because of static field instantiation order.
 	public static final String[] colourNames = {"red","orange","green","blue","violet","pink","mahogany",
@@ -61,6 +74,8 @@ public class Potion extends Item implements Consumable {
 			subImagePotion(5,1), subImagePotion(2,1),subImagePotion(4,0),subImagePotion(1,1),subImagePotion(5,0),subImagePotion(3,1)};
 	
 	// TODO (J) JSONize.
+	/** Enumerates all the possible colours a Potion could have, with the sprites and names for these colours.
+	 */
 	public static enum PotionColour {
 		RED		 		(0),
 		ORANGE 		 	(1),
@@ -163,9 +178,21 @@ public class Potion extends Item implements Consumable {
 		}		
 	}
 	
+	
 	@Override
 	public void use(Creature c) {
-
+		// TODO (A) Implement iterating over potion effects.
+		// TODO (A) Implement text output.
+		// TEMP
+		c.changeHP(effects.getOrDefault("HP_CHANGE", 0));
+		if(effects.containsKey("FLIGHT")) c.addStatus(Status.FLIGHT);
+		if(effects.containsKey("MIGHTY")) c.addStatus(Status.MIGHTY);
+		
+		if(c instanceof Player) {
+			((Player) c).identify(this);
+		}
+		
+		super.delete(c);
 	}
 	
 	// TODO (T) TEMP

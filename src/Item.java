@@ -288,6 +288,12 @@ public abstract class Item extends GameObject {
 	
 	public void drop(Entity from) {
 		// TODO (A) Implement
+		Main.appendText("You drop the "+this.getDisplayName());
+		delete(from);
+	}
+	
+	public void delete(Entity from) {
+		from.inv.removeItem(getInventoryID());
 	}
 	
 	public void setInventoryID(char c) {

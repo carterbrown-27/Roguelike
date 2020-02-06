@@ -5,7 +5,7 @@ public class Food extends Item implements Consumable {
 	
 	Food(String id) {
 		super(id);
-		
+		super.addPrompt('e', "(e)at");
 		JSONObject itemData = super.getItemData();
 		foodValue = itemData.getDouble("foodValue");
 		// TODO Auto-generated constructor stub
@@ -15,6 +15,7 @@ public class Food extends Item implements Consumable {
 	public void use(Creature c) {
 		// TODO Auto-generated method stub
 		c.changeSAT(+foodValue);
+		super.delete(c);
 	}
 
 }

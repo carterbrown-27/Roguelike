@@ -59,4 +59,9 @@ public class Missile extends Item implements Consumable, Equippable {
 			this.amount = 0;
 		}
 	}
+	
+	@Override
+	public boolean isStackable() {
+		return true;
+	}
 }

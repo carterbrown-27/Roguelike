@@ -26,7 +26,7 @@ public final class Armour extends Item implements Equippable {
 
 	@Override
 	public void unequip(Creature c) {
-		c.getArmourSet().takeOff(slot);
+		c.getArmourSet().takeOff(slot, this);
 	}
 
 	@Override

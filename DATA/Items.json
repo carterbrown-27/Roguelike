@@ -171,7 +171,7 @@
 				"tier" : 2,
 			
 				"effects" : {
-					"MIGHT" : 10
+					"MIGHTY" : 10
 				},
 				
 				"selfUseMsg" : "Your body shudders with newfound strength!",

@@ -83,16 +83,6 @@ public class Main {
 
 		// controls
 
-		/* y	(k/ua)	u
-		 *(h/la) . (l/ra)
-		 * b	(d/da) n
-		 * or shift/ctrl+l/r 
-		 * 
-		 * 7 0 4
-		 * 3 . 1
-		 * 6 2 5
-		 */
-
 		frame.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
@@ -246,11 +236,16 @@ public class Main {
 							
 							case 'q' : {
 								// quaff effect
-								appendText("");
+								appendText("You quaff the "+i.getDisplayName());
 								cnsm.use(player);
 								break;
 							}
 							
+							case 'e' : {
+								appendText("You eat the "+i.getDisplayName());
+								cnsm.use(player);
+								break;
+							}
 							}
 						}
 
@@ -259,9 +254,8 @@ public class Main {
 					}else if(pickItem){
 						System.out.println("pickItem screen");
 						boolean flag = false;
-						for (char c = 'a'; c <= 'z'; c++) {
-							if (e.getKeyChar() == c && player.inv.contains(c)) {
-								Item i = player.inv.getItem(c);
+						if (player.inv.contains(e.getKeyChar())) {
+								Item i = player.inv.getItem(e.getKeyChar());
 								if(identify && !player.isItemIdentified(i)){
 									flag = true;
 									player.identify(i);
@@ -271,7 +265,7 @@ public class Main {
 									enchant = false;
 								}
 							}
-						}
+
 						if(!flag){
 							appendText(e.getKeyChar()+" is not a valid option.");
 						}else{
@@ -790,7 +784,24 @@ public class Main {
 		img = resize(img, img.getWidth()*3, img.getHeight()*3);
 		return img;
 	}
-
+	
+	/**
+	 * @param keyCode: the KeyCode from the KeyEvent
+	 * @param controlDown: is control pressed
+	 * @param shiftDown: is shift pressed
+	 * @return: the direction corresponding to the keys pressed
+	 * 
+	 * These are how keys correspond to Directions:
+	 * 
+	 * YKU
+	 * H@L	
+	 * BJN
+	 * 
+	 * or Arrow Keys + CTRL (adds down to L/R) + SHIFT (adds up to L/R)
+	 * shift-left	up		shift-right
+	 * left			@		right
+	 * ctrl-left	down	ctrl-right
+	 */
 	public static Direction directionValue(int keyCode, boolean controlDown, boolean shiftDown){
 		System.out.println("dir check");
 		if (keyCode == KeyEvent.VK_K || keyCode == KeyEvent.VK_UP) {

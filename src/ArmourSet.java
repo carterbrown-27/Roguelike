@@ -34,8 +34,11 @@ public class ArmourSet {
 		return null;
 	}
 	
-	public void takeOff(String slot) {
-		armourMap.replace(slot, null);
+	public void takeOff(String slot, Armour a) {
+		// if the armour is in this slot
+		if(armourMap.get(slot).equals(a)) {
+			armourMap.replace(slot, null);			
+		}
 	}
 	
 	// removes all of armour (though this should not matter)
