@@ -193,6 +193,8 @@ public class Potion extends Item implements Consumable {
 		}
 		
 		super.delete(c);
+		Main.takeTurn();
+
 	}
 	
 	// TODO (T) TEMP

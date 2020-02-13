@@ -4,11 +4,15 @@ import javax.imageio.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Map {
+	private static final Logger logger = Logger.getLogger(Map.class.getName());
+	
 	public int height = 52; // 52
 	public int width = 90; // 90
-	public int MIN_DOORS = 32; // 32
+	public final int MIN_DOORS = 32; // 32
 
 	public int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
@@ -64,11 +68,11 @@ public class Map {
 			generateCaves();
 		}
 
-		System.out.println("placing exits...");
+		logger.info("placing exits...");
 		placeExits();
-		System.out.println("exits placed");
+		logger.info("exits placed");
 		printMap();
-		System.out.println("building tile map...");
+		logger.info("building tile map...");
 		buildTileMap();
 
 		for(char[][] r: type.precons.values()){
@@ -79,8 +83,8 @@ public class Map {
 				System.out.println();
 			}
 		}
-		System.out.println("done.");
-		if(debugFlag) System.out.println("debug flag raised");
+		logger.info("Done.");
+		if(debugFlag) logger.warning("debug flag raised");
 	}
 
 	// methods
@@ -195,7 +199,7 @@ public class Map {
 
 			while (!q.isEmpty()) {
 				Room R = q.remove();
-				System.out.println("building OFF OF..."+R.roomType.name());
+				logger.fine("building OFF OF..."+R.roomType.name());
 				// room vs corridor
 				for(int t = 0; t < R.doors; t++){
 
@@ -309,12 +313,13 @@ public class Map {
 		}while(doorCount<MIN_DOORS);
 		
 		// doctorMap();
-		printMap();
-		System.out.println("F:");
+		encaseMap();
+		logger.info("Done building Undercity");
+		// printMap();
 	}
 
 	public ArrayList<PointDir> buildCorridor(PointDir door, boolean fromOtherC){
-		System.out.println("building corridor...");
+		logger.fine("building corridor...");
 		ArrayList<PointDir> doors = new ArrayList<PointDir>();
 
 		char dir = door.dir;
@@ -414,6 +419,16 @@ public class Map {
 		if((map[y][x-1] == 1 && map[y][x+1] == 1) || (map[y-1][x] == 1 && map[y+1][x] == 1)) return true;
 		return false;
 	}
+	
+	/** Surrounds the map with a 1-tile wall, so that non-wall tiles cannot occupy the outer edges of the map.
+	 */
+	public void encaseMap() {
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				if(x==0 || y==0 || x==width-1 || y==height-1) map[y][x] = 1;
+			}
+		}
+	}
 
 	public class PointDir {
 		public Point point;
@@ -450,7 +465,8 @@ public class Map {
 		SEWER,
 		PRECON;
 	}
-
+	
+	// TODO (R) Refactor, clean up & document all of this
 	public class Room {
 
 		public int x;
@@ -498,7 +514,7 @@ public class Map {
 
 			if(roomType.equals(RoomType.RANDOM)){
 				// TODO: Tabulate %s
-				System.out.println("picking type.");
+				logger.fine("picking type.");
 				int a = Main.rng.nextInt(10);
 				if(a>=7){
 					roomType = RoomType.SEWER;
@@ -576,9 +592,9 @@ public class Map {
 
 		public PointDir getRandomDoor(){
 			if(!doorPoints.isEmpty()){
-				System.out.println(doorPoints.size());
+				logger.fine("" + doorPoints.size());
 				for(PointDir d: doorPoints){
-					System.out.println(d.point);
+					logger.fine(String.valueOf(d.point));
 				}
 				int rand;
 				if(doorPoints.size()>1){
@@ -590,10 +606,10 @@ public class Map {
 				doorPoints.remove(rand);
 				return p;
 			}else{
-				System.out.println("picking random door");
+				logger.fine("Picking random door...");
 				PointDir p = randomDoor();
 				if(p==null){
-					System.out.println("no more doors possible");
+					logger.fine("No more doors possible!");
 				}
 				return p;
 			}
@@ -735,12 +751,12 @@ public class Map {
 
 		public void buildNormal(){
 			if(roomType.equals(RoomType.REGULAR)){
-				System.out.println("building regular...");
+				logger.fine("building regular...");
 				pickDoors();
 				//				placeDoors();
 				cutOut();
 			}else if(roomType.equals(RoomType.SEWER)){
-				System.out.println("building sewer...");
+				logger.fine("building sewer...");
 				pickDoors();
 
 				//				if(dir==dirs[UP]){
@@ -756,7 +772,7 @@ public class Map {
 				cutOut();
 				buildSewer();
 			}else if(roomType.equals(RoomType.PRECON)){
-				System.out.println("building precon #"+precon_id);
+				logger.fine("building precon #"+precon_id);
 				pickDoors();
 				buildPrecon();
 			}
@@ -1132,7 +1148,7 @@ public class Map {
 		// left
 		if(!(centerX<=0) && f!= foreground[centerY][centerX-1]) type+=8;
 
-		System.out.println(type);
+		// System.out.println(type);
 		return type;
 	}
 
@@ -1173,6 +1189,8 @@ public class Map {
 		return map[p.y][p.x];
 	}
 
+	
+	// TODO (R) Refactor to FW, pick 2 points whose edge is not null, and exceeds a certain distance.
 	public void placeExits(){
 		int x1=0;
 		int y1=0;
@@ -1182,6 +1200,10 @@ public class Map {
 		int tries = 0;
 		int bigtries=0;
 		Pathfinder.PointBFS p = null;
+		
+		final double criterion = Math.min(Math.max(width, height)/2.25,Math.min(width,height));
+		
+		// TODO: change this to FW lookup (V^3 = very fast here)
 		do {
 			do {
 				do {
@@ -1193,13 +1215,12 @@ public class Map {
 					y2 = Main.rng.nextInt(height-1);
 				} while (!isOpen(x2,y2));
 				tries++;
-			} while (!(Math.abs(x2-x1)+Math.abs(y2-y1)>=Math.min(Math.max(width, height)/2.25,Math.min(width,height))) && tries<=300);
-			System.out.println("placed exits");
+			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
+			logger.fine("Placed exits.");
 			if(tries<=150){
-				// TODO: change this to flood fill from every unvisited node source
 				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), buildOpenMap(), entities, true, true);
 				if(p==null || p.getParent() == null){
-					System.out.println("connecting exits failed.");
+					logger.warning("Connecting exits failed.");
 				}
 			}else{
 				break;
@@ -1208,7 +1229,7 @@ public class Map {
 		} while (p==null || p.getParent() == null && bigtries < 10);
 
 		if(tries>300){
-			System.out.println("connecting exits failed.");
+			logger.severe("Connecting exits failed completely.");
 			if(undercity){
 				generateUndercity();
 			}else{
@@ -1226,7 +1247,27 @@ public class Map {
 			map[y2][x2] = 3;
 		}
 	}
-
+	
+	public int[][] dijkstra(Pathfinder pf, Point src){
+		int[][] dijk = new int[this.height][this.width];
+		
+		Queue<Point> q = new LinkedList<Point>();
+		for(int y = 0; y < height; y++) {
+			for(int x = 0; x < width; x++) {
+				dijk[y][x] = Integer.MAX_VALUE;
+				q.add(new Point(x,y));
+			}
+		}
+		                 
+		dijk[src.y][src.x] = 0;
+		
+		while(/*!*/q.isEmpty()) {
+			// TODO (A) Implement
+		}
+		
+		return dijk;
+	}
+	
 	public boolean hasSouthFace(int x, int y){
 		int t = tileTypeAdj(x,y);
 		if((t>=4 && t<=7)||(t>=12 && t<=15)) return true;
@@ -1480,7 +1521,7 @@ public class Map {
 					// and draw player
 					if(player != null && player.getX() == x && player.getY() == y){
 						g.drawImage(player.getSprite(),x_ofs*tileSize,y_ofs*tileSize,null);
-						//					fg.drawImage(player.getImg(),0,0,null);
+						// fg.drawImage(player.getImg(),0,0,null);
 					}
 				}
 			}
@@ -1489,6 +1530,10 @@ public class Map {
 			e.printStackTrace();
 		};
 		return area;
+	}
+	
+	public void addItemToSpace(Item i, Point p) {
+		tileMap[p.y][p.x].inventory.addItem(i);
 	}
 
 	public BufferedImage renderRadius(int x, int y, int r){

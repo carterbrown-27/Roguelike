@@ -66,7 +66,7 @@ public enum MapTypes {
 		if(type.equals("undercity")){
 			BufferedReader br;
 			try{
-				br = new BufferedReader(new FileReader("precons.txt"));
+				br = new BufferedReader(new FileReader("DATA/precons.txt"));
 				ArrayList<String> rows = new ArrayList<String>();
 				
 				char[][] room;

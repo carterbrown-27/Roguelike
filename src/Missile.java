@@ -38,6 +38,14 @@ public class Missile extends Item implements Consumable, Equippable {
 	}
 	
 	@Override
+	public String toString() {
+		String name = getDisplayName();
+		String quantity = super.getQuantityString();
+
+		return String.format("%s - %s %s%s",super.getInventoryID(), quantity, name, super.getAmount() > 1 ? "s" : "");
+	}
+	
+	@Override
 	public void use(Creature c) {
 		
 	}

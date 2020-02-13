@@ -8,7 +8,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.logging.Logger;
 
+// TODO (*) Decouple GUI from Main & Switch to JavaFX for GUI.
 public class Main {
 
 	// TODO (+) saving
@@ -51,8 +53,8 @@ public class Main {
 	public static Inventory currentInventory;
 	public static Point ropePoint;
 
-	public static final int MAP_H = 60;
-	public static final int MAP_W = 60;
+	public static final int MAP_H = 45;
+	public static final int MAP_W = 45;
 	public static final int MAP_FILL = 49;
 
 	public static int seed;
@@ -69,6 +71,8 @@ public class Main {
 
 	public static ArrayList<String> txt = new ArrayList<String>();
 	public static final int rows = 15;
+	
+	private static final Logger logger = Logger.getLogger(Main.class.getName());
 
 	public static void main(String[] args){
 
@@ -229,7 +233,7 @@ public class Main {
 							
 							case 'r' : {
 								// read effect
-								appendText("");
+								appendText("You read the"+i.getDisplayName());
 								cnsm.use(player);
 								break;
 							}
@@ -301,11 +305,13 @@ public class Main {
 									break;
 								}
 							}
+							// TODO: (A) Implement
 							if(f){
 								// valid target
-								appendTextRF("valid target");
+								appendText("valid target");
 							}else{
-								appendTextRF("invalid target");
+								// invalid
+								appendText("invalid target");
 							}
 
 							aimScreen = false;
@@ -425,18 +431,14 @@ public class Main {
 		floors.clear();
 		floorNumber = 0;
 
-		long time = System.currentTimeMillis();
-
-		floors.put(floorNumber, new Map(MAP_H,MAP_W,MAP_FILL));
+		floors.put(floorNumber,  new Map(MAP_H, MAP_W, MAP_FILL));
 		currentMap = floors.get(floorNumber);
-
 		ropePoint = currentMap.getPosition(2);
+		player = new Player(ropePoint.x,ropePoint.y, currentMap);
+		
+		changeFloor(floorNumber, true, true);
 
-		System.out.println("@@@ gen = "+(System.currentTimeMillis()-time)+"ms @@@");
-
-		player = new Player(ropePoint.x,ropePoint.y,currentMap);
-
-		// (temporary), player inventory population
+		// TEMP player default inventory
 		Weapon dagger = new Weapon("dagger");
 		player.inv.addItem(dagger);
 		player.equip(dagger);
@@ -444,55 +446,7 @@ public class Main {
 		Missile darts = new Missile("throwing dart");
 		player.inv.addItem(darts);
 		player.equip(darts);
-
-		// (temporary) populate level with mobs
-		int mobs = rng.nextInt(8)+16;
-		for (int i = 0; i < mobs; i++) {
-			Point t;
-			do{
-				t = currentMap.randomOpenSpace();				
-				// make sure mobs aren't within 3 tiles of player.
-			}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
-
-			System.out.println("point picked");
-			// TODO: tierCalculation.
-			new Creature(floorNumber,t,currentMap);
-			System.out.println("Entity Added.");
-		}
-
-		int items = rng.nextInt(6)+14; // 6+8, 6+28
-		for(int i = 0; i < items; i++){
-			Point t = currentMap.randomOpenSpace();
-			Item.ItemType ty = Item.randomItemType(floorNumber);
-			System.out.println("adding "+ty);
-			currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(1));
-		}
-
-		int chests = rng.nextInt(2)+1;
-		for(int i = 0; i < chests; i++){
-			Point t = currentMap.randomEmptySpace();
-			System.out.println("adding Chest/Key pair");
-			currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key",floorNumber));
-			t = currentMap.randomEmptySpace();
-
-			currentMap.entities.add(new StaticEntity("chest", t, currentMap));
-		}
-
-		try{
-			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(floorNumber)+"-t"+System.currentTimeMillis()+".png");
-			ImageIO.write(currentMap.renderMap(), "png", output);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-
-		System.out.printf("@@@ Ready = %sms @@@\n", System.currentTimeMillis()-time);
-		if(frame==null){
-			frame = buildFrame(render(ropePoint.x,ropePoint.y));
-		}else{
-			refreshFrame(render(ropePoint.x,ropePoint.y));
-		}
-
-		System.out.printf("@@@ frameUp = %sms @@@\n",System.currentTimeMillis()-time);
+		
 		running = true;
 	}
 
@@ -502,10 +456,12 @@ public class Main {
 		// floors.replace(currentFloor, new Map(map_h,map_w,map_fill,rng));
 		System.out.println(floors.size()+" total");
 		floors.put(floorNumber+1, new Map(MAP_H, MAP_W, MAP_FILL));
+		
 		changeFloor(floorNumber+1,true,true);
 	}
 
 	public static void changeFloor(int floor, boolean down, boolean isNew){
+		long time = System.currentTimeMillis();
 		floorNumber = floor;
 		currentMap = floors.get(floorNumber);
 		Point startPoint= currentMap.getPosition(2);
@@ -517,45 +473,59 @@ public class Main {
 		currentMap.player = player;
 
 		if(isNew){
-
-			// TODO (T) Temp
-			Point t;
-			int mobs = (rng.nextInt(6)+10)*(floorNumber+1);
+			
+			// TEMP populate level with mobs
+			int mobs = rng.nextInt(8)+16;
 			for (int i = 0; i < mobs; i++) {
+				Point t;
 				do{
 					t = currentMap.randomOpenSpace();				
+					// make sure mobs aren't within 3 tiles of player.
 				}while(Math.abs(t.x-player.getX()) <=3 && Math.abs(t.y-player.getY()) <=3);
 
-				// TODO (+) tierCalculation
-				new Creature(1, t, currentMap);
+				// logger.info("point picked");
+				// TODO: tierCalculation.
+				logger.fine("Adding Entity...");
+				new Creature(floorNumber,t,currentMap);
 			}
 
-			int items = rng.nextInt(6)+8;
+			// TEMP populate level with items
+			int items = rng.nextInt(6)+14; // 6+8, 6+28
 			for(int i = 0; i < items; i++){
-				t = currentMap.randomOpenSpace();
-				System.out.println("adding item #"+i);
-
-				// TODO (F) refactor & reimplement tier: floorNumber
-				currentMap.tileMap[t.y][t.x].inventory.addItem(Item.randomItem(floorNumber+1));
+				Point t = currentMap.randomOpenSpace();
+				Item item = Item.randomItem(floorNumber);
+				logger.fine("Adding item: "+ item.getDisplayName());
+				currentMap.tileMap[t.y][t.x].inventory.addItem(item);
 			}
 
+			// TEMP populate level with chests/keys
 			int chests = rng.nextInt(2)+1;
 			for(int i = 0; i < chests; i++){
-				t = currentMap.randomEmptySpace();
-				System.out.println("adding Chest/Key pair");
+				Point t = currentMap.randomEmptySpace();
+				logger.fine("adding Chest/Key pair");
 				currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key",floorNumber));
 				t = currentMap.randomEmptySpace();
-				currentMap.addEntity(new StaticEntity("Silver Chest",t,currentMap));
+
+				currentMap.entities.add(new StaticEntity("chest", t, currentMap));
 			}
 		}
 
 		try{
-			File output = new File("renders/"+String.valueOf(rng.nextInt(seed))+"_"+String.valueOf(floorNumber)+"-t"+System.currentTimeMillis()+".png");
+			File output = new File(String.format("renders/%d_%d-t%d.png",seed, floorNumber, System.currentTimeMillis()));
 			ImageIO.write(currentMap.renderMap(), "png", output);
 		}catch(Exception e){
 			e.printStackTrace();
-		};
-		refreshFrame(render(startPoint.x,startPoint.y));
+		}
+		
+		System.out.printf("@@@ Saved Render = %dms @@@\n", System.currentTimeMillis()-time);
+		
+		if(frame==null){
+			frame = buildFrame(render(startPoint.x,startPoint.y));
+		}else{
+			refreshFrame(render(startPoint.x,startPoint.y));
+		}
+		
+		System.out.printf("@@@ Frame Initialized = %dms @@@\n",System.currentTimeMillis()-time);
 	}
 
 	private static JFrame buildFrame(BufferedImage img) {
@@ -625,8 +595,8 @@ public class Main {
 
 		// TODO (R) Refactor
 		stats.append("  "+playerName+"\t\t                     .\n\n");
-		stats.append("  HP: "+player.getHP()+"\n");
-		stats.append("  SP: "+player.getSP()+"\n");
+		stats.append(String.format("  HP: %.1f/%.1f\n", player.getHP(), player.getHP_max()));
+		stats.append(String.format("  SP: %.1f/%.1f\n", player.getSP(), player.getSP_max()));
 		stats.append("  STR: "+player.getStrength()+"\n");
 		stats.append("  DEF: "+player.getArmourSet().getDefence()+"\n");
 		stats.append("  SAT: "+ActionLibrary.round(player.getSAT(),1)+"\n");
@@ -648,15 +618,10 @@ public class Main {
 
 		String line = "  ";
 		for(Status s: player.getStatuses().keySet()){
-			line += s.name();
+			line += s.name() + " ";
 		}
 		stats.append(line+"\n");
-		stats.append("      _________________________________________________________\n\n");
-	}
-
-	public static void appendTextRF(String text){
-		appendText(text);
-		refreshText();
+		stats.append("__________________________________________________________\n\n");
 	}
 
 	public static void appendText(String text){
@@ -789,7 +754,7 @@ public class Main {
 	 * @param keyCode: the KeyCode from the KeyEvent
 	 * @param controlDown: is control pressed
 	 * @param shiftDown: is shift pressed
-	 * @return: the direction corresponding to the keys pressed
+	 * @return the direction corresponding to the keys pressed
 	 * 
 	 * These are how keys correspond to Directions:
 	 * 

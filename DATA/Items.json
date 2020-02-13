@@ -113,7 +113,7 @@
 				"tier" : 2,
 			
 				"effects" : {
-					"ID" : true,
+					"IDENTIFY" : 1,
 					"NOISE" : 3,
 					"LIGHT" : 4
 				},
@@ -127,7 +127,7 @@
 				"tier" : 2,
 			
 				"effects" : {
-					"TELEPORT" : true,
+					"TELEPORT" : 1,
 					"DIZZY" : 5,
 					"NOISE" : 7
 				},

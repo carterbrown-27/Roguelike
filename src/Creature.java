@@ -217,7 +217,9 @@ public class Creature extends Entity {
 	public double getSP() {
 		return SP;
 	}
-	
+	public double getSP_max() {
+		return SP_max;
+	}	
 	public void changeSP(double delta) {
 		setSP(getSP() + delta);
 	}

@@ -32,7 +32,7 @@ public abstract class Item extends GameObject {
 			JSONObject j = masterJSON.getJSONObject(k);
 			if(j.getJSONObject("list").has(typeName)) {
 				this.supertypeData = j;
-				System.out.println(typeName+" found under " + k);
+				// TODO (L) Log: System.out.println(typeName+" found under " + k);
 				break;
 			}
 		}
@@ -161,16 +161,12 @@ public abstract class Item extends GameObject {
 		}
 	}
 	
+	// TODO (T) TEMP --> polymorph
 	public boolean isUnknown(){
-		Object o = getSpecValue("unknown");
-		if(o == null) {
-			return false;
-		}else{
-			return (boolean) o;
-		}
+		return superType.equals(ItemType.SCROLL) || superType.equals(ItemType.SCROLL);
 	}
 
-	// TODO: (R) Fix
+	// TODO (T) TEMP --> polymorph
 	public boolean isStackable(){
 		Object o = getSpecValue("stackable");
 		if(o == null) {
@@ -240,7 +236,8 @@ public abstract class Item extends GameObject {
 	
 	
 	public static List<String> getAllItemIDs(ItemType type){
-		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
+		if(masterJSON == null) initMasterJSON();
+ 		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
 		return new ArrayList<String>(itemListObj.keySet());
 	}
 	
@@ -249,6 +246,8 @@ public abstract class Item extends GameObject {
 		
 		List<String> items = getAllItemIDs(type);
 		List<String> result = new ArrayList<>();
+		
+		if(masterJSON == null) initMasterJSON();
 		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
 		
 		// decrease to 0.
@@ -286,14 +285,16 @@ public abstract class Item extends GameObject {
 		return ItemType.values()[r];
 	}
 	
+	// TODO (F) Fix
 	public void drop(Entity from) {
-		// TODO (A) Implement
 		Main.appendText("You drop the "+this.getDisplayName());
+		// TODO (R) Refactor
+		from.map.addItemToSpace(this, from.getPos());
 		delete(from);
 	}
 	
 	public void delete(Entity from) {
-		from.inv.removeItem(getInventoryID());
+		from.inv.removeItem(this.getInventoryID());
 	}
 	
 	public void setInventoryID(char c) {
