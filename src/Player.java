@@ -172,7 +172,7 @@ public class Player extends Creature {
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
 				Main.appendText("You hit the "+target.getName());								
-				Main.appendText(target.getName()+" 's HP: "+target.getHP());				
+				Main.appendText(target.getName()+" 's HP: "+Math.max(0,target.getHP()));				
 			}else{
 				Main.appendText("You miss the "+target.getName());				
 			}

@@ -202,4 +202,9 @@ public class Potion extends Item implements Consumable {
 	public boolean isStackable() {
 		return true;
 	}
+	
+	@Override
+	public boolean isUnknown() {
+		return true;
+	}
 }

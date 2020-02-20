@@ -33,9 +33,6 @@ public class Creature extends Entity {
 	
 	private AI ai;
 	
-	@Deprecated
-	private boolean hasAI = true;
-	
 	private HashMap<Status,Integer> statuses = new HashMap<Status,Integer>();
 	
 	public Weapon weapon;
@@ -72,6 +69,8 @@ public class Creature extends Entity {
 		this.SP_max = SP_Data.getDouble("max");
 		this.SP = SP_max;
 		this.SP_regen = SP_Data.getDouble("regenRate");
+		
+		// init AI.
 
 	}
 	
@@ -88,17 +87,6 @@ public class Creature extends Entity {
 			}catch(Exception e) {
 				e.printStackTrace();
 			};
-		}
-	}
-	
-	// TODO (V) Add rat to DEFAULT sprite sheet.
-	@Deprecated
-	private void createRat(){
-		// TODO: edit sprites
-		try {
-			setSprite(ImageIO.read(new File("imgs/rat.png")));
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	
@@ -217,9 +205,11 @@ public class Creature extends Entity {
 	public double getSP() {
 		return SP;
 	}
+	
 	public double getSP_max() {
 		return SP_max;
-	}	
+	}
+	
 	public void changeSP(double delta) {
 		setSP(getSP() + delta);
 	}

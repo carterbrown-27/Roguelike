@@ -15,84 +15,98 @@ public class Main {
 
 	// TODO (+) saving
 	//	public static int seed = 12345678;
-	public static Random rng = new Random();
+	public static Random rng;
 	//	public static boolean randSeed = true;
 	//	public static boolean render = true;
 
-	public static boolean running = true;
-
-	private static JFrame frame;
-	private static JPanel panel = new JPanel();
+	public static boolean running;
 
 	public static Player player;
-	public static String playerName = "Player Name";
-
-	public static int ticks = 0;
-
-	public static double lastPress = System.currentTimeMillis();
-	public static double interval = 70; // 70ms input interval.
-
-	public static boolean itemPickup = false;
-	public static boolean inventoryScreen = false;
-	public static boolean itemScreen = false;
-	public static boolean pickItem = false;
-	public static boolean aimScreen = false;
-
-	public static Point targetPos;
-
-	public static boolean identify = false;
-	public static boolean enchant = false;
-
-	public static char selectedItem;
-
-	public static HashMap<Integer,Map> floors = new HashMap<>();
-	public static Map gen;
-
-	public static int floorNumber;
-	public static Map currentMap;
-	public static Inventory currentInventory;
-	public static Point ropePoint;
+	public static String playerName = "Hillstyle";
 
 	public static final int MAP_H = 45;
 	public static final int MAP_W = 45;
 	public static final int MAP_FILL = 49;
 
+	public static int ticks = 0;
+
+	public static double lastPress;
+	public static double interval = 70; // 70ms input interval.
+
+	private static GameState state;
+	private static InventorySelectAction invSelAction;
+
+	public static char selectedItem;
+	public static Point targetPos;
+
+	private static HashMap<Integer,Map> floors;
+	public static int floorNumber;
+	public static Map currentMap;
+	public static Inventory currentInventory;
+	public static Point ropePoint;
+	public static Point lastPos;
+
 	public static int seed;
 
 	public static int JFrame_WIDTH = 1500;
 	public static int JFrame_HEIGHT = 1000;
-	public static JPanel consolePanel = new JPanel();
-
-	public static StringHelper stringHelper;
-
-	public static Font f = new Font("Serif",Font.BOLD,20);
-	public static JTextArea area = new JTextArea();
-	public static JTextArea stats = new JTextArea();
+	public static Font font;
+	private static JFrame frame;
+	private static JPanel panel;
+	public static JPanel consolePanel;
+	public static JTextArea area;
+	public static JTextArea stats;
 
 	public static ArrayList<String> txt = new ArrayList<String>();
 	public static final int rows = 15;
-	
+
 	private static final Logger logger = Logger.getLogger(Main.class.getName());
+	public static StringHelper stringHelper;
 
 	public static void main(String[] args){
 
-		// Map.Room r = new Map.Room(8,8);
-		// 52,90,46
+		running = true;
+		state = GameState.REGULAR;
+		invSelAction = InventorySelectAction.NONE;
+
+		rng = new Random();
+
+		lastPress = System.currentTimeMillis();
+
+		panel = new JPanel();
+		area = new JTextArea();
+		stats = new JTextArea();
+		consolePanel = new JPanel();
+
+		floors = new HashMap<>();
+
 		seed = rng.nextInt(Integer.MAX_VALUE);
-		// seed = 356598179;
 		rng = new Random(seed);
+
 		stringHelper = new StringHelper(rng);
+
+		font = new Font("Serif",Font.BOLD,20);
+
+		try{
+			InputStream is = new FileInputStream("DATA/Adventurer.ttf");
+			font = Font.createFont(Font.TRUETYPE_FONT, is);
+			font = font.deriveFont(Font.PLAIN, 20);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+
 		startGame();
-		System.out.println(seed);
+		logger.info("Seed = " + seed);
 
 		// controls
-
 		frame.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
-				System.out.println("key pressed "+KeyEvent.getKeyText(e.getKeyCode()));
+				logger.fine("Key Pressed "+KeyEvent.getKeyText(e.getKeyCode()));
+
 				if(!running){
-					System.out.println("not running.");
+					logger.warning("Game not running.");
 					if(e.getKeyCode() == KeyEvent.VK_SPACE){
 						// restart
 						startGame();
@@ -101,293 +115,63 @@ public class Main {
 				}
 
 				if (System.currentTimeMillis()-lastPress>=interval) {
-					System.out.println("valid press");
+					logger.fine("Valid Press");
 					lastPress = System.currentTimeMillis();
-					if(!itemPickup && !inventoryScreen){
-						// System.out.println("flag 1");
-						txt.clear(); // TODO (T) Temp
-						refreshText();
-					}
+				}else {
+					return;
+				}
 
-					// TODO (R) Review
-					if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-						itemPickup = false;
-						itemScreen = false;
-						pickItem = false;
-						inventoryScreen = false;
+				if(!state.equals(GameState.PICKUP) && !state.equals(GameState.INVENTORY)){
+					// System.out.println("flag 1");
+					clearText();
+				}
 
-					} else if(itemPickup){
-						System.out.println("item Pickup");
-						for (char c = 'a'; c <= 'z'; c++) {
-							if(currentInventory==null){
-								currentInventory = currentMap.tileMap[player.getY()][player.getX()].inventory;
-							}
+				// ESCAPE takes precedent.
+				if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+					state = GameState.REGULAR;
+					return;
+				}
 
-							if (e.getKeyChar() == c && currentInventory.contains(c)) {
-								player.pickUp(c,currentInventory);
-								if(currentInventory.isEmpty()){
-									currentInventory = null;
-									itemPickup = false;
-								}
-							}
-						}
-						if(e.getKeyChar() < 'a' || e.getKeyChar() >'z'){
-							currentInventory = null;
-							itemPickup = false;
-						}
+				if(state == GameState.REGULAR) {
+					if (directionValue(e) != null) {
+						// Directional Key: corresponding move/action
+						logger.fine("Directional Key");
+						Direction dir = directionValue(e);
+						player.act_adj(dir);
 
-					}else if(inventoryScreen){
-						System.out.println("inventory screen");
-						txt.clear();
-						refreshText();
-						boolean selected = false;
-						char c = e.getKeyChar();
-						if (player.inv.contains(c)) {
-							selected = true;
-							// open item menu
-							// TODO (R) Review
-							Item i = player.inv.getItem(c);
+					}else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+						// ENTER: Descend/Ascend Staircase
+						handleUseStaircase();
 
-							appendText(i+" selected.");
-							appendText(i.getDescription());
-
-							for(String s: i.listPrompts()) {
-								appendText(s);
-							}
-
-							selectedItem = c;
-						}
-
-						if(selected) itemScreen = true;
-						inventoryScreen = false;
-
-					}else if(itemScreen){
-						System.out.println("item screen");
-						char c = selectedItem;
-						Item i = player.inv.getItem(c);
-
-						char keyChar = e.getKeyChar();
-
-						if(!Character.isAlphabetic(keyChar) || !i.actionsContains(keyChar)) {
-							appendText(keyChar + " is not an option.");
-							return;
-						}
-
-						// NOTE: letters for actions must be unique across all items
-
-						// TODO (A) Implement
-						
-						// any item
-						switch(keyChar) {
-
-						case 'd' : {
-							i.drop(player);
-							break;
-						}
-						
-						case 'a' : {
-							// reassign
-							break;
-						}
-						
-						}
-
-						if(i instanceof Equippable){
-							Equippable eq = (Equippable) i;
-							
-							// TODO: differentiate
-							switch(keyChar) {
-
-							case 'w' : {
-								appendText("You wield your "+i.getDisplayName());
-								eq.equip(player);
-								break;
-							}
-							
-							case 'p' : {
-								appendText("You put on your "+i.getDisplayName());
-								eq.equip(player);
-								break;
-							}
-							
-							case 'u' : {
-								appendText("You unwield your "+i.getDisplayName());
-								eq.unequip(player);
-								break;
-							}
-							
-							case 't' : {
-								appendText("You take off your "+i.getDisplayName());
-								eq.unequip(player);
-								break;
-							}
-							
-							}
-							// TODO (A) Implement
-						}
-
-						if(i instanceof Consumable){
-							Consumable cnsm = (Consumable) i;
-							// TODO (A) Implement
-							switch(keyChar) {
-							
-							case 'r' : {
-								// read effect
-								appendText("You read the"+i.getDisplayName());
-								cnsm.use(player);
-								break;
-							}
-							
-							case 'q' : {
-								// quaff effect
-								appendText("You quaff the "+i.getDisplayName());
-								cnsm.use(player);
-								break;
-							}
-							
-							case 'e' : {
-								appendText("You eat the "+i.getDisplayName());
-								cnsm.use(player);
-								break;
-							}
-							}
-						}
-
-						itemScreen = false;
-						refreshStats();
-					}else if(pickItem){
-						System.out.println("pickItem screen");
-						boolean flag = false;
-						if (player.inv.contains(e.getKeyChar())) {
-								Item i = player.inv.getItem(e.getKeyChar());
-								if(identify && !player.isItemIdentified(i)){
-									flag = true;
-									player.identify(i);
-									identify = false;
-								}else if(enchant){
-									flag = true;
-									enchant = false;
-								}
-							}
-
-						if(!flag){
-							appendText(e.getKeyChar()+" is not a valid option.");
-						}else{
-							pickItem = false;
-						}
-
-
-						/* DIRECTIONALS */
-					}else if (directionValue(e.getKeyCode(),e.isControlDown(),e.isShiftDown()) != null) {
-						System.out.println("movement");
-						Direction dir = directionValue(e.getKeyCode(),e.isControlDown(), e.isShiftDown());
-						if(aimScreen){
-							targetPos = Direction.translate(targetPos,dir);
-							// TODO: aim visuals & L.O.S check
-
-						}else{								
-							player.act_adj(dir);
-						}
-
-
-					}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
-						if(aimScreen){
-							ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
-
-							boolean f = true;
-							for(Point p: line){
-								if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
-									continue;
-								}
-
-								if(!currentMap.isFullOpen(p.x, p.y)){
-									f = false;
-									break;
-								}
-							}
-							// TODO: (A) Implement
-							if(f){
-								// valid target
-								appendText("valid target");
-							}else{
-								// invalid
-								appendText("invalid target");
-							}
-
-							aimScreen = false;
-							return;
-						}
-						if(currentMap.valueAt(player.getPos()) == 3){
-							if(floors.size()<=floorNumber+1){
-								newFloor();
-							}else{
-								changeFloor(floorNumber+1,true,false);
-							}
-						}else if(currentMap.valueAt(player.getPos()) == 2 && floorNumber > 0){
-							// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
-							changeFloor(floorNumber-1,false,false);
-						}
-						appendText("Current Floor: "+floorNumber);
-
-					} else if(e.getKeyCode() == KeyEvent.VK_P){
+					} else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_P) {
+						// Ctrl-P: Prints map to console
 						currentMap.printMap();
 
-					} else if(e.getKeyCode() == KeyEvent.VK_T){
-						aimScreen = !aimScreen;
+					} else if(e.getKeyCode() == KeyEvent.VK_T) {
+						// T: toggles targeting mode
+						state = !(state == GameState.TARGETING) ? GameState.TARGETING : GameState.REGULAR;
+						// Crosshairs' origin = player.
 						targetPos = player.getPos();
 
-					} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
-						// open attack selections
-						// area.append("space.\n");
-						// if already open attack
-					} else if(e.getKeyCode() == KeyEvent.VK_G){
-						// get
-						Inventory tileInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
-						Inventory selectedInv = null;
+					} else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+						// SPACE: Open action selections
+						// TODO (A) Implement
 
+					} else if(e.getKeyCode() == KeyEvent.VK_G) {
+						// G: get item
+						handleGet();
 
-						// TODO (F) fix CHESTS
-						if(tileInv.isEmpty()){
-							for(Entity n: currentMap.entities){
-								if(n instanceof StaticEntity) {
-									StaticEntity se = (StaticEntity) n;
-									if(se.getPos().equals(player.getPos())){
-										if(!se.isLocked){
-											selectedInv = se.inv;
-											appendText("Pick up what?");
-										}else{											
-											appendText("It's locked.");
-											return;
-										}
-										// n.SE.interact(player,'g');
-										break;
-									}
-								}
-							}
-						}else{
-							selectedInv = tileInv;
-						}
-
-						if(selectedInv == null || selectedInv.isEmpty()){
-							appendText("There is nothing here.");
-							return;
-						}
-
-						if(selectedInv.isOneItem()){
-							player.pickUp(selectedInv.getFirstItem(),selectedInv);
-						}else if(!selectedInv.isEmpty()){
-							itemPickup = true;
-							currentInventory = selectedInv;
-							appendText("Pick up what?");
-						}
-
-					}else if(e.getKeyCode() == KeyEvent.VK_I){
+					} else if(e.getKeyCode() == KeyEvent.VK_I){
+						// I: open inventory
 						player.inv.printContents(false);
 
-						if(!player.inv.isEmpty()) inventoryScreen = true;
+						if(!player.inv.isEmpty()) {
+							state = GameState.INVENTORY;
+						}
 
-						// TODO: interactable checks handled by Interactable interface
-					}else if(e.getKeyCode() == KeyEvent.VK_O){
+					} else if(e.getKeyCode() == KeyEvent.VK_O){
+						// O: Open Chest
+						// TODO: interact-able checks handled by "Interactable" interface
 						for(Entity n: currentMap.entities) {
 							if(n instanceof StaticEntity) {
 								StaticEntity se = (StaticEntity) n;
@@ -396,35 +180,352 @@ public class Main {
 								}
 							}
 						}
+
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
-						txt.clear();
-						refreshText();
+						// Ctrl-C: Clear
+						clearText();
 					}else if(e.getKeyCode() == KeyEvent.VK_5){
+						// 5: Rest
 						player.startRest();
-
 					}else if(e.getKeyCode() == KeyEvent.VK_X){
-						// TODO: overview
-
+						// X: Map Overview	
+						// TODO (+) Add Map Overview
 					}else{
+						// other keys: abilities
 						for(Player.Ability a: Player.Ability.values()){
 							if(e.getKeyCode() == a.k){
 								if(player.getSP() >= a.s){
 									player.select(a);
 									appendText(a.name);
 								}else{
-									appendText("Not enough stamina (stamina!).");
+									appendText("Not enough stamina!");
 									player.deselect();
 								}
 								break;
 							}
 						}
 					}
+				} else {
+					char k = e.getKeyChar();
+					switch(state) {
+					case PICKUP : {
+						handleItemPickup(k);
+						break;
+					}
+
+					case INVENTORY : {
+						handleInventory(k);
+						break;
+					}
+
+					case ITEM_SCREEN : {
+						handleItemScreen(k);
+						break;
+					}
+
+					case INVENTORY_SELECT : {
+						handleInventorySelect(k);
+						break;
+					}
+					
+					case TARGETING : {
+						handleTargeting(e);
+						break;
+					}
+					
+					// Doesn't apply to REGULAR here, as in this branch REGULAR = False.
+					default : {
+						logger.severe("State not recognized or fallthrough occured.");
+					}
+					
+					}
 				}
-			}	
+			}
 		});
 
 		// System.out.println(ropePoint.toString());
 		refreshFrame(render(ropePoint.x,ropePoint.y));
+	}
+
+	public static enum GameState {
+		REGULAR,
+		INVENTORY,
+		PICKUP,
+		ITEM_SCREEN,
+		TARGETING,
+		INVENTORY_SELECT
+	}
+
+	public static void setGameState(GameState s) {
+		state = s;
+	}
+
+	public static enum InventorySelectAction {
+		NONE,
+		IDENTIFY,
+		ENCHANT,
+		ETC
+	}
+	
+	public static void setInvSelAction(InventorySelectAction a) {
+		invSelAction = a;
+	}
+
+	public static void handleItemPickup(char k) {
+		logger.fine("Item Pickup Handler called.");
+		if(k < 'a' || k > 'z'){
+			currentInventory = null;
+			state = GameState.REGULAR;
+			return;
+		}
+
+		if(currentInventory==null){
+			currentInventory = currentMap.tileMap[player.getY()][player.getX()].inventory;
+		}
+
+		if (currentInventory.contains(k)) {
+			player.pickUp(k,currentInventory);
+			if(currentInventory.isEmpty()){
+				currentInventory = null;
+				state = GameState.REGULAR;
+			}
+		}
+	}
+	
+	public static void handleTargeting(KeyEvent e) {
+		Direction dir = directionValue(e);
+		if(dir != null) {
+			// TODO (+) Aiming visuals & continual L.O.S. check
+			targetPos = Direction.translate(targetPos,dir);
+		}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
+			handleTargetConfirm();
+		}
+	}
+	
+	public static void handleItemScreen(char k) {
+		logger.fine("Item Screen Handler called.");
+		char c = selectedItem;
+		Item i = player.inv.getItem(c);
+
+		if(!Character.isAlphabetic(k) || !i.actionsContains(k)) {
+			appendText(k + " is not an option.");
+			return;
+		}
+
+		// NOTE: letters for actions must be unique across all items
+		switch(k) {
+
+		case 'd' : {
+			i.drop(player);
+			break;
+		}
+
+		case 'a' : {
+			// reassign
+			break;
+		}
+
+		}
+
+		if(i instanceof Equippable){
+			Equippable eq = (Equippable) i;
+
+			// TODO: differentiate
+			switch(k) {
+
+			case 'w' : {
+				appendText("You wield your "+i.getDisplayName());
+				eq.equip(player);
+				break;
+			}
+
+			case 'p' : {
+				appendText("You put on your "+i.getDisplayName());
+				eq.equip(player);
+				break;
+			}
+
+			case 'u' : {
+				appendText("You unwield your "+i.getDisplayName());
+				eq.unequip(player);
+				break;
+			}
+
+			case 't' : {
+				appendText("You take off your "+i.getDisplayName());
+				eq.unequip(player);
+				break;
+			}
+
+			}
+			// TODO (A) Implement
+		}
+
+		if(i instanceof Consumable){
+			Consumable cnsm = (Consumable) i;
+			// TODO (A) Implement
+			switch(k) {
+
+			case 'r' : {
+				// read effect
+				appendText("You read the"+i.getDisplayName());
+				cnsm.use(player);
+				break;
+			}
+
+			case 'q' : {
+				// quaff effect
+				appendText("You quaff the "+i.getDisplayName());
+				cnsm.use(player);
+				break;
+			}
+
+			case 'e' : {
+				appendText("You eat the "+i.getDisplayName());
+				cnsm.use(player);
+				break;
+			}
+			}
+		}
+
+		state = GameState.REGULAR;
+		refreshStats();
+	}
+
+	public static void handleInventory(char k) {
+		logger.fine("Inventory Handler called.");
+		txt.clear();
+		refreshText();
+		boolean selected = false;
+		if (player.inv.contains(k)) {
+			selected = true;
+			// open item menu
+			// TODO (R) Review
+			Item i = player.inv.getItem(k);
+
+			appendText(i+" selected.");
+			appendText(i.getDescription());
+
+			for(String s: i.listPrompts()) {
+				appendText(s);
+			}
+
+			selectedItem = k;
+		}
+
+		if(selected) {
+			state = GameState.ITEM_SCREEN;
+		} else {
+			state = GameState.REGULAR;
+		}
+	}
+
+	public static void handleInventorySelect(char k) {
+		logger.fine("Inventory Selection Handler called.");
+		
+		boolean flag = false;
+		if (player.inv.contains(k)) {
+			Item i = player.inv.getItem(k);
+			if(invSelAction == InventorySelectAction.IDENTIFY  && !player.isItemIdentified(i)){
+				flag = true;
+				player.identify(i);
+			}else if(invSelAction == InventorySelectAction.ENCHANT){
+				flag = true;
+			}
+		}
+
+		if(!flag){
+			appendText(k+" is not a valid option.");
+		}else{
+			state = GameState.REGULAR;
+			invSelAction = InventorySelectAction.NONE;
+		}
+
+	}
+
+	public static void handleTargetConfirm() {
+		ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
+
+		boolean f = true;
+		for(Point p: line){
+			if(p.equals(player.getPos()) || p.equals(line.get(line.size()-1))){
+				continue;
+			}
+
+			if(!currentMap.isFullOpen(p.x, p.y)){
+				f = false;
+				break;
+			}
+		}
+		// TODO: (A) Implement
+		if(f){
+			// valid target
+			appendText("valid target");
+		}else{
+			// invalid
+			appendText("invalid target");
+		}
+		state = GameState.REGULAR;
+	}
+
+	public static void handleGet() {
+		Inventory tileInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
+		Inventory selectedInv = null;
+
+
+		// TODO (F) Fix Chests
+		if(tileInv.isEmpty()){
+			for(Entity n: currentMap.entities){
+				if(n instanceof StaticEntity) {
+					StaticEntity se = (StaticEntity) n;
+					if(se.getPos().equals(player.getPos())){
+						if(!se.isLocked){
+							selectedInv = se.inv;
+							appendText("Pick up what?");
+						}else{											
+							appendText("It's locked.");
+							return;
+						}
+						// n.SE.interact(player,'g');
+						break;
+					}
+				}
+			}
+		}else{
+			selectedInv = tileInv;
+		}
+
+		if(selectedInv == null || selectedInv.isEmpty()){
+			appendText("There is nothing here.");
+			return;
+		}
+
+		if(selectedInv.isOneItem()){
+			player.pickUp(selectedInv.getFirstItem(),selectedInv);
+		}else if(!selectedInv.isEmpty()){
+			state = GameState.PICKUP;
+			currentInventory = selectedInv;
+			appendText("Pick up what?");
+		}
+	}
+
+	public static void handleUseStaircase() {
+		if(currentMap.valueAt(player.getPos()) == 3){
+			if(floors.size()<=floorNumber+1){
+				newFloor();
+			}else{
+				changeFloor(floorNumber+1,true,false);
+			}
+		}else if(currentMap.valueAt(player.getPos()) == 2 && floorNumber > 0){
+			// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
+			changeFloor(floorNumber-1,false,false);
+		}
+		appendText("Current Floor: "+floorNumber);
+	}
+
+	public static void clearText() {
+		txt.clear();
+		refreshText();
 	}
 
 	public static void startGame(){
@@ -435,7 +536,7 @@ public class Main {
 		currentMap = floors.get(floorNumber);
 		ropePoint = currentMap.getPosition(2);
 		player = new Player(ropePoint.x,ropePoint.y, currentMap);
-		
+
 		changeFloor(floorNumber, true, true);
 
 		// TEMP player default inventory
@@ -446,7 +547,7 @@ public class Main {
 		Missile darts = new Missile("throwing dart");
 		player.inv.addItem(darts);
 		player.equip(darts);
-		
+
 		running = true;
 	}
 
@@ -454,9 +555,8 @@ public class Main {
 		// floors.set(currentFloor, new Map(floors.get(currentFloor)));
 		blackOverlay();
 		// floors.replace(currentFloor, new Map(map_h,map_w,map_fill,rng));
-		System.out.println(floors.size()+" total");
+		logger.fine("Now " + floors.size() + " floors.");
 		floors.put(floorNumber+1, new Map(MAP_H, MAP_W, MAP_FILL));
-		
 		changeFloor(floorNumber+1,true,true);
 	}
 
@@ -473,7 +573,7 @@ public class Main {
 		currentMap.player = player;
 
 		if(isNew){
-			
+
 			// TEMP populate level with mobs
 			int mobs = rng.nextInt(8)+16;
 			for (int i = 0; i < mobs; i++) {
@@ -516,15 +616,15 @@ public class Main {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+
 		System.out.printf("@@@ Saved Render = %dms @@@\n", System.currentTimeMillis()-time);
-		
+
 		if(frame==null){
 			frame = buildFrame(render(startPoint.x,startPoint.y));
 		}else{
 			refreshFrame(render(startPoint.x,startPoint.y));
 		}
-		
+
 		System.out.printf("@@@ Frame Initialized = %dms @@@\n",System.currentTimeMillis()-time);
 	}
 
@@ -543,8 +643,8 @@ public class Main {
 		panel.setLayout(new BorderLayout());
 		panel.add(consolePanel,BorderLayout.EAST);
 
-		area.setBackground(new Color(0,0,0));
-		area.setFont(f);
+		area.setBackground(Color.BLACK);
+		area.setFont(font.deriveFont(Font.PLAIN,24));
 		area.setEditable(false);
 		area.setFocusable(false);
 		area.setForeground(Color.white);
@@ -555,10 +655,10 @@ public class Main {
 		consolePanel.setLayout(new BorderLayout());
 		consolePanel.add(stats,BorderLayout.NORTH);
 		consolePanel.add(area,BorderLayout.CENTER);
-		consolePanel.setBackground(new Color(0,0,0));
+		consolePanel.setBackground(Color.BLACK);
 
 		frame.setTitle("Roguelike");
-		panel.setBackground(new Color(0,0,0));
+		panel.setBackground(Color.BLACK);
 		panel.add(consolePanel,BorderLayout.EAST);
 
 
@@ -588,18 +688,19 @@ public class Main {
 	}
 
 	public static void refreshStats(){
-		stats.setBackground(new Color(0,0,0));
+		stats.setBackground(Color.BLACK);
 		stats.setForeground(Color.LIGHT_GRAY);
-		stats.setFont(f);
+		stats.setFont(font);
 		stats.setText("");
 
 		// TODO (R) Refactor
-		stats.append("  "+playerName+"\t\t                     .\n\n");
+		stats.append("\n\n");
+		stats.append("  "+playerName+"\n");
 		stats.append(String.format("  HP: %.1f/%.1f\n", player.getHP(), player.getHP_max()));
 		stats.append(String.format("  SP: %.1f/%.1f\n", player.getSP(), player.getSP_max()));
 		stats.append("  STR: "+player.getStrength()+"\n");
 		stats.append("  DEF: "+player.getArmourSet().getDefence()+"\n");
-		stats.append("  SAT: "+ActionLibrary.round(player.getSAT(),1)+"\n");
+		stats.append(String.format("  SAT: %d\n", Math.round(player.getSAT())));
 
 		if(player.weapon != null){			
 			stats.append("  Weapon: "+player.weapon.getDisplayName());
@@ -608,11 +709,8 @@ public class Main {
 		}
 		stats.append("\n");
 
-		if(player.quivered != null){			
-			stats.append("  Quivr'd: "+player.quivered.getDisplayName());
-		}else{
-			stats.append("  Quivr'd: none");
-		}
+		stats.append("  Quivered: "+ (player.quivered == null ? "none" : player.quivered.getDisplayName()));
+
 		stats.append("\n");
 
 
@@ -621,7 +719,7 @@ public class Main {
 			line += s.name() + " ";
 		}
 		stats.append(line+"\n");
-		stats.append("__________________________________________________________\n\n");
+		stats.append("_________________________________________________________________\n\n");
 	}
 
 	public static void appendText(String text){
@@ -649,7 +747,7 @@ public class Main {
 		try{
 			refreshFrame(ImageIO.read(new File("imgs/descendingOverlay.png")));
 		}catch(Exception e){
-			System.out.println("overlay not found.");
+			logger.warning("Black overlay not found.");
 		}
 	}
 
@@ -664,16 +762,7 @@ public class Main {
 		return dimg;
 	}
 
-	@Deprecated
-	public static void advanceTicks(int _ticks){
-		ticks++;
-		Point pos = player.getPos();
-		// System.out.println(pos.toString());
-		refreshFrame(render(pos.x,pos.y));
-	}
-
-	public static Point lastPos;
-	// TODO: switch Entity to Creature
+	// TODO (X) Overhaul
 	public static void takeTurn(){
 		Inventory floorInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
 		if(!floorInv.isEmpty() && (lastPos!=null && !player.getPos().equals(lastPos))){
@@ -768,7 +857,7 @@ public class Main {
 	 * ctrl-left	down	ctrl-right
 	 */
 	public static Direction directionValue(int keyCode, boolean controlDown, boolean shiftDown){
-		System.out.println("dir check");
+		logger.finer("dir check");
 		if (keyCode == KeyEvent.VK_K || keyCode == KeyEvent.VK_UP) {
 			return Direction.UP;
 		} else if (keyCode == KeyEvent.VK_H || keyCode == KeyEvent.VK_LEFT) {
@@ -799,5 +888,9 @@ public class Main {
 			return Direction.DOWN_RIGHT;
 		}
 		return null;
+	}
+	
+	public static Direction directionValue(KeyEvent e) {
+		return directionValue(e.getKeyCode(), e.isControlDown(), e.isShiftDown());
 	}
 }

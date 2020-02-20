@@ -40,13 +40,15 @@ public class Scroll extends Item implements Consumable {
 	@Override
 	public void use(Creature c) {
 		// TODO (A) Implement
+		super.delete(c);
+		
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {
 			if(c.inv.containsUnidentified()){
 				Main.appendText("Identify what?");
 				c.inv.printContents(false);
-				Main.pickItem = true;
-				Main.identify = true;
+				Main.setGameState(Main.GameState.INVENTORY_SELECT);
+				Main.setInvSelAction(Main.InventorySelectAction.IDENTIFY);
 			}else{
 				Main.appendText("There is nothing in your pack to identify!");
 			}
@@ -58,7 +60,6 @@ public class Scroll extends Item implements Consumable {
 			((Player) c).identify(this);
 		}
 		// "noise", "dizzy" etc
-		super.delete(c);
 		Main.takeTurn();
 	}
 
@@ -92,6 +93,11 @@ public class Scroll extends Item implements Consumable {
 	// TODO (T) TEMP
 	@Override
 	public boolean isStackable() {
+		return true;
+	}
+	
+	@Override
+	public boolean isUnknown() {
 		return true;
 	}
 }

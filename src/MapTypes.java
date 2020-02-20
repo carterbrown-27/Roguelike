@@ -41,25 +41,6 @@ public enum MapTypes {
 //		
 //		return room;
 //	}
-	
-	public char[][] charGridFromStrings(ArrayList<String> rows){
-		int max = 0;
-		for(String s: rows){
-			if(s.length() > max) max = s.length();
-		}
-		
-		
-		
-		char[][] room = new char[rows.size()][max];
-		
-		for(int y = 0; y < rows.size(); y++){
-			for(int x = 0; x < max; x++){
-				room[y][x] = rows.get(y).charAt(x);
-			}
-		}
-		
-		return room;
-	}
 
 	MapTypes(String type){
 		
@@ -139,8 +120,10 @@ public enum MapTypes {
 			
 			// walls
 			// usedTiles[1] = new Tile(1,tilesArray[1][4],false);
-			BufferedImage[] temp = {tilesArray[1][2],tilesArray[1][3]};
-			variations.put(1,temp);
+			variations.put(1, new BufferedImage[] {
+					tilesArray[1][2],
+					tilesArray[1][3]
+			});
 			variationPercentages.put(1,30);
 			defaultImages[1] = tilesArray[1][1];
 			
@@ -159,7 +142,7 @@ public enum MapTypes {
 			// usedTiles[5] = usedTiles[0];
 			defaultImages[5] = itemmap.getSubimage(0*tileSize+0, 0*tileSize, tileSize, tileSize);
 			
-			BufferedImage[] tempDir = {
+			directionals.put(6,new BufferedImage[] {
 					tilesArray[3][5], // 0
 					tilesArray[4][1], // 1
 					tilesArray[3][6], // 2
@@ -176,9 +159,7 @@ public enum MapTypes {
 					tilesArray[3][7],
 					tilesArray[3][4], // 14 E
 					tilesArray[4][3]
-			};
-			
-			directionals.put(6,tempDir);
+			});
 			
 			// open door
 			defaultImages[7] = itemmap.getSubimage(2*tileSize+2, 0*tileSize, tileSize, tileSize);
@@ -189,7 +170,7 @@ public enum MapTypes {
 			foregroundImages[1] = vertB;
 			
 			
-			tempDir = new BufferedImage[16];	
+			BufferedImage[] tempDir = new BufferedImage[16];	
 			tempDir[15-1] = vertB;
 			tempDir[15-4] = vertB;
 			tempDir[15-2] = horiB;
@@ -198,6 +179,25 @@ public enum MapTypes {
 			tempDir[15-10] = horiB;
 			directionals.put(100+1, tempDir);
  		}
+	}
+	
+	public char[][] charGridFromStrings(ArrayList<String> rows){
+		int max = 0;
+		for(String s: rows){
+			if(s.length() > max) max = s.length();
+		}
+		
+		
+		
+		char[][] room = new char[rows.size()][max];
+		
+		for(int y = 0; y < rows.size(); y++){
+			for(int x = 0; x < max; x++){
+				room[y][x] = rows.get(y).charAt(x);
+			}
+		}
+		
+		return room;
 	}
 	
 	public BufferedImage pickFGImage(int type, int fgAdj, int adj){

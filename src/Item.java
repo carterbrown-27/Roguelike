@@ -11,7 +11,6 @@ public abstract class Item extends GameObject {
 	private JSONObject supertypeData;
 	private JSONObject itemData;
 	
-	private ItemType superType;
 	private String typeName;
 	private String displayName = "<name>";
 	private String description = "<description>";
@@ -161,9 +160,8 @@ public abstract class Item extends GameObject {
 		}
 	}
 	
-	// TODO (T) TEMP --> polymorph
 	public boolean isUnknown(){
-		return superType.equals(ItemType.SCROLL) || superType.equals(ItemType.SCROLL);
+		return false;
 	}
 
 	// TODO (T) TEMP --> polymorph
@@ -180,9 +178,6 @@ public abstract class Item extends GameObject {
 		return super.getSprite();
 	}
 	
-	public ItemType getSuperType() {
-		return superType;
-	}
 
 	public String getDisplayName(){
 		return displayName;

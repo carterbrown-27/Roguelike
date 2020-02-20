@@ -11,14 +11,9 @@ public class Inventory {
 
 	private char firstOpen = 'a';
 	
-	Inventory(){
-		
-	}
-	
 	public Item getItem(Character c) {
 		return inventoryMap.get(c);
 	}
-	
 	
 	public boolean isEmpty(){
 		return inventoryMap.isEmpty();
@@ -68,20 +63,9 @@ public class Inventory {
 		}
 		return null;
 	}
-	
-	// TODO (X) Deprecate
-	@Deprecated
-	public char getItemTypeChar(Item t){
-		for(char c = 'a'; c <= 'z'; c++){
-			if(inventoryMap.containsKey(c) && inventoryMap.get(c).equals(t)){
-				return c;
-			}
-		}
-		return '!';
-	}
 
-	@Deprecated
 	public char getFirstItem(){
+		// ordered by letters
 		for(char c = 'a'; c <= 'z'; c++){
 			if(inventoryMap.containsKey(c)){
 				return c;
@@ -90,6 +74,7 @@ public class Inventory {
 		return '!';
 	}
 	public void getFirstOpen(){
+		// ordered by letters
 		for(char c = 'a'; c <= 'z'; c++){
 			if(!inventoryMap.containsKey(c)){
 				firstOpen = c;
@@ -145,7 +130,7 @@ public class Inventory {
 		return inventoryMap.containsKey(c);
 	}
 	
-	// TODO (I) Replace
+	// TODO (F) Replace
 	// public <T extends Item & Consumable> int getStackSize(T type){
 		// TODO: variation
 		// return type.commonStackSize();

@@ -74,7 +74,14 @@ public class Map {
 		printMap();
 		logger.info("building tile map...");
 		buildTileMap();
+		// printPrecons();
+		logger.info("Done.");
+		if(debugFlag) logger.warning("debug flag raised");
+	}
 
+	// methods
+	
+	public void printPrecons() {
 		for(char[][] r: type.precons.values()){
 			for(int cy = 0; cy < r.length; cy++){
 				for(int cx = 0; cx < r[0].length; cx++){
@@ -83,11 +90,7 @@ public class Map {
 				System.out.println();
 			}
 		}
-		logger.info("Done.");
-		if(debugFlag) logger.warning("debug flag raised");
 	}
-
-	// methods
 
 	public int[][] getMap(){
 		return map;

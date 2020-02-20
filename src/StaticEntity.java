@@ -40,7 +40,7 @@ public class StaticEntity extends Entity {
 				}else{
 					Main.appendText("You open the "+type.name+" to find:");
 					inv.printContents(true);
-					Main.itemPickup = true;
+					Main.setGameState(Main.GameState.PICKUP);
 					Main.currentInventory = inv;
 				}
 			}else{
