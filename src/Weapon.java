@@ -1,10 +1,12 @@
 import java.util.List;
 
+import org.json.JSONObject;
+
 public final class Weapon extends Item implements Equippable {
 	private boolean equipped = false;
-	double damage;
-	double accuracy;
-	double weight;
+	private double damage;
+	private double accuracy;
+	private double weight;
 	
 	Weapon(String id){
 		super(id);
@@ -13,6 +15,9 @@ public final class Weapon extends Item implements Equippable {
 		super.addPrompt('u', "(u)nwield");
 		super.addPrompt('w', "(w)ield");
 		// TODO: weapon init here:
+		damage = super.getItemData().getDouble("damage");
+		accuracy = super.getItemData().getDouble("accuracy");
+		weight = super.getItemData().getDouble("weight");
 	}
 	
 	// TODO (+) add a dmg calculation here (maybe)

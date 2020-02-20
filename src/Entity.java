@@ -115,6 +115,11 @@ public class Entity extends GameObject {
 		translated.translate(delta.x,delta.y);
 		return translated;
 	}
+	
+	// check if in square bound range.
+	public boolean inRange(Point other, int range) {
+		return (Math.abs(other.x-pos.x) <= range) && (Math.abs(other.y-pos.y) <= range);
+	}
 
 	public boolean isAdjacentTo(Point p){
 		return getAdjacentDir(p) != null;

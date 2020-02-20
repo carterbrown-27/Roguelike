@@ -788,6 +788,11 @@ public class Main {
 				else if(c.awake) creatureQueue.add(c);
 			}
 		}
+		
+		// TODO (T) TEMP
+		for(Creature c: creatureQueue) {
+			c.takeTurn();
+		}
 
 		// TODO (X) Overhaul
 		//		while(!creatureQueue.isEmpty()){
@@ -834,7 +839,7 @@ public class Main {
 	}
 
 	public static BufferedImage render(int x, int y){
-		BufferedImage img = currentMap.render_vig(x, y, player.ViewDistance, player.Luminosity);
+		BufferedImage img = currentMap.render_vig(x, y, player.viewDis, player.luminosity);
 		img = resize(img, img.getWidth()*3, img.getHeight()*3);
 		return img;
 	}

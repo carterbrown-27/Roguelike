@@ -109,8 +109,12 @@ public class ActionLibrary {
 	}
 
 	public double calculateDmg(Creature target, double damage_modifier){
-		return round(getAttackDamage() * damage_modifier
-				- ( (target.getDefence()/2 + (Main.rng.nextDouble()*target.getDefence()) ) / 2), 1);
+		double atkDmg = getAttackDamage() * damage_modifier;
+		// 50% DEF <-> 100% DEF
+		double defAmt = target.getDefence()/2 + (Main.rng.nextDouble()*target.getDefence())/2;
+		
+		// System.out.println("AtkDmg: "+atkDmg+" - DefAmt"+defAmt);
+		return round(Math.max(0,atkDmg-defAmt), 1);
 	}
 
 
@@ -133,34 +137,15 @@ public class ActionLibrary {
 	}
 
 	public double calculateAccuracy(){
-		/* accuracy is "quadratic"
-		 * deltaS <=~ -6; acc = 0
-		 * deltaS ~ acc 
-		 * if acc<=0.1, acc = 0.1
-		 * 0.025x^2+1 with +/-
-		 * MAX = 1.6
-		 * MIN = 0.1
-		 */
-
-		
-		// TODO (M) Migrate
 		if (c.weapon!=null) {
-			double deltaS = c.getStrength() + c.weapon.getAccuracy() /* x skill */ - (c.weapon.getAccuracy() * 2);
+			double excessStrength = c.getStrength() - c.weapon.getWeight();
+			// <1 if str < weight.
+			// unlimited negative, caps at +6 excess strength.
+			// TODO (T) TEMP
 			
-			// calculations, move these?
-			// TODO (R) Review
-			if (deltaS < 0){
-				return Math.min(Math.max(Math.pow(deltaS, 2) * (-1) * 0.025 + 1.0 , 0.1), 1.51);	
-			}else{		
-				return Math.min(Math.pow(deltaS, 2) * 0.0125 + 1.0 , 1.6);	
-			}
+			return 0.75 + (0.1 * Math.min(excessStrength, 6)) + (0.05 * c.weapon.getAccuracy());
 		}else{
-			// TODO (X) terrible, get rid of this
-//			if(!c.hasAI){
-//				return 1.1;
-//			}else{
-//				return 1.0;
-//			}
+			// TODO (A) Implement default accuracy
 			return 1.0;
 		}
 	}
@@ -169,12 +154,15 @@ public class ActionLibrary {
 		double accuracy = calculateAccuracy();
 		// System.out.println("acc = "+accuracy);
 		// standard formula -- hail mary
+		
+		// 50% ACC <-> 125% ACC
 		double calcAcc = round(accuracy/2+(Main.rng.nextDouble()*accuracy*3/4),4);
-		double calcEV = round(target.getEV()/2+(Main.rng.nextDouble()*target.getEV()),4);
+		// 50% EV <-> 125% EV
+		double calcEV = round(target.getEV()/2+(Main.rng.nextDouble()*target.getEV()*3/4),4);
 		
 		// System.out.println(e.name+"'s ACC: "+calcAcc + " {vs} "+target.name+"'s EV: "+calcEV);
 		
-		if((calcAcc >  calcEV && Main.rng.nextInt(9) >= 1) || Main.rng.nextInt(9)==9){
+		if((calcAcc >= calcEV && Main.rng.nextInt(9) >= 1) || Main.rng.nextInt(9)==9){
 			return true;
 		}
 		return false;

@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Player extends Creature {
-	public int ViewDistance = 5;
-	public int Luminosity = 4;
+	public int viewDis = 5;
+	public int luminosity = 4;
 	
 	public Ability ability = Ability.BASIC;
 
@@ -77,15 +77,16 @@ public class Player extends Creature {
 	}
 	
 	public void act_adj(Direction dir){
-		if(ability.equals(Ability.BASIC)){
+		// TODO (F) Refactor, Switch
+		if(ability == Ability.BASIC){
 			basic(dir);
-		}else if(ability.equals(Ability.SLASH)){
+		}else if(ability == Ability.SLASH){
 			if(melee(getTarget(dir),1.5)){
 				changeSP(-Ability.SLASH.s);
 				Main.takeTurn();
 				deselect();
 			}
-		}else if(ability.equals(Ability.LUNGE)){
+		}else if(ability == Ability.LUNGE){
 			dirs.add(dir);
 			if(dirs.size()==2){
 				Point start = getPos();
@@ -124,7 +125,8 @@ public class Player extends Creature {
 		for(Entity e: map.entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
-				if(c.awakeCheck()){
+				// check closeness
+				if(c.awakeCheck() && this.inRange(c.getPos(), viewDis)){
 					return true;
 				}	
 			}
@@ -133,7 +135,7 @@ public class Player extends Creature {
 	}
 	
 	public void rest(){
-		while(!enemiesNearby()){
+		while(!enemiesNearby() && getHP() < getHP_max()){
 			super.changeHP(+1);
 			Main.takeTurn();
 		}

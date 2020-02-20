@@ -1404,7 +1404,7 @@ public class Map {
 	private FOV fov = new FOV();
 
 	public void updateFOV(){
-		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.Luminosity);
+		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.luminosity);
 		
 		for(Entity e: entities){
 			if(e instanceof Creature) {

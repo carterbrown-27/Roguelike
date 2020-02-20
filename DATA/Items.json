@@ -16,7 +16,7 @@
 			
 				"type" : "short blade",
 				"damage" : 3.0,
-				"accuracy" : 6.5,
+				"accuracy" : 6.0,
 				"weight" : 2.0,
 			
 				"description" : "A short metal blade that is efficient in short ranged combat."
@@ -32,7 +32,7 @@
 			
 				"type" : "axe",
 				"damage" : 9.0,
-				"accuracy" : 5.5,
+				"accuracy" : 5.0,
 				"weight" : 6.0,
 			
 				"description" : "A small battleaxe that can be effectively weilded using one hand by stronger warriors."
@@ -48,7 +48,7 @@
 			
 				"type" : "bludgeon",
 				"damage" : 6.0,
-				"accuracy" : 4.5,
+				"accuracy" : 4.0,
 				"weight" : 4.5,
 			
 				"description" : ""
@@ -64,7 +64,7 @@
 			
 				"type" : "bludgeon",
 				"damage" : 7.0,
-				"accuracy" : 4.5,
+				"accuracy" : 4.0,
 				"weight" : 5.0,
 			
 				"description" : ""

@@ -71,7 +71,7 @@ public class Creature extends Entity {
 		this.SP_regen = SP_Data.getDouble("regenRate");
 		
 		// init AI.
-
+		ai = new AI(this);
 	}
 	
 	Creature(int tier, Point p, Map map){
@@ -91,7 +91,6 @@ public class Creature extends Entity {
 	}
 	
 	public void upkeep(){
-		satiation = Math.max(satiation-0.01,0);
 		for(Status s: getStatuses().keySet()){
 			if(s.upkeep){
 				// TODO (M) move this data elsewhere.
@@ -111,7 +110,9 @@ public class Creature extends Entity {
 	
 	public void endStep() {
 		// recover HP, SP
-		// hunger
+		changeHP(+HP_regen);
+		changeSP(+SP_regen);
+		satiation = Math.max(satiation-0.01,0);
 		// etc.
 	}
 	
@@ -120,7 +121,7 @@ public class Creature extends Entity {
 		if(awake) return true;
 		if(ai == null) return false;
 		// TODO (+) add creature viewDis
-		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.Luminosity); 
+		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.luminosity); 
 		if(vision[Main.player.getY()][Main.player.getX()]){
 			awake = true;
 			return true;
