@@ -18,15 +18,22 @@ public final class Armour extends Item implements Equippable {
 	public double getDefence() {
 		return defence;
 	}
+	
+	@Override
+	public String toString() {
+		return super.toString() + (isEquipped() ? " (worn)" : "");
+	}
 
 	@Override
 	public void equip(Creature c) {
 		c.getArmourSet().putInSlot(slot, this);
+		equipped = true;
 	}
 
 	@Override
 	public void unequip(Creature c) {
 		c.getArmourSet().takeOff(slot, this);
+		equipped = false;
 	}
 
 	@Override

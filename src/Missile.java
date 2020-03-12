@@ -5,49 +5,55 @@ import java.util.List;
 public class Missile extends Item implements Consumable, Equippable {
 	private boolean equipped;
 	private int amount;
-	
+
 	Missile(String id, int _amount){
 		super(id);
 		super.addPrompt('o', "thr(o)w");
 		this.setAmount(_amount);
 	}
-	
+
 	Missile(String id){
 		// TODO (+) replace 1 with stack size.
 		this(id,1);
 	}
-	
+
 	@Override
 	public void equip(Creature c) {
-		
+		equipped = true;
 	}
-	
+
 	@Override
 	public void unequip(Creature c) {
-		
+		equipped = false;
 	}
-	
+
 	@Override
 	public boolean isEquipped() {
 		return this.equipped;
 	}
-	
+
 	public void throwThis(Creature c, Point target) {
 		// throwing logic
 		use(c);
 	}
-	
+
 	@Override
 	public String toString() {
 		String name = getDisplayName();
 		String quantity = super.getQuantityString();
 
-		return String.format("%s - %s %s%s",super.getInventoryID(), quantity, name, super.getAmount() > 1 ? "s" : "");
+		return String.format("%s - %s %s%s%s",
+			super.getInventoryID(),
+			quantity,
+			name,
+			super.getAmount() > 1 ? "s" : "",
+			isEquipped() ? " (quivered)" : ""
+		);
 	}
-	
+
 	@Override
 	public void use(Creature c) {
-		
+
 	}
 
 	@Override
@@ -67,7 +73,7 @@ public class Missile extends Item implements Consumable, Equippable {
 			this.amount = 0;
 		}
 	}
-	
+
 	@Override
 	public boolean isStackable() {
 		return true;

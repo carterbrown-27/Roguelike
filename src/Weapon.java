@@ -34,15 +34,22 @@ public final class Weapon extends Item implements Equippable {
 	}
 	
 	@Override
+	public String toString() {
+		return super.toString() + (isEquipped() ? " (wielded)" : "");
+	}
+	
+	@Override
 	public void equip(Creature c) {
 		// TODO (A) Implement
 		c.weapon = this;
+		equipped = true;
 	}
 
 	@Override
 	public void unequip(Creature c) {
 		// TODO (A) Implement
 		c.weapon = null;
+		equipped = false;
 	}
 	
 	@Override

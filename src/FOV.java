@@ -80,7 +80,7 @@ public class FOV {
 			// deltaY is how far away from @
 			int deltaY = -distance;
 			// distance always = the number of tiles "to the left" from @ in a row, therefore go from -3 to 0 if on row 3
-			for (int deltaX = -distance; deltaX <= 0; deltaX++) {
+			for (int deltaX = -distance + (distance == radius ? 1 : 0); deltaX <= 0; deltaX++) {
 				
 				// multipliers change the +/- of the numbers to simulate direction shown in diagram
 				int currentX = startX + deltaX * xx + deltaY * xy;

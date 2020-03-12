@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 public enum MapTypes {
 	UNDERCITY ("undercity");
 	
+	// TODO (E) Encapsulate
 	public final String PATH = "imgs/";
 	public char[] tile_characters = {' ','#','Z',':','+','D','~','\''};
 	
@@ -19,31 +20,17 @@ public enum MapTypes {
 	public Tile[] usedTiles = new Tile[tile_characters.length];
 	public BufferedImage[] defaultImages = new BufferedImage[usedTiles.length];
 	
-	public HashMap<Integer,BufferedImage[]> variations = new HashMap<Integer,BufferedImage[]>();
-	public HashMap<Integer,BufferedImage[]> directionals = new HashMap<Integer,BufferedImage[]>();
-	public BufferedImage[][] tilesArray = null;
-	public HashMap<Integer,Integer> variationPercentages = new HashMap<Integer,Integer>();
+	// TODO (R) Switch from [] to ArrayList.
+	private HashMap<Integer,BufferedImage[]> variations = new HashMap<>();
+	private HashMap<Integer,BufferedImage[]> directionals = new HashMap<>();
+	private BufferedImage[][] tilesArray;
+	private HashMap<Integer,Integer> variationPercentages = new HashMap<>();
 	
-	public HashMap<Integer,char[][]> precons = new HashMap<Integer,char[][]>();
-	public HashMap<Integer,ArrayList<String>> precons_fg = new HashMap<Integer,ArrayList<String>>();
-	
-//	public Tile[][] tileMapFromFile(ArrayList<String> rows){
-//		int max = 0;
-//		for(String s: rows){
-//			if(s.length() > max) max = s.length();
-//		}
-//		Tile[][] room = new Tile[rows.size()][max];
-//		
-//		for(int y = 0; y < rows.size(); y++){
-//			for(int x = 0; x < max; x++){
-//			}
-//		}
-//		
-//		return room;
-//	}
+	// TODO (A) Create Rooms here instead of storing Room data.
+	public HashMap<Integer,char[][]> precons = new HashMap<>();
+	public HashMap<Integer,ArrayList<String>> precons_fg = new HashMap<>();
 
 	MapTypes(String type){
-		
 		if(type.equals("undercity")){
 			BufferedReader br;
 			try{
@@ -98,13 +85,13 @@ public enum MapTypes {
 			}
 			
 			int tileSize = 24;
-			int mw = tilemap.getWidth()/tileSize;
-			int mh = tilemap.getHeight()/tileSize;
+			int maxW = tilemap.getWidth()/tileSize;
+			int maxH = tilemap.getHeight()/tileSize;
 			
-			tilesArray = new BufferedImage[mh][mw];
+			tilesArray = new BufferedImage[maxH][maxW];
 			
-			for(int x = 0; x < mw; x++){
-				for(int y = 0; y < mh; y++){
+			for(int x = 0; x < maxW; x++){
+				for(int y = 0; y < maxH; y++){
 					tilesArray[y][x] = tilemap.getSubimage(x*tileSize, y*tileSize, tileSize, tileSize);
 				}
 			}
@@ -186,8 +173,6 @@ public enum MapTypes {
 		for(String s: rows){
 			if(s.length() > max) max = s.length();
 		}
-		
-		
 		
 		char[][] room = new char[rows.size()][max];
 		

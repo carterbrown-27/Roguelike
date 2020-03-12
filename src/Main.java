@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.logging.Logger;
 
-// TODO (*) Decouple GUI from Main & Switch to JavaFX for GUI.
+// TODO (*) Decouple GUI from Main, Switch to JavaFX for GUI, create JApplet from JavaFX.
 public class Main {
 
 	// TODO (+) saving

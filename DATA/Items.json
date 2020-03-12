@@ -209,7 +209,7 @@
 					"x" : 8,
 					"y" : 1
 				},
-				"tier" : 1,
+				"tier" : 10,
 			
 				"damage" : 2.0,
 				"commonStack" : 5

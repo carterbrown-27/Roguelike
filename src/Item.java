@@ -8,6 +8,9 @@ public abstract class Item extends GameObject {
 	private static JSONObject masterJSON;
 	// private static boolean initialized;
 	
+	private static final int MIN_TIER = 1;
+	private static final int MAX_TIER = 10;
+	
 	private JSONObject supertypeData;
 	private JSONObject itemData;
 	
@@ -184,7 +187,6 @@ public abstract class Item extends GameObject {
 	}
 	
 	// TODO (R) Review, is this good practice? resolve unchecked warnings.
-	// TODO (A) Implement food
 	private static final Class[] itemClasses = {Weapon.class,Armour.class,Potion.class,Scroll.class,Missile.class,Food.class,Item.class};
 	private static final String[] itemTypeNames = {"Weapons","Armour","Potions","Scrolls","Missiles","Food","Special"};
 
@@ -219,7 +221,7 @@ public abstract class Item extends GameObject {
 		// TODO (A) Implement
 		// TODO (+) More Sophisticated Random Calculations.
 		float plusMinus = 1/3f * tierMean;
-		int tier = (int) ((Main.rng.nextFloat()*2*plusMinus) + tierMean - plusMinus);
+		int tier = Math.round((Main.rng.nextFloat()*2*plusMinus) + tierMean - plusMinus);
 		
 		ItemType type = randomItemType(0);
 		
@@ -246,23 +248,21 @@ public abstract class Item extends GameObject {
 		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
 		
 		// decrease to 0.
-		do {
+		for(;result.isEmpty() && tier >= MIN_TIER; tier--) {
 			for(String id: items) {
 				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
 					result.add(id);
 				}
 			}
-			tier--;
-		} while(result.isEmpty() && tier > 0);
+		}
 		
 		// then go up
-		while(result.isEmpty() && tier <= 5) {
+		for(;result.isEmpty() && tier <= MAX_TIER; tier++) {
 			for(String id: items) {
 				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
 					result.add(id);
 				}
 			}
-			tier++;
 		}
 		
 		return result;

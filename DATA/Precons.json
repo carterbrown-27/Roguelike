@@ -1,0 +1,9 @@
+{
+	"general" : {
+		"00" : {
+			"file" : "precon_00.txt",
+			"tiles" : "default",
+			"rarity" : 0
+		}
+	}
+}

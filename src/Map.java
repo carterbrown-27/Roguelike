@@ -1462,20 +1462,25 @@ public class Map {
 						if(!lightMap[y][x]){
 							if (tileMap[y][x].visited) {
 								BufferedImage image = new BufferedImage(tileSize, tileSize,
-										BufferedImage.TYPE_BYTE_GRAY);
+										BufferedImage.TYPE_4BYTE_ABGR);
 								Graphics tileG = image.getGraphics();
 								tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
 								Entity LEH = tileMap[y][x].lastEntityHere;
 								if(LEH!=null && isOnMap(LEH.getPos()) && !lightMap[LEH.getY()][LEH.getX()]){
 									tileG.drawImage(LEH.getSprite(), 0, 0, null);
 								}
+								
+								final float percentBrightness = .60f;
+								
+								tileG.setColor(new Color(0,0,0, (int) (255*(1-percentBrightness)) ));
+								tileG.fillRect(0, 0, image.getWidth(), image.getHeight());
 								tileG.dispose();
 								tile = image;
 							}else{
 								tile = dark;
 							}
 						}else{
-
+							
 						}
 					}
 					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
