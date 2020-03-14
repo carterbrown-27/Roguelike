@@ -36,15 +36,15 @@ public class StaticEntity extends Entity {
 				isLocked = false;
 				e.inv.useKey(Main.floorNumber);
 				if(inv.isEmpty()){
-					Main.appendText("You open the "+type.name+" and find nothing.");
+					Main.view.appendText("You open the "+type.name+" and find nothing.");
 				}else{
-					Main.appendText("You open the "+type.name+" to find:");
+					Main.view.appendText("You open the "+type.name+" to find:");
 					inv.printContents(true);
 					Main.setGameState(Main.GameState.PICKUP);
 					Main.currentInventory = inv;
 				}
 			}else{
-				Main.appendText("It's locked, and you don't have a key to open it.");
+				Main.view.appendText("It's locked, and you don't have a key to open it.");
 			}
 		}
 	}

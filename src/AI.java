@@ -31,9 +31,9 @@ public class AI {
 	public boolean basic(){
 		if(c.isAdjacentTo(player.getPos())){
 			if(lib.melee(player,1)){
-				Main.appendText("The "+c.getName()+" hits you!");
+				Main.view.appendText("The "+c.getName()+" hits you!");
 			}else{
-				Main.appendText("The "+c.getName()+" misses you.");				
+				Main.view.appendText("The "+c.getName()+" misses you.");				
 			}
 			return true;
 		}else{

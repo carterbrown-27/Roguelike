@@ -65,7 +65,7 @@ public class Entity extends GameObject {
 			map.map[getY()][getX()] = 7;
 			map.tileMap[getY()][getX()].setValue(7);
 
-			Main.appendText("The door creaks open.");
+			Main.view.appendText("The door creaks open.");
 		}
 		return sxs;
 	}

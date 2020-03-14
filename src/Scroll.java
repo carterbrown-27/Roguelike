@@ -45,12 +45,12 @@ public class Scroll extends Item implements Consumable {
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {
 			if(c.inv.containsUnidentified()){
-				Main.appendText("Identify what?");
+				Main.view.appendText("Identify what?");
 				c.inv.printContents(false);
 				Main.setGameState(Main.GameState.INVENTORY_SELECT);
 				Main.setInvSelAction(Main.InventorySelectAction.IDENTIFY);
 			}else{
-				Main.appendText("There is nothing in your pack to identify!");
+				Main.view.appendText("There is nothing in your pack to identify!");
 			}
 		}else if(effects.containsKey("TELEPORT")) {
 			c.setPos(c.map.randomEmptySpace());

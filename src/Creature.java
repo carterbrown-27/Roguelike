@@ -140,7 +140,7 @@ public class Creature extends Entity {
 			
 			// TODO (R) Refactor
 			if (getHP()<0.05) {
-				Main.appendText("You kill the " + super.getName() + ".");
+				Main.view.appendText("You kill the " + super.getName() + ".");
 				return turnEnding.DEAD; // dead
 			}
 			if(!ai.takeTurn()){
@@ -156,9 +156,9 @@ public class Creature extends Entity {
 		if(!getStatuses().containsKey(s)){
 			toggle(s, true);
 			if(ai!=null){
-				Main.appendText(String.format("The %s is %s!", getName(), s.name));
+				Main.view.appendText(String.format("The %s is %s!", getName(), s.name));
 			}else{
-				Main.appendText(String.format("You are %s!", s.name));
+				Main.view.appendText(String.format("You are %s!", s.name));
 			}
 			getStatuses().put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
 		}else{
@@ -169,9 +169,9 @@ public class Creature extends Entity {
 	public void removeStatus(Status s){
 		toggle(s, false);
 		if(ai!=null){
-			Main.appendText("The "+getName()+" is no longer "+s.name+".");
+			Main.view.appendText("The "+getName()+" is no longer "+s.name+".");
 		}else{
-			Main.appendText("You are no longer "+s.name+".");
+			Main.view.appendText("You are no longer "+s.name+".");
 		}
 		getStatuses().remove(s);
 	}

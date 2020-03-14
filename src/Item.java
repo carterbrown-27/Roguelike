@@ -282,7 +282,7 @@ public abstract class Item extends GameObject {
 	
 	// TODO (F) Fix
 	public void drop(Entity from) {
-		Main.appendText("You drop the "+this.getDisplayName());
+		Main.view.appendText("You drop the "+this.getDisplayName());
 		// TODO (R) Refactor
 		from.map.addItemToSpace(this, from.getPos());
 		delete(from);

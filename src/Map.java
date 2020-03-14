@@ -1411,10 +1411,10 @@ public class Map {
 				Creature c = (Creature) e;
 				if(c.isInPlayerView()){
 					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-					if(!c.isInPlayerView()) Main.appendText("The "+c.getName()+" is no longer in view.");
+					if(!c.isInPlayerView()) Main.view.appendText("The "+c.getName()+" is no longer in view.");
 				}else{
 					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-					if(c.isInPlayerView()) Main.appendText("A "+c.getName()+" moves into view.");
+					if(c.isInPlayerView()) Main.view.appendText("A "+c.getName()+" moves into view.");
 				}
 			}
 		}
@@ -1461,8 +1461,7 @@ public class Map {
 					if(tile!=dark && !noLighting){
 						if(!lightMap[y][x]){
 							if (tileMap[y][x].visited) {
-								BufferedImage image = new BufferedImage(tileSize, tileSize,
-										BufferedImage.TYPE_4BYTE_ABGR);
+								BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
 								Graphics tileG = image.getGraphics();
 								tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
 								Entity LEH = tileMap[y][x].lastEntityHere;
@@ -1485,7 +1484,7 @@ public class Map {
 					}
 					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
 
-					BufferedImage fullImg = new BufferedImage(tileSize,tileSize,BufferedImage.TYPE_INT_ARGB);
+					BufferedImage fullImg = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
 					Graphics fg = fullImg.getGraphics();
 					fg.drawImage(tile, 0, 0, null);
 

@@ -45,14 +45,14 @@ public class Inventory {
 
 	public void printContents(boolean floor){
 		if(floor){
-			Main.appendText("Things here:");
+			Main.view.appendText("Things here:");
 		}else{
-			Main.appendText("Your Inventory:");
+			Main.view.appendText("Your Inventory:");
 		}
 		
 		for(char c: inventoryMap.keySet()){
 			Item i = inventoryMap.get(c);
-			Main.appendText(i.toString());
+			Main.view.appendText(i.toString());
 		}
 	}
 
@@ -102,7 +102,7 @@ public class Inventory {
 			inventoryMap.put(firstOpen, i);
 			i.setInventoryID(firstOpen);
 		} else {
-			Main.appendText("Inventory full.");
+			Main.view.appendText("Inventory full.");
 			return;
 		}
 	}

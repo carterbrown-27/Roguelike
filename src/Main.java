@@ -17,9 +17,10 @@ public class Main {
 	//	public static int seed = 12345678;
 	public static Random rng;
 	//	public static boolean randSeed = true;
-	//	public static boolean render = true;
 
 	public static boolean running;
+	
+	public static View view;
 
 	public static Player player;
 	public static String playerName = "Hillstyle";
@@ -48,35 +49,19 @@ public class Main {
 
 	public static int seed;
 
-	public static int JFrame_WIDTH = 1500;
-	public static int JFrame_HEIGHT = 1000;
-	public static Font font;
-	private static JFrame frame;
-	private static JPanel panel;
-	public static JPanel consolePanel;
-	public static JTextArea area;
-	public static JTextArea stats;
-
-	public static ArrayList<String> txt = new ArrayList<String>();
-	public static final int rows = 15;
-
 	private static final Logger logger = Logger.getLogger(Main.class.getName());
 	public static StringHelper stringHelper;
 
 	public static void main(String[] args){
 
 		running = true;
+		
 		state = GameState.REGULAR;
 		invSelAction = InventorySelectAction.NONE;
 
 		rng = new Random();
 
 		lastPress = System.currentTimeMillis();
-
-		panel = new JPanel();
-		area = new JTextArea();
-		stats = new JTextArea();
-		consolePanel = new JPanel();
 
 		floors = new HashMap<>();
 
@@ -85,22 +70,12 @@ public class Main {
 
 		stringHelper = new StringHelper(rng);
 
-		font = new Font("Serif",Font.BOLD,20);
-
-		try{
-			InputStream is = new FileInputStream("DATA/Adventurer.ttf");
-			font = Font.createFont(Font.TRUETYPE_FONT, is);
-			font = font.deriveFont(Font.PLAIN, 20);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-
+		view = new View();
 		startGame();
 		logger.info("Seed = " + seed);
 
 		// controls
-		frame.addKeyListener(new KeyAdapter() {
+		view.getFrame().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
 				logger.fine("Key Pressed "+KeyEvent.getKeyText(e.getKeyCode()));
@@ -123,7 +98,7 @@ public class Main {
 
 				if(!state.equals(GameState.PICKUP) && !state.equals(GameState.INVENTORY)){
 					// System.out.println("flag 1");
-					clearText();
+					view.clearText();
 				}
 
 				// ESCAPE takes precedent.
@@ -183,7 +158,7 @@ public class Main {
 
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
 						// Ctrl-C: Clear
-						clearText();
+						view.clearText();
 					}else if(e.getKeyCode() == KeyEvent.VK_5){
 						// 5: Rest
 						player.startRest();
@@ -196,9 +171,9 @@ public class Main {
 							if(e.getKeyCode() == a.k){
 								if(player.getSP() >= a.s){
 									player.select(a);
-									appendText(a.name);
+									view.appendText(a.name);
 								}else{
-									appendText("Not enough stamina!");
+									view.appendText("Not enough stamina!");
 									player.deselect();
 								}
 								break;
@@ -244,7 +219,7 @@ public class Main {
 		});
 
 		// System.out.println(ropePoint.toString());
-		refreshFrame(render(ropePoint.x,ropePoint.y));
+		view.refreshFrame(render(ropePoint.x,ropePoint.y));
 	}
 
 	public static enum GameState {
@@ -308,7 +283,7 @@ public class Main {
 		Item i = player.inv.getItem(c);
 
 		if(!Character.isAlphabetic(k) || !i.actionsContains(k)) {
-			appendText(k + " is not an option.");
+			view.appendText(k + " is not an option.");
 			return;
 		}
 
@@ -334,25 +309,25 @@ public class Main {
 			switch(k) {
 
 			case 'w' : {
-				appendText("You wield your "+i.getDisplayName());
+				view.appendText("You wield your "+i.getDisplayName());
 				eq.equip(player);
 				break;
 			}
 
 			case 'p' : {
-				appendText("You put on your "+i.getDisplayName());
+				view.appendText("You put on your "+i.getDisplayName());
 				eq.equip(player);
 				break;
 			}
 
 			case 'u' : {
-				appendText("You unwield your "+i.getDisplayName());
+				view.appendText("You unwield your "+i.getDisplayName());
 				eq.unequip(player);
 				break;
 			}
 
 			case 't' : {
-				appendText("You take off your "+i.getDisplayName());
+				view.appendText("You take off your "+i.getDisplayName());
 				eq.unequip(player);
 				break;
 			}
@@ -368,20 +343,20 @@ public class Main {
 
 			case 'r' : {
 				// read effect
-				appendText("You read the"+i.getDisplayName());
+				view.appendText("You read the"+i.getDisplayName());
 				cnsm.use(player);
 				break;
 			}
 
 			case 'q' : {
 				// quaff effect
-				appendText("You quaff the "+i.getDisplayName());
+				view.appendText("You quaff the "+i.getDisplayName());
 				cnsm.use(player);
 				break;
 			}
 
 			case 'e' : {
-				appendText("You eat the "+i.getDisplayName());
+				view.appendText("You eat the "+i.getDisplayName());
 				cnsm.use(player);
 				break;
 			}
@@ -389,13 +364,13 @@ public class Main {
 		}
 
 		state = GameState.REGULAR;
-		refreshStats();
+		view.refreshStats();
 	}
 
 	public static void handleInventory(char k) {
 		logger.fine("Inventory Handler called.");
-		txt.clear();
-		refreshText();
+		view.clearText();
+		
 		boolean selected = false;
 		if (player.inv.contains(k)) {
 			selected = true;
@@ -403,11 +378,11 @@ public class Main {
 			// TODO (R) Review
 			Item i = player.inv.getItem(k);
 
-			appendText(i+" selected.");
-			appendText(i.getDescription());
+			view.appendText(i+" selected.");
+			view.appendText(i.getDescription());
 
 			for(String s: i.listPrompts()) {
-				appendText(s);
+				view.appendText(s);
 			}
 
 			selectedItem = k;
@@ -435,12 +410,11 @@ public class Main {
 		}
 
 		if(!flag){
-			appendText(k+" is not a valid option.");
+			view.appendText(k+" is not a valid option.");
 		}else{
 			state = GameState.REGULAR;
 			invSelAction = InventorySelectAction.NONE;
 		}
-
 	}
 
 	public static void handleTargetConfirm() {
@@ -457,13 +431,14 @@ public class Main {
 				break;
 			}
 		}
+		
 		// TODO: (A) Implement
 		if(f){
 			// valid target
-			appendText("valid target");
+			view.appendText("valid target");
 		}else{
 			// invalid
-			appendText("invalid target");
+			view.appendText("invalid target");
 		}
 		state = GameState.REGULAR;
 	}
@@ -481,9 +456,9 @@ public class Main {
 					if(se.getPos().equals(player.getPos())){
 						if(!se.isLocked){
 							selectedInv = se.inv;
-							appendText("Pick up what?");
+							view.appendText("Pick up what?");
 						}else{											
-							appendText("It's locked.");
+							view.appendText("It's locked.");
 							return;
 						}
 						// n.SE.interact(player,'g');
@@ -496,7 +471,7 @@ public class Main {
 		}
 
 		if(selectedInv == null || selectedInv.isEmpty()){
-			appendText("There is nothing here.");
+			view.appendText("There is nothing here.");
 			return;
 		}
 
@@ -505,7 +480,7 @@ public class Main {
 		}else if(!selectedInv.isEmpty()){
 			state = GameState.PICKUP;
 			currentInventory = selectedInv;
-			appendText("Pick up what?");
+			view.appendText("Pick up what?");
 		}
 	}
 
@@ -520,12 +495,7 @@ public class Main {
 			// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
 			changeFloor(floorNumber-1,false,false);
 		}
-		appendText("Current Floor: "+floorNumber);
-	}
-
-	public static void clearText() {
-		txt.clear();
-		refreshText();
+		view.appendText("Current Floor: "+floorNumber);
 	}
 
 	public static void startGame(){
@@ -539,7 +509,7 @@ public class Main {
 
 		changeFloor(floorNumber, true, true);
 
-		// TEMP player default inventory
+		// TODO (T) TEMP player default inventory
 		Weapon dagger = new Weapon("dagger");
 		player.inv.addItem(dagger);
 		player.equip(dagger);
@@ -574,7 +544,7 @@ public class Main {
 
 		if(isNew){
 
-			// TEMP populate level with mobs
+			// TODO (T) TEMP populate level with mobs
 			int mobs = rng.nextInt(8)+16;
 			for (int i = 0; i < mobs; i++) {
 				Point t;
@@ -589,7 +559,7 @@ public class Main {
 				new Creature(floorNumber,t,currentMap);
 			}
 
-			// TEMP populate level with items
+			// TODO (T) TEMP populate level with items
 			int items = rng.nextInt(6)+14; // 6+8, 6+28
 			for(int i = 0; i < items; i++){
 				Point t = currentMap.randomOpenSpace();
@@ -598,7 +568,7 @@ public class Main {
 				currentMap.tileMap[t.y][t.x].inventory.addItem(item);
 			}
 
-			// TEMP populate level with chests/keys
+			// TODO (T) TEMP populate level with chests/keys
 			int chests = rng.nextInt(2)+1;
 			for(int i = 0; i < chests; i++){
 				Point t = currentMap.randomEmptySpace();
@@ -619,133 +589,16 @@ public class Main {
 
 		System.out.printf("@@@ Saved Render = %dms @@@\n", System.currentTimeMillis()-time);
 
-		if(frame==null){
-			frame = buildFrame(render(startPoint.x,startPoint.y));
-		}else{
-			refreshFrame(render(startPoint.x,startPoint.y));
-		}
+		if(view.getFrame()==null) view.init();
+		view.refreshFrame(render(startPoint.x,startPoint.y));
 
 		System.out.printf("@@@ Frame Initialized = %dms @@@\n",System.currentTimeMillis()-time);
-	}
-
-	private static JFrame buildFrame(BufferedImage img) {
-		// GUI gui = new GUI();
-		// gui.run();
-
-		JFrame frame = new JFrame();
-		// TODO (X) Overhaul GUI.
-		JFrame_HEIGHT = img.getHeight()+42;
-		JFrame_WIDTH = Math.min(img.getWidth()*7/3,1600);
-
-		// TODO: use different icon for game.
-		frame.setIconImage(player.getSprite());
-
-		panel.setLayout(new BorderLayout());
-		panel.add(consolePanel,BorderLayout.EAST);
-
-		area.setBackground(Color.BLACK);
-		area.setFont(font.deriveFont(Font.PLAIN,24));
-		area.setEditable(false);
-		area.setFocusable(false);
-		area.setForeground(Color.white);
-
-		stats.setFocusable(false);
-		stats.setEditable(false);
-
-		consolePanel.setLayout(new BorderLayout());
-		consolePanel.add(stats,BorderLayout.NORTH);
-		consolePanel.add(area,BorderLayout.CENTER);
-		consolePanel.setBackground(Color.BLACK);
-
-		frame.setTitle("Roguelike");
-		panel.setBackground(Color.BLACK);
-		panel.add(consolePanel,BorderLayout.EAST);
-
-
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.setSize(JFrame_WIDTH, JFrame_HEIGHT);
-		frame.setVisible(true);
-		return frame;
-	}
-
-	public static void refreshFrame(BufferedImage render) {
-		panel.removeAll();
-		JLabel picLabel = new JLabel(new ImageIcon(render));
-		panel.add(picLabel,BorderLayout.WEST);
-		panel.setSize(frame.getWidth(), frame.getHeight());
-		// panel.setLocation(new Point(panel.getX(),panel.getY()+25));
-		consolePanel.setSize((int) (frame.getWidth()-picLabel.getWidth()*1.1), frame.getHeight()-10);
-		area.setSize(consolePanel.getWidth(), consolePanel.getHeight());
-		stats.setSize(consolePanel.getWidth(), consolePanel.getHeight());
-		refreshStats();
-
-		panel.add(consolePanel,BorderLayout.EAST);
-		frame.add(panel);
-		frame.setFocusable(true);
-		frame.requestFocusInWindow();
-		frame.revalidate();
-		frame.repaint();
-	}
-
-	public static void refreshStats(){
-		stats.setBackground(Color.BLACK);
-		stats.setForeground(Color.LIGHT_GRAY);
-		stats.setFont(font);
-		stats.setText("");
-
-		// TODO (R) Refactor
-		stats.append("\n\n");
-		stats.append("  "+playerName+"\n");
-		stats.append(String.format("  HP: %.1f/%.1f\n", player.getHP(), player.getHP_max()));
-		stats.append(String.format("  SP: %.1f/%.1f\n", player.getSP(), player.getSP_max()));
-		stats.append("  STR: "+player.getStrength()+"\n");
-		stats.append("  DEF: "+player.getArmourSet().getDefence()+"\n");
-		stats.append(String.format("  SAT: %d\n", Math.round(player.getSAT())));
-
-		if(player.weapon != null){			
-			stats.append("  Weapon: "+player.weapon.getDisplayName());
-		}else{
-			stats.append("  Weapon: none");
-		}
-		stats.append("\n");
-
-		stats.append("  Quivered: "+ (player.quivered == null ? "none" : player.quivered.getDisplayName()));
-
-		stats.append("\n");
-
-
-		String line = "  ";
-		for(Status s: player.getStatuses().keySet()){
-			line += s.name() + " ";
-		}
-		stats.append(line+"\n");
-		stats.append("_________________________________________________________________\n\n");
-	}
-
-	public static void appendText(String text){
-		String[] strArray = text.split("\\r?\\n");
-		for(String str: strArray){
-			txt.add(str);
-		}
-		refreshText();
-	}
-
-	public static void refreshText(){
-		area.setText("");
-		while (txt.size()>rows){
-			txt.remove(0);
-		}
-		for(int i = 0; i < txt.size(); i++){
-			area.append(txt.get(i)+"\n"+"\n");
-		}
-
-		//		if(txt.size()>=1) area.append(txt.get(txt.size()-1));
 	}
 
 	public static void blackOverlay(){
 		// TODO (F) load file into memory
 		try{
-			refreshFrame(ImageIO.read(new File("imgs/descendingOverlay.png")));
+			view.refreshFrame(ImageIO.read(new File("imgs/descendingOverlay.png")));
 		}catch(Exception e){
 			logger.warning("Black overlay not found.");
 		}
@@ -824,10 +677,10 @@ public class Main {
 		lastPos = pos;
 		// if(player.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.HP,2));
 		if(player.getHP() < 0.05){
-			appendText("You die...");
+			view.appendText("You die...");
 			running = false;
 		}
-		refreshFrame(render(pos.x,pos.y));
+		view.refreshFrame(render(pos.x,pos.y));
 	}
 
 	@Deprecated

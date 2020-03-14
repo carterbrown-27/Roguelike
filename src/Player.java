@@ -141,26 +141,26 @@ public class Player extends Creature {
 		}
 		
 		resting = false;
-		Main.appendText("You feel better - HP: "+getHP());
-		Main.refreshText();
+		Main.view.appendText("You feel better - HP: "+getHP());
+		Main.view.refreshText();
 	}
 	
 	public void startRest(){
 		if (getHP() < getHP_max()) {
 			if (!enemiesNearby()) {
 				if (!resting) {
-					Main.appendText("You start resting.");
+					Main.view.appendText("You start resting.");
 					resting = true;
 					rest();
 				} else {
-					Main.appendText("You stop resting.");
+					Main.view.appendText("You stop resting.");
 					resting = false;
 				}
 			} else {
-				Main.appendText("You cannot rest now, there are enemies nearby.");
+				Main.view.appendText("You cannot rest now, there are enemies nearby.");
 			}
 		}else{
-			Main.appendText("You aren't tired.");			
+			Main.view.appendText("You aren't tired.");			
 		}
 	}
 	
@@ -173,10 +173,10 @@ public class Player extends Creature {
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
-				Main.appendText("You hit the "+target.getName());								
-				Main.appendText(target.getName()+" 's HP: "+Math.max(0,target.getHP()));				
+				Main.view.appendText("You hit the "+target.getName());								
+				Main.view.appendText(target.getName()+" 's HP: "+Math.max(0,target.getHP()));				
 			}else{
-				Main.appendText("You miss the "+target.getName());				
+				Main.view.appendText("You miss the "+target.getName());				
 			}
 			return true;
 		}
@@ -197,12 +197,12 @@ public class Player extends Creature {
 	
 	public void identify(Item i) {
 		identifiedItems.add(i.getTypeName());
-		Main.appendText("It was a "+i.getTypeName()+".");
+		Main.view.appendText("It was a "+i.getTypeName()+".");
 	}
 	
 	
 	public void pickUp(char c, Inventory origInv){
-		Main.appendText("You pick up the " + origInv.getItem(c).getDisplayName());
+		Main.view.appendText("You pick up the " + origInv.getItem(c).getDisplayName());
 		origInv.pickUp(c,this);
 		Main.takeTurn();
 	}
@@ -221,13 +221,13 @@ public class Player extends Creature {
 //		if(e.weapon!=null) unweild(e.weapon);
 //		i.equipped = true;
 //		e.weapon = i;
-//		Main.appendText("You are now weilding your "+i.name+".");
+//		Main.view.appendText("You are now weilding your "+i.name+".");
 //	}
 //	
 //	public void unweild(Weapon i){
 //		if(i!=null) i.equipped = false;
 //		e.weapon = null;
-//		Main.appendText("You unweild your "+i.name+".");
+//		Main.view.appendText("You unweild your "+i.name+".");
 //	}
 //	
 //	public void quiver(Missile i){
@@ -238,7 +238,7 @@ public class Player extends Creature {
 //		}
 //		i.equipped = true;
 //		e.quivered = i;
-//		Main.appendText("You quiver your "+i.name+"(s).");
+//		Main.view.appendText("You quiver your "+i.name+"(s).");
 //	}
 //	
 //	public void unquiver(Missile i){
@@ -248,7 +248,7 @@ public class Player extends Creature {
 //			return;
 //		}
 //		e.quivered = null;
-//		Main.appendText("You put away your "+i.name+"(s).");
+//		Main.view.appendText("You put away your "+i.name+"(s).");
 //	}
 	
 //	public void takeOff(Item i){
@@ -269,7 +269,7 @@ public class Player extends Creature {
 //		}else if(e.ring_right.equals(i)){
 //			e.ring_right = null;
 //		}
-//		Main.appendText("You take off your "+i.name+".");
+//		Main.view.appendText("You take off your "+i.name+".");
 //	}
 	
 //	public void putOn(Item i){
@@ -295,14 +295,14 @@ public class Player extends Creature {
 //				e.ring_right = i;
 //			}else{
 //				// take off rings
-//				Main.appendText("you must take off one of your two rings first.");
+//				Main.view.appendText("you must take off one of your two rings first.");
 //			}
 //		}else if(i.isInClass(Item.Items.amulets)){
 //			if(e.amulet!=null) takeOff(e.amulet);
 //			e.amulet = i;
 //		}
 //		i.worn = true;
-//		Main.appendText("You put on your "+i.name+".");
+//		Main.view.appendText("You put on your "+i.name+".");
 //	}
 	
 //	public ArrayList<Entity> getAdjacents() {
