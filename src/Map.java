@@ -9,29 +9,32 @@ import java.util.logging.Logger;
 
 public class Map {
 	private static final Logger logger = Logger.getLogger(Map.class.getName());
-	
+
 	public int height = 52; // 52
 	public int width = 90; // 90
 	public final int MIN_DOORS = 32; // 32
 
 	public int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
-
+	
+	// TODO: compress this all into tileMap
 	public int[][] map;
-	public Tile[][] tileMap;
 	public int[][] foreground;
+	public Tile[][] tileMap;
+	public boolean[][] lightMap;
 
 	public static int smooths = 4;
 	// public static Entity[][] entity_map = new Entity[height][width];
-	
+
 	// TODO (I) Populate w/ creatures.
 	public HashSet<Entity> entities = new HashSet<>();
 
 	public Player player;
 
 	public int tileSize = 24;
-	
+
 	private Pathfinder pf = new Pathfinder();
+	private FOV fov = new FOV();
 
 	private MapTypes type = MapTypes.UNDERCITY;
 
@@ -59,7 +62,7 @@ public class Map {
 		map = new int[height][width];
 		foreground = new int[height][width];
 
-		// kill
+		// TODO (R) Review
 		tileMap = new Tile[height][width];
 
 		if(undercity){
@@ -80,7 +83,7 @@ public class Map {
 	}
 
 	// methods
-	
+
 	public void printPrecons() {
 		for(char[][] r: type.precons.values()){
 			for(int cy = 0; cy < r.length; cy++){
@@ -100,7 +103,7 @@ public class Map {
 		if(x>=width || y>= height || x<0 || y<0) return false;
 		return true;
 	}
-	
+
 	public boolean isOnMap(Point p) {
 		return isOnMap(p.x,p.y);
 	}
@@ -108,10 +111,10 @@ public class Map {
 	public boolean isOpen(int x, int y){
 		if(!isOnMap(x,y)) return false;
 		if(map[y][x]!=1 && map[y][x]!=6) return true;
-		
+
 		return false;
 	}
-	
+
 	public boolean isOpen(Point p){
 		return isOpen(p.x,p.y);
 	}
@@ -119,7 +122,7 @@ public class Map {
 	public boolean isFullOpen(int x, int y){
 		return isFullOpen(new Point(x,y)); 
 	}
-	
+
 	public boolean isFullOpen(Point p) {
 		for(Entity e: entities){
 			if(e.isPassable == false && e.getPos().equals(p)) return false;
@@ -127,7 +130,7 @@ public class Map {
 		if(player.getPos().equals(p)) return false;
 		return isOpen(p);
 	}
-	
+
 	public boolean isEmpty(Point p) {
 		for(Entity e: entities){
 			if(e.getPos().equals(p)) return false;
@@ -254,7 +257,7 @@ public class Map {
 									}
 								}else{
 									// corridor
-									
+
 									doors = buildCorridor(i,true);
 									if (doors!=null) {
 										workingDoors.add(i);
@@ -297,9 +300,9 @@ public class Map {
 					if(true /*|| Main.rng.nextInt(7)>=1*/){
 						map[p.point.y][p.point.x] = 5;
 					}
-//					else{
-//						map[p.point.y][p.point.x] = 7;
-//					}
+					//					else{
+					//						map[p.point.y][p.point.x] = 7;
+					//					}
 				}else{
 					// if door is not between two walls, destroy it
 					if(isOnMap(p.point)) map[p.point.y][p.point.x] = 1;
@@ -308,13 +311,13 @@ public class Map {
 					i--;
 				}
 			}
-			
+
 			for(PointDir d: invalidDoors){
 				if(isOpen(aheadTile(d)));
 			}
 			// System.out.println(doorCount);
 		}while(doorCount<MIN_DOORS);
-		
+
 		// doctorMap();
 		encaseMap();
 		logger.info("Done building Undercity");
@@ -422,7 +425,7 @@ public class Map {
 		if((map[y][x-1] == 1 && map[y][x+1] == 1) || (map[y-1][x] == 1 && map[y+1][x] == 1)) return true;
 		return false;
 	}
-	
+
 	/** Surrounds the map with a 1-tile wall, so that non-wall tiles cannot occupy the outer edges of the map.
 	 */
 	public void encaseMap() {
@@ -468,7 +471,7 @@ public class Map {
 		SEWER,
 		PRECON;
 	}
-	
+
 	// TODO (R) Refactor, clean up & document all of this
 	public class Room {
 
@@ -482,7 +485,7 @@ public class Map {
 
 		public int offset;
 		public int rotationNinety = 0; // int rN * 90 = degrees to rotate
-		
+
 		public PointDir door;
 		public int doors;
 		public ArrayList<PointDir> doorPoints = new ArrayList<PointDir>();
@@ -551,10 +554,10 @@ public class Map {
 						for(int i = 0; i < rotationNinety; i++){
 							r = rotateNinety(r);
 						}
-//						if(rotationNinety == 1 || rotationNinety == 3){
-//							p = new Point(p.y,p.x);
-//							dp = new Point(dp.y,dp.x);
-//						}
+						//						if(rotationNinety == 1 || rotationNinety == 3){
+						//							p = new Point(p.y,p.x);
+						//							dp = new Point(dp.y,dp.x);
+						//						}
 						if((precon_containsDoors() 
 								&& (r[dp.y][dp.x] == 'D' || r[dp.y][dp.x] == 'd')) 
 								|| (!precon_containsDoors() && r[p.y][p.x] == '.')){
@@ -640,7 +643,7 @@ public class Map {
 				if(!preconPicked){
 					precon_id = Main.rng.nextInt(type.precons.size());
 					rotationNinety = Main.rng.nextInt(3);
-					
+
 					h = type.precons.get(precon_id).length - 2;
 					w = type.precons.get(precon_id)[0].length - 2;
 					if(rotationNinety == 1 || rotationNinety == 3){
@@ -715,7 +718,7 @@ public class Map {
 
 		public boolean precon_containsDoors(){
 			char[][] r = type.precons.get(precon_id);
-			
+
 			for(int cy = 0; cy < r.length; cy++){
 				for(int cx = 0; cx < r[0].length; cx++){
 					if(r[cy][cx] == 'D' || r[cy][cx] == 'd'){
@@ -804,7 +807,7 @@ public class Map {
 					room[cy][cx] = c;
 				}
 			}
-			
+
 			for(int i = 0; i < rotationNinety; i++){
 				room = rotateNinety(room);
 			}
@@ -1192,9 +1195,11 @@ public class Map {
 		return map[p.y][p.x];
 	}
 
-	
+
 	// TODO (R) Refactor to FW, pick 2 points whose edge is not null, and exceeds a certain distance.
 	public void placeExits(){
+		int[][] openMap = buildOpenMap();
+		
 		int x1=0;
 		int y1=0;
 		int x2=0;
@@ -1203,9 +1208,9 @@ public class Map {
 		int tries = 0;
 		int bigtries=0;
 		Pathfinder.PointBFS p = null;
-		
+
 		final double criterion = Math.min(Math.max(width, height)/2.25,Math.min(width,height));
-		
+
 		// TODO: change this to FW lookup (V^3 = very fast here)
 		do {
 			do {
@@ -1221,7 +1226,7 @@ public class Map {
 			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
 			logger.fine("Placed exits.");
 			if(tries<=150){
-				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), buildOpenMap(), entities, true, true);
+				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), openMap, entities, true, true);
 				if(p==null || p.getParent() == null){
 					logger.warning("Connecting exits failed.");
 				}
@@ -1250,10 +1255,10 @@ public class Map {
 			map[y2][x2] = 3;
 		}
 	}
-	
+
 	public int[][] dijkstra(Pathfinder pf, Point src){
 		int[][] dijk = new int[this.height][this.width];
-		
+
 		Queue<Point> q = new LinkedList<Point>();
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
@@ -1261,16 +1266,16 @@ public class Map {
 				q.add(new Point(x,y));
 			}
 		}
-		                 
+
 		dijk[src.y][src.x] = 0;
-		
+
 		while(/*!*/q.isEmpty()) {
 			// TODO (A) Implement
 		}
-		
+
 		return dijk;
 	}
-	
+
 	public boolean hasSouthFace(int x, int y){
 		int t = tileTypeAdj(x,y);
 		if((t>=4 && t<=7)||(t>=12 && t<=15)) return true;
@@ -1400,12 +1405,9 @@ public class Map {
 	//		return temp;
 	//	}
 
-	public boolean[][] lightMap;
-	private FOV fov = new FOV();
-
 	public void updateFOV(){
 		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.luminosity);
-		
+
 		for(Entity e: entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
@@ -1429,6 +1431,8 @@ public class Map {
 	//		}
 	//	}
 
+
+	// TODO (R) Render Layers (seperately, instead of tile-based)
 	public BufferedImage renderArea(int x1, int y1, int x2, int y2, boolean noLighting){
 		int areaHeight = Math.abs(y2-y1)+1;
 		int areaWidth = Math.abs(x2-x1)+1;
@@ -1458,28 +1462,24 @@ public class Map {
 
 					if(tile==null) tile = dark;
 
-					if(tile!=dark && !noLighting){
-						if(!lightMap[y][x]){
-							if (tileMap[y][x].visited) {
-								BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
-								Graphics tileG = image.getGraphics();
-								tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
-								Entity LEH = tileMap[y][x].lastEntityHere;
-								if(LEH!=null && isOnMap(LEH.getPos()) && !lightMap[LEH.getY()][LEH.getX()]){
-									tileG.drawImage(LEH.getSprite(), 0, 0, null);
-								}
-								
-								final float percentBrightness = .60f;
-								
-								tileG.setColor(new Color(0,0,0, (int) (255*(1-percentBrightness)) ));
-								tileG.fillRect(0, 0, image.getWidth(), image.getHeight());
-								tileG.dispose();
-								tile = image;
-							}else{
-								tile = dark;
+					if(tile!=dark && !noLighting && !lightMap[y][x]){
+						if (tileMap[y][x].visited) {
+							BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
+							Graphics tileG = image.getGraphics();
+							tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
+							Entity LEH = tileMap[y][x].lastEntityHere;
+							if(LEH!=null && isOnMap(LEH.getPos()) && !lightMap[LEH.getY()][LEH.getX()]){
+								tileG.drawImage(LEH.getSprite(), 0, 0, null);
 							}
+
+							final float percentBrightness = .60f;
+
+							tileG.setColor(new Color(0,0,0, (int) (255*(1-percentBrightness)) ));
+							tileG.fillRect(0, 0, image.getWidth(), image.getHeight());
+							tileG.dispose();
+							tile = image;
 						}else{
-							
+							tile = dark;
 						}
 					}
 					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
@@ -1538,7 +1538,7 @@ public class Map {
 		};
 		return area;
 	}
-	
+
 	public void addItemToSpace(Item i, Point p) {
 		tileMap[p.y][p.x].inventory.addItem(i);
 	}
@@ -1549,6 +1549,7 @@ public class Map {
 		return area;
 	}
 
+	@Deprecated
 	public BufferedImage addVignette(BufferedImage image, int x, int y, int r){
 		int d = r*2*tileSize;
 		Graphics g = (Graphics2D) image.getGraphics();
@@ -1557,6 +1558,7 @@ public class Map {
 		return image;
 	}
 
+	@Deprecated
 	public BufferedImage addCenterVignette(BufferedImage image, int r){
 		int pixr = r*tileSize;
 		return addVignette(image,image.getWidth()/2 - pixr,image.getHeight()/2 - pixr,r);

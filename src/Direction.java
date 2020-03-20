@@ -10,7 +10,13 @@ public enum Direction {
 	DOWN_LEFT		(-1,+1),
 	UP_LEFT			(-1,-1);
 
-	Point p;
+	public static final Direction[] diagonals = {
+		UP_LEFT,
+		UP_RIGHT,
+		DOWN_LEFT,
+		DOWN_RIGHT
+	};
+	public Point p;
 
 	Direction(int x, int y){
 		p = new Point(x,y);

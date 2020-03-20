@@ -506,6 +506,7 @@ public class Main {
 		currentMap = floors.get(floorNumber);
 		ropePoint = currentMap.getPosition(2);
 		player = new Player(ropePoint.x,ropePoint.y, currentMap);
+		view.getFrame().setIconImage(player.getSprite().getScaledInstance(96,96,Image.SCALE_SMOOTH));
 
 		changeFloor(floorNumber, true, true);
 
@@ -604,13 +605,15 @@ public class Main {
 		}
 	}
 
-	public static BufferedImage resize(BufferedImage img, int w, int h){
-		Image tmp = img.getScaledInstance(w, h, Image.SCALE_REPLICATE);
-		BufferedImage dimg = new BufferedImage(w,h,BufferedImage.TYPE_4BYTE_ABGR);
+	public static BufferedImage resize(BufferedImage img, float scale){
+		int newWidth = (int) (img.getWidth()*scale);
+		int newHeight = (int) (img.getHeight()*scale);
+		BufferedImage dimg = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
 
-		Graphics2D g = dimg.createGraphics();
-		g.drawImage(tmp,0,0,null);
-		g.dispose();
+		Graphics2D g2 = dimg.createGraphics();
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+		g2.drawImage(img, 0, 0, newWidth, newHeight, null);
+		g2.dispose();
 
 		return dimg;
 	}
@@ -647,27 +650,6 @@ public class Main {
 			c.takeTurn();
 		}
 
-		// TODO (X) Overhaul
-		//		while(!creatureQueue.isEmpty()){
-		//			Creature c = creatureQueue.remove();
-		//			// TODO (+) add mob sleep/detection stuff
-		//			// Entity e = floors.get(currentFloor).entities.get(i);
-		//			Entity.turnEnding ending = c.takeTurn();
-		//			System.out.println(c.getName()+" takes a turn.");
-		//			if(ending.equals(Entity.turnEnding.DEAD)){
-		//				// TODO (R) Review
-		//				c.setPos(new Point(-1,-1));
-		//				dead.add(c);
-		//			}else if(ending.equals(Entity.turnEnding.WAITING)){
-		//				System.out.println(c.getName()+" is waiting.");
-		//				if(!allWaiting(creatureQueue)){
-		//					creatureQueue.add(c);
-		//				}else{
-		//
-		//				}
-		//			}
-		//		}
-
 		for(Creature c: dead){
 			c.die();
 		}
@@ -693,7 +675,7 @@ public class Main {
 
 	public static BufferedImage render(int x, int y){
 		BufferedImage img = currentMap.render_vig(x, y, player.viewDis, player.luminosity);
-		img = resize(img, img.getWidth()*3, img.getHeight()*3);
+		img = resize(img, 4);
 		return img;
 	}
 	

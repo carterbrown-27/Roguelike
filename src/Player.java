@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Player extends Creature {
-	public int viewDis = 5;
-	public int luminosity = 4;
+	public int viewDis = 4;
+	public int luminosity = 3;
 	
 	public Ability ability = Ability.BASIC;
 

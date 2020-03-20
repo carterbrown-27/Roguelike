@@ -113,13 +113,14 @@ public class View {
 		stats.setText("");
 
 		// TODO (R) Refactor
-		stats.append(Main.playerName+"\n~~~~~\n");
+		
+		stats.append(Main.playerName+"\n");
+		stats.append("~~~~~\n");
 		stats.append(String.format("HP: %.1f/%.1f\n", Main.player.getHP(), Main.player.getHP_max()));
 		stats.append(String.format("SP: %.1f/%.1f\n", Main.player.getSP(), Main.player.getSP_max()));
 		stats.append(String.format("STR: %s\n",Main.player.getStrength()));
 		stats.append(String.format("DEF: %s\n",Main.player.getDefence()));
 		stats.append(String.format("SAT: %d\n",Math.round(Main.player.getSAT())));
-
 		stats.append("~~~~~\n");
 		
 		if(Main.player.weapon != null){			
@@ -134,9 +135,9 @@ public class View {
 		stats.append("\n");
 
 
-		String line = "  ";
+		String line = "";
 		for(Status s: Main.player.getStatuses().keySet()){
-			line += s.name() + " ";
+			line += s.name() + ", ";
 		}
 		stats.append(line+"\n");
 	}

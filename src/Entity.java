@@ -1,5 +1,6 @@
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Entity extends GameObject {
@@ -72,10 +73,13 @@ public class Entity extends GameObject {
 
 	public boolean isOpen(int x, int y){
 		if(!map.isOnMap(x,y)) return false;
-		int[][] m = map.buildOpenMap();
-		// wall			// water 		// fly-over-able
-		if(m[y][x]!=1 && m[y][x]!=2 && m[y][x]!=3) return true;
-		return false;
+		int[][] openMap = map.buildOpenMap();
+		return canOccupySpace(openMap,x,y);
+	}
+	
+	public boolean canOccupySpace(int[][] openMap, int x, int y) {
+		if(!map.isOnMap(x,y)) return false;
+		return openMap[y][x] == 0;
 	}
 	
 	public boolean isOpen(Point p) {
@@ -109,7 +113,7 @@ public class Entity extends GameObject {
 		return isFullOpen(translated);
 	}
 	
-	private Point getTranslatedPos(Direction dir) {
+	public Point getTranslatedPos(Direction dir) {
 		Point delta = dir.p;
 		Point translated = new Point(pos);
 		translated.translate(delta.x,delta.y);

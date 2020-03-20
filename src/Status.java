@@ -12,7 +12,7 @@ public enum Status {
 	public boolean[] upkeeps = {true,false,true,false};
 
 	public int baseDuration;
-	public int[] baseDurations = {25,45,12,45};
+	public int[] baseDurations = {25,45,10,45};
 
 	private int t;
 	Status(int _t){

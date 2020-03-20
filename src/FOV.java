@@ -8,27 +8,6 @@ public class FOV {
 	 * thanks to them, link here:
 	 * <github link here> ***/
 
-	public enum DIAGONAL {
-		UP_LEFT		(-1,-1),
-		UP_RIGHT	(+1,-1),
-		DOWN_RIGHT(+1,+1),
-		DOWN_LEFT (-1,+1);
-
-		/**
-		 * UP = -y
-		 * DOWN = +y
-		 * LEFT = -x
-		 * RIGHT = +x
-		 **/
-		int deltaX;
-		int deltaY;
-
-		DIAGONAL (int x, int y){
-			this.deltaX = x;
-			this.deltaY = y;
-		}
-	}
-
 	/** true = opaque **/
 	boolean[][] opacityMap;
 	boolean[][] lightMap;
@@ -49,11 +28,11 @@ public class FOV {
 		this.lightMap = new boolean[height][width];
 
 		lightMap[startY][startX] = true;
-		for(DIAGONAL d: DIAGONAL.values()){
+		for(Direction d: Direction.diagonals){
 			// does both directions from the diagonal
 			// every direction's start is 1, end is 0, other args are multipliers
-			castLight(1, 1.0, 0.0, 0, d.deltaX, d.deltaY, 0);
-			castLight(1, 1.0, 0.0, d.deltaX, 0, 0, d.deltaY);
+			castLight(1, 1.0, 0.0, 0, d.getX(), d.getY(), 0);
+			castLight(1, 1.0, 0.0, d.getX(), 0, 0, d.getY());
 		}
 
 		return lightMap;

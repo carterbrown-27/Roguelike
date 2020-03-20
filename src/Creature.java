@@ -70,6 +70,10 @@ public class Creature extends Entity {
 		this.SP = SP_max;
 		this.SP_regen = SP_Data.getDouble("regenRate");
 		
+		JSONObject attributesData = creatureData.getJSONObject("attributes");
+		this.flying = attributesData.optBoolean("flying");
+		this.amphibious = attributesData.optBoolean("amphibious");
+		
 		// init AI.
 		ai = new AI(this);
 	}
@@ -155,7 +159,8 @@ public class Creature extends Entity {
 	public void addStatus(Status s){
 		if(!getStatuses().containsKey(s)){
 			toggle(s, true);
-			if(ai!=null){
+			// TODO (P) Polymorph
+			if(!super.getName().equals("player")){
 				Main.view.appendText(String.format("The %s is %s!", getName(), s.name));
 			}else{
 				Main.view.appendText(String.format("You are %s!", s.name));
@@ -168,7 +173,8 @@ public class Creature extends Entity {
 
 	public void removeStatus(Status s){
 		toggle(s, false);
-		if(ai!=null){
+		// TODO (P) Polymorph
+		if(!super.getName().equals("player")){
 			Main.view.appendText("The "+getName()+" is no longer "+s.name+".");
 		}else{
 			Main.view.appendText("You are no longer "+s.name+".");
@@ -191,16 +197,24 @@ public class Creature extends Entity {
 		return Main.rng.nextBoolean() ? "rat" : "bat";
 	}
 	
+	@Override
+	public boolean canOccupySpace(int[][] openMap, int x, int y) {
+		int space = openMap[y][x];
+		return super.canOccupySpace(openMap, x, y) || (space == 2 && isFlyingOrAmphib()) || (space == 3 && isFlying());
+	}
+	
 	// GETTERS, SETTERS, MUTATORS
 	
-	@Deprecated
 	public boolean isFlying() {
 		return flying;
 	}
 	
-	@Deprecated
 	public boolean isAmphibious() {
 		return amphibious;
+	}
+	
+	public boolean isFlyingOrAmphib() {
+		return flying || amphibious;
 	}
 
 	public double getSP() {
