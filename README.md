@@ -10,6 +10,16 @@ FOV Algorithm is an interpretation from [SquidLib](https://github.com/SquidPony/
 
 Project revived. I am spending most of my time right now refactoring old messy code/systems, so please excuse any bad legacy code (particularly the Map, MapType, StaticEntity, and View classes).
 
+Basic World Controls, before the game is actually user-friendly
+
+![vi-keys](https://i.imgur.com/6T9eJtR.png)
+
+- (alternative) arrow keys: up, down, left, right; with shift-left = up-left, ctrl-left = down-left, etc.
+- i: open inventory
+- ESC: exit menus
+- Enter: use staircase
+
+Screenshots:
 
 ![In-Game Screenshot](Renders/screenshots/screenshot1.png)
 ![In-Game Screenshot](Renders/screenshots/screenshot2.png)
