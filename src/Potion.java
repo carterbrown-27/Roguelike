@@ -192,7 +192,7 @@ public class Potion extends Item implements Consumable {
 			((Player) c).identify(this);
 		}
 		
-		super.delete(c);
+		super.removeFrom(c);
 		Main.takeTurn();
 
 	}

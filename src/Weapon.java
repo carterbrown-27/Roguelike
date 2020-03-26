@@ -10,6 +10,7 @@ public final class Weapon extends Item implements Equippable {
 	
 	Weapon(String id){
 		super(id);
+		super.setAmount(1);
 		
 		// TODO (A) introduce logic to see if it is weilded/not.
 		super.addPrompt('u', "(u)nwield");
@@ -53,12 +54,9 @@ public final class Weapon extends Item implements Equippable {
 	}
 	
 	@Override
-	public void drop(Entity e) {
-		// TODO (T) TEMP
-		if(e instanceof Creature) unequip((Creature) e);
-		super.drop(e);
-		// TODO (A) Implement
-		// drop to floor.
+	public void drop(Creature from) {
+		unequip(from);
+		super.drop(from);
 	}
 	
 	@Override

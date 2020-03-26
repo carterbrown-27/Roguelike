@@ -7,6 +7,7 @@ public final class Armour extends Item implements Equippable {
 	
 	Armour(String id) {
 		super(id);
+		super.setAmount(1);
 		super.addPrompt('t', "(t)ake off");
 		super.addPrompt('p', "(p)ut on");
 		
@@ -39,5 +40,11 @@ public final class Armour extends Item implements Equippable {
 	@Override
 	public boolean isEquipped() {
 		return equipped;
+	}
+	
+	@Override
+	public void drop(Creature from) {
+		unequip(from);
+		super.drop(from);
 	}
 }

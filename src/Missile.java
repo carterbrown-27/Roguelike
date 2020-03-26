@@ -9,7 +9,7 @@ public class Missile extends Item implements Consumable, Equippable {
 	Missile(String id, int _amount){
 		super(id);
 		super.addPrompt('o', "thr(o)w");
-		this.setAmount(_amount);
+		super.setAmount(_amount);
 	}
 
 	Missile(String id){
@@ -30,6 +30,12 @@ public class Missile extends Item implements Consumable, Equippable {
 	@Override
 	public boolean isEquipped() {
 		return this.equipped;
+	}
+	
+	@Override
+	public void drop(Creature from) {
+		unequip(from);
+		super.drop(from);
 	}
 
 	public void throwThis(Creature c, Point target) {

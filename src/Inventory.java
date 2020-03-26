@@ -8,8 +8,6 @@ public class Inventory {
 	private HashMap<Integer,Integer> keys = new HashMap<>();
 	
 	private ArmourSet armourSet = new ArmourSet();
-
-	private char firstOpen = 'a';
 	
 	public Item getItem(Character c) {
 		return inventoryMap.get(c);
@@ -34,7 +32,7 @@ public class Inventory {
 
 	public void pickUp(char c, Entity destination){
 		// TODO (R) rework key system
-		Item i = inventoryMap.remove(c);
+		Item i = deleteItem(c);
 		if(i instanceof Key){
 			Key k = (Key) i;
 			destination.inv.pickupKey(k.getFloor());
@@ -73,23 +71,22 @@ public class Inventory {
 		}
 		return '!';
 	}
-	public void getFirstOpen(){
+	public char getFirstOpen(){
 		// ordered by letters
 		for(char c = 'a'; c <= 'z'; c++){
 			if(!inventoryMap.containsKey(c)){
-				firstOpen = c;
-				return;
+				return c;
 			}
 		}
-		firstOpen = '!';
+		return '!';
 	}
 
 	// TODO: (A) Implement stacking
 	public <T extends Item> void addItem(T i){
 		if (i.isStackable()) {
 			// TODO (F) handle better
-			for (Item t : inventoryMap.values()) {
-				if (t.getDisplayName().equals(i.getDisplayName())){
+			for (Item t: inventoryMap.values()) {
+				if (t.getTypeName().equals(i.getTypeName())){
 					t.changeAmount(i.getAmount());
 					return;
 				}
@@ -97,11 +94,12 @@ public class Inventory {
 		}
 
 		// if not added to stack
-		getFirstOpen();
+		char firstOpen = getFirstOpen();
 		if (firstOpen != '!') {
 			inventoryMap.put(firstOpen, i);
 			i.setInventoryID(firstOpen);
 		} else {
+			// TODO (A) Implement returning item to floor.
 			Main.view.appendText("Inventory full.");
 			return;
 		}
@@ -113,6 +111,11 @@ public class Inventory {
 		if(inventoryMap.get(c).getAmount() <= 0){
 			inventoryMap.remove(c);			
 		}
+	}
+	
+	public Item deleteItem(char c) {
+		if(!inventoryMap.containsKey(c)) return null;
+		return inventoryMap.remove(c);
 	}
 	
 	public void makeRandomInventory(int tier, int amount){
@@ -136,9 +139,9 @@ public class Inventory {
 		// return type.commonStackSize();
 	// }
 	
-	public void dropAll(char c, Entity e){
-		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(inventoryMap.remove(c));
-	}
+//	public void dropAll(char c, Entity e){
+//		e.map.tileMap[e.getY()][e.getX()].inventory.addItem(inventoryMap.remove(c));
+//	}
 
 	public void switchItem(char itemToMove, char destination){
 		if(inventoryMap.containsKey(itemToMove)){

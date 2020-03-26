@@ -40,7 +40,7 @@ public class Scroll extends Item implements Consumable {
 	@Override
 	public void use(Creature c) {
 		// TODO (A) Implement
-		super.delete(c);
+		super.removeFrom(c);
 		
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {

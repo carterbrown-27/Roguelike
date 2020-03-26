@@ -15,7 +15,7 @@ public class Food extends Item implements Consumable {
 	public void use(Creature c) {
 		// TODO Auto-generated method stub
 		c.changeSAT(+foodValue);
-		super.delete(c);
+		super.removeFrom(c);
 	}
 
 }
