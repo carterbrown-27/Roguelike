@@ -3,13 +3,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
-public class Pathfinder {
-
-	private Creature c;
-	private HashSet<Entity> entities = new HashSet<>();
-
-	private Queue<PointBFS> q;
+public abstract class Pathfinder {
 
 	public static class PointBFS{
 		public Point point;
@@ -42,13 +38,8 @@ public class Pathfinder {
 		return false;
 	}
 
-	public void setEntity(Creature _c){
-		this.c = _c;
-	}
-
-	public PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, boolean diagonals, boolean entityCol){
-		this.entities = entities;
-		q = new LinkedList<PointBFS>();
+	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol){
+		Queue<PointBFS> q = new LinkedList<PointBFS>();
 		q.add(new PointBFS(start.x,start.y,null));
 
 		int checkedTiles = 0;
@@ -58,14 +49,14 @@ public class Pathfinder {
 			if (p.getX() == end.x && p.getY() == end.y) {
 				return p;
 			}
-			if(!isOpen(p,p.point,tempMap,entityCol)){
+			if(!isOpen(p, p.point, tempMap,entityCol, q, entities, c)){
 				break;
 			}
 
 			// up
 			for(Direction dir: Direction.values()) {
 				Point newPoint = Direction.translate(p.point, dir);
-				if(isOpen(p,newPoint,tempMap,entityCol)){
+				if(isOpen(p, newPoint, tempMap, entityCol, q, entities, c)){
 					tempMap[p.getY()][p.getX()] = -1;
 					q.add(new PointBFS(newPoint.x,newPoint.y,p));
 				}
@@ -75,7 +66,7 @@ public class Pathfinder {
 		return null;
 	}
 
-	private boolean isOpen(PointBFS self, Point check, int[][] map, boolean entityCol){
+	private static boolean isOpen(PointBFS self, Point check, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c){
 		if (q!=null) {
 			// if(isParentOf(p,x,y)) return false;
 			for (PointBFS i : q) {
@@ -86,7 +77,7 @@ public class Pathfinder {
 		if(check.x<0 || check.y<0 || check.y>=map.length || check.x>=map[check.y].length) return false;
 		if (entityCol) {
 			for (Entity e : entities) {
-				if (!e.equals((Entity) this.c) && !e.isPassable && e.getX() == check.x && e.getY() == check.y){
+				if (!e.equals((Entity) c) && !e.isPassable() && e.getX() == check.x && e.getY() == check.y){
 					return false;
 				}
 			}
@@ -103,8 +94,8 @@ public class Pathfinder {
 
 
 	@SuppressWarnings("unused")
-	private boolean isOpen(PointBFS start, Direction dir, int[][] map, boolean entityCol) {
+	private static boolean isOpen(PointBFS start, Direction dir, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c) {
 		Point check = Direction.translate(start.point, dir);
-		return isOpen(start,check,map,entityCol);
+		return isOpen(start, check, map, entityCol, q, entities, c);
 	}
 }

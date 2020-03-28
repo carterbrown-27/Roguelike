@@ -139,9 +139,9 @@ public class Main {
 
 					} else if(e.getKeyCode() == KeyEvent.VK_I){
 						// I: open inventory
-						player.inv.printContents(false);
+						player.getInv().printContents(false);
 
-						if(!player.inv.isEmpty()) {
+						if(!player.getInv().isEmpty()) {
 							state = GameState.INVENTORY;
 						}
 					
@@ -320,7 +320,7 @@ public class Main {
 	public static void handleItemScreen(char k) {
 		logger.fine("Item Screen Handler called.");
 		char c = selectedItem;
-		Item i = player.inv.getItem(c);
+		Item i = player.getInv().getItem(c);
 
 		if(!Character.isAlphabetic(k) || !i.actionsContains(k)) {
 			view.appendText(k + " is not an option.");
@@ -383,7 +383,7 @@ public class Main {
 
 			case 'r' : {
 				// read effect
-				view.appendText("You read the"+i.getDisplayName());
+				view.appendText("You read the "+i.getDisplayName());
 				cnsm.use(player);
 				break;
 			}
@@ -412,11 +412,11 @@ public class Main {
 		view.clearText();
 		
 		boolean selected = false;
-		if (player.inv.contains(k)) {
+		if (player.getInv().contains(k)) {
 			selected = true;
 			// open item menu
 			// TODO (R) Review
-			Item i = player.inv.getItem(k);
+			Item i = player.getInv().getItem(k);
 
 			view.appendText(i+" selected.");
 			view.appendText(i.getDescription());
@@ -439,8 +439,8 @@ public class Main {
 		logger.fine("Inventory Selection Handler called.");
 		
 		boolean flag = false;
-		if (player.inv.contains(k)) {
-			Item i = player.inv.getItem(k);
+		if (player.getInv().contains(k)) {
+			Item i = player.getInv().getItem(k);
 			if(invSelAction == InventorySelectAction.IDENTIFY  && !player.isItemIdentified(i)){
 				flag = true;
 				player.identify(i);
@@ -495,7 +495,7 @@ public class Main {
 					StaticEntity se = (StaticEntity) n;
 					if(se.getPos().equals(player.getPos())){
 						if(!se.isLocked){
-							selectedInv = se.inv;
+							selectedInv = se.getInv();
 							view.appendText("Pick up what?");
 						}else{											
 							view.appendText("It's locked.");
@@ -552,12 +552,15 @@ public class Main {
 
 		// TODO (T) TEMP player default inventory
 		Weapon dagger = new Weapon("dagger");
-		player.inv.addItem(dagger);
+		player.getInv().addItem(dagger);
 		player.equip(dagger);
 
-		Missile darts = new Missile("throwing dart");
-		player.inv.addItem(darts);
+		Missile darts = new Missile("throwing dart",3);
+		player.getInv().addItem(darts);
 		player.equip(darts);
+		
+		Food bread = new Food("bread");
+		player.getInv().addItem(bread);
 
 		running = true;
 	}
@@ -681,7 +684,7 @@ public class Main {
 				if(c.getHP() <= 0) {
 					dead.add(c);
 				}
-				else if(c.awake) creatureQueue.add(c);
+				else if(c.isAwake()) creatureQueue.add(c);
 			}
 		}
 		

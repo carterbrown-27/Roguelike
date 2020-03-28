@@ -122,7 +122,7 @@ public class Player extends Creature {
 	}
 	
 	public boolean enemiesNearby(){
-		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), luminosity);
+		boolean[][] vision = getFov().calculate(map.buildOpacityMap(), getX(), getY(), luminosity);
 		for(Entity e: map.entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;

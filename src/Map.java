@@ -33,7 +33,6 @@ public class Map {
 
 	public int tileSize = 24;
 
-	private Pathfinder pf = new Pathfinder();
 	private FOV fov = new FOV();
 
 	private MapTypes type = MapTypes.UNDERCITY;
@@ -125,7 +124,7 @@ public class Map {
 
 	public boolean isFullOpen(Point p) {
 		for(Entity e: entities){
-			if(e.isPassable == false && e.getPos().equals(p)) return false;
+			if(e.isPassable() == false && e.getPos().equals(p)) return false;
 		}
 		if(player.getPos().equals(p)) return false;
 		return isOpen(p);
@@ -1226,7 +1225,7 @@ public class Map {
 			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
 			logger.fine("Placed exits.");
 			if(tries<=150){
-				p = pf.pathfindBFS(new Point(x1,y1), new Point(x2,y2), openMap, entities, true, true);
+				p = Pathfinder.pathfindBFS(new Point(x1,y1), new Point(x2,y2), openMap, entities, player, true, true);
 				if(p==null || p.getParent() == null){
 					logger.warning("Connecting exits failed.");
 				}

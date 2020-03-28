@@ -20,13 +20,13 @@ public class Missile extends Item implements Consumable, Equippable {
 	public void equip(Creature c) {
 		Missile prev = c.quivered;
 		if(prev != null) prev.unequip(c);
-		equipped = true;
+		this.equipped = true;
 	}
 
 	@Override
 	public void unequip(Creature c) {
 		c.quivered = null;
-		equipped = false;
+		this.equipped = false;
 	}
 
 	@Override

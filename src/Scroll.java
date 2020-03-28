@@ -32,21 +32,27 @@ public class Scroll extends Item implements Consumable {
 	@Override
 	public String toString() {
 		String name = getDisplayName();
-		String quantity = super.getQuantityString() + (!Main.player.isItemIdentified(this) ? " scroll(s) reading" : "");
+		String quantity = super.getQuantityString();
 
-		return String.format("%s - %s %s",super.getInventoryID(), quantity, name);
+		// TODO (R) Refactor
+		if(Main.player.isItemIdentified(this)) {
+			return String.format("%s - %s %s", super.getInventoryID(), quantity, super.getAmount() > 1 ? name.replace("scroll", "scrolls") : name);
+		}else {
+			return String.format("%s - %s scroll%s reading %s", super.getInventoryID(), quantity, super.getAmount() > 1 ? "s" : "", name);
+		}
+
 	}
 
 	@Override
 	public void use(Creature c) {
 		// TODO (A) Implement
-		super.removeFrom(c);
-		
+		c.getInv().removeOne(this.getInventoryID());
+
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {
-			if(c.inv.containsUnidentified()){
+			if(c.getInv().containsUnidentified()){
 				Main.view.appendText("Identify what?");
-				c.inv.printContents(false);
+				c.getInv().printContents(false);
 				Main.setGameState(Main.GameState.INVENTORY_SELECT);
 				Main.setInvSelAction(Main.InventorySelectAction.IDENTIFY);
 			}else{
@@ -55,7 +61,7 @@ public class Scroll extends Item implements Consumable {
 		}else if(effects.containsKey("TELEPORT")) {
 			c.setPos(c.map.randomEmptySpace());
 		}
-		
+
 		if(c instanceof Player) {
 			((Player) c).identify(this);
 		}
@@ -95,7 +101,7 @@ public class Scroll extends Item implements Consumable {
 	public boolean isStackable() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isUnknown() {
 		return true;

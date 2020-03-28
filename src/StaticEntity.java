@@ -22,7 +22,7 @@ public class StaticEntity extends Entity {
 		this.setSprite(type.spriteA);
 		
 		if(type.hasInventory){
-			inv.makeRandomInventory(type.inventoryTierModifier + Main.floorNumber, type.inventoryAmount);
+			getInv().makeRandomInventory(type.inventoryTierModifier + Main.floorNumber, type.inventoryAmount);
 		}
 	}
 	
@@ -31,16 +31,16 @@ public class StaticEntity extends Entity {
 		// TODO: non-player entity interaction
 
 		if(i == Main.Interaction.OPEN && isLocked){
-			if(e.inv.hasKey(Main.floorNumber)){
+			if(e.getInv().hasKey(Main.floorNumber)){
 				isLocked = false;
-				e.inv.useKey(Main.floorNumber);
-				if(inv.isEmpty()){
+				e.getInv().useKey(Main.floorNumber);
+				if(getInv().isEmpty()){
 					Main.view.appendText("You open the "+type.name+" and find nothing.");
 				}else{
 					Main.view.appendText("You open the "+type.name+" to find:");
-					inv.printContents(true);
+					getInv().printContents(true);
 					Main.setGameState(Main.GameState.PICKUP);
-					Main.currentInventory = inv;
+					Main.currentInventory = getInv();
 					// TODO (R) Refactor, potentially drop items to floor.
 				}
 			}else{

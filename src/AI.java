@@ -1,5 +1,4 @@
 public class AI {
-	private Pathfinder p = new Pathfinder();
 	private Creature c;
 	private ActionLibrary lib;
 	private static Player player;

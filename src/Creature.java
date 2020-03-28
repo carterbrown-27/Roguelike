@@ -125,7 +125,7 @@ public class Creature extends Entity {
 	
 	public boolean awakeCheck(){
 		// TODO: upgrade
-		if(awake) return true;
+		if(isAwake()) return true;
 		if(ai == null) return false;
 		// TODO (+) add creature viewDis
 		//boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.luminosity); 
@@ -133,7 +133,7 @@ public class Creature extends Entity {
 		
 		// Basic check
 		if((Math.abs(getX() - Main.player.getX()) <= AWAKE_DISTANCE && Math.abs(getY() - Main.player.getY()) <= AWAKE_DISTANCE) && Main.rng.nextInt(5) >= 1) {
-			awake = true;
+			super.setAwake(true);
 			return true;
 		}
 		return false;

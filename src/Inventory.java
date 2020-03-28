@@ -33,9 +33,9 @@ public class Inventory {
 		Item i = deleteItem(c);
 		if(i instanceof Key){
 			Key k = (Key) i;
-			destination.inv.pickupKey(k.getFloor());
+			destination.getInv().pickupKey(k.getFloor());
 		}else{
-			destination.inv.addItem(i);			
+			destination.getInv().addItem(i);			
 		}
 	}
 
@@ -104,16 +104,25 @@ public class Inventory {
 	}
 
 	// TODO (F) refactor, move
-	public void removeItem(char c){
+	public void removeOne(char c){
 		inventoryMap.get(c).changeAmount(-1);
 		if(inventoryMap.get(c).getAmount() <= 0){
-			inventoryMap.remove(c);			
+			deleteItem(c);		
 		}
 	}
 	
 	public Item deleteItem(char c) {
 		if(!inventoryMap.containsKey(c)) return null;
 		return inventoryMap.remove(c);
+	}
+	
+	public void deleteItem(Item i) {
+		for(char key: inventoryMap.keySet()) {
+			if(inventoryMap.get(key) == i) {
+				inventoryMap.remove(key);
+				return;
+			}
+		}
 	}
 	
 	public void makeRandomInventory(int tier, int amount){

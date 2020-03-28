@@ -6,27 +6,31 @@ import java.util.HashMap;
 public class Entity extends GameObject {
 	
 	// TODO (M) move all creature logic to creature class
+	private String name;
 	private Point pos;
+	
 	@Deprecated
 	public Map map;
-
-	private String name;
+	
+	private Inventory inv;
+	private FOV fov;
 	
 	private boolean waiting = false;
 	private boolean inPlayerView = false;
-	
-	public Inventory inv = new Inventory();
-	public boolean awake = false;
-	public FOV fov = new FOV();
-	public boolean isPassable = false;
+	private boolean awake = false;
+	private boolean passable = false;
+	private boolean indestructible = false;
 	
 	private double HP = 1.0;
 	private double HP_max = 1; // 6 dmg = player with dagger
-	private boolean indestructible = false;
-
+	
 	Entity(String id, Point _pos, Map _map){
 		// TODO (I) Implement
 		super();
+		
+		inv = new Inventory();
+		fov = new FOV();
+		
 		// TODO: init by id
 		this.pos = _pos;
 		this.map = _map;
@@ -94,7 +98,7 @@ public class Entity extends GameObject {
 	
 	public boolean isFullOpen(Point p) {
 		for(Entity e: map.entities){
-			if(!e.isPassable && p.equals(e.getPos())) return false;
+			if(!e.isPassable() && p.equals(e.getPos())) return false;
 		}
 		if(p.equals(map.player.getPos())) return false;
 		return isOpen(p);
@@ -186,5 +190,25 @@ public class Entity extends GameObject {
 
 	public void setHP_max(double hP_max) {
 		HP_max = hP_max;
+	}
+
+	public Inventory getInv() {
+		return inv;
+	}
+
+	public FOV getFov() {
+		return fov;
+	}
+
+	public boolean isAwake() {
+		return awake;
+	}
+
+	public void setAwake(boolean b) {
+		awake = b;
+	}
+
+	public boolean isPassable() {
+		return passable;
 	}
 }

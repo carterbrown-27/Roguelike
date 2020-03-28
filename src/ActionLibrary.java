@@ -3,7 +3,6 @@ import java.awt.Point;
 // TODO: static-ize most of this.
 public class ActionLibrary {
 	private Creature c;
-	private Pathfinder pf = new Pathfinder();
 	public static Player player;
 	private Map map;
 	public Pathfinder.PointBFS pBFS;
@@ -20,7 +19,6 @@ public class ActionLibrary {
 		}else {
 			player = map.player;
 		}
-		pf.setEntity(c);
 		// System.out.println("updating path...");
 		// updatePath();
 		// System.out.println("done.");
@@ -32,10 +30,9 @@ public class ActionLibrary {
 		Pathfinder.PointBFS temp;
 		// flag = false;
 		if (player == null) System.out.println("NO PLAYERRRRRRR AHHHH");
-		pBFS = pf.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, true, true);
+		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
 		// System.out.println("done pathing");
-		Pathfinder.PointBFS direct_path;
-		direct_path = pf.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, true, false);
+		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, false);
 		
 		temp = pBFS;
 		distance = 0;
@@ -62,13 +59,13 @@ public class ActionLibrary {
 		Pathfinder.PointBFS temp;
 		// flag = false;
 		
-		pBFS = pf.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, true, true);
+		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
 		// System.out.println("done pathing");
 		if(pBFS==null || pBFS.getParent()==null){
 			int[][] m = map.buildOpenMap();
 			
 			if(avoidP) m[player.getPos().x][player.getPos().y] = 1;
-			pBFS = pf.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, true, false);
+			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
 		}
 		
 		temp = pBFS;
