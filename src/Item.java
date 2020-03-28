@@ -167,20 +167,13 @@ public abstract class Item extends GameObject {
 		return false;
 	}
 
-	// TODO (T) TEMP --> polymorph
 	public boolean isStackable(){
-		Object o = getSpecValue("stackable");
-		if(o == null) {
-			return false;
-		}else{
-			return (boolean) o;
-		}
+		return false;
 	}
 	
 	public BufferedImage getSprite() {
 		return super.getSprite();
 	}
-	
 
 	public String getDisplayName(){
 		return displayName;

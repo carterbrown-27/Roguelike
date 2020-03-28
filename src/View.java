@@ -116,8 +116,8 @@ public class View {
 		
 		stats.append(Main.playerName+"\n");
 		stats.append("~~~~~\n");
-		stats.append(String.format("HP: %.1f/%.1f\n", Main.player.getHP(), Main.player.getHP_max()));
-		stats.append(String.format("SP: %.1f/%.1f\n", Main.player.getSP(), Main.player.getSP_max()));
+		stats.append(String.format("HP: %d/%d\n", (int) Main.player.getHP(), (int) Main.player.getHP_max()));
+		stats.append(String.format("SP: %d/%d\n", (int) Main.player.getSP(), (int) Main.player.getSP_max()));
 		stats.append(String.format("STR: %s\n",Main.player.getStrength()));
 		stats.append(String.format("DEF: %s\n",Main.player.getDefence()));
 		stats.append(String.format("SAT: %d\n",Math.round(Main.player.getSAT())));

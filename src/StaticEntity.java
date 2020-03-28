@@ -6,6 +6,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 // TODO: deprecate entirely or move logic to new Interface: Interactable
+// add Doors as Interactables.
 public class StaticEntity extends Entity {
 	
 	public SEType type;
@@ -25,13 +26,11 @@ public class StaticEntity extends Entity {
 		}
 	}
 	
-	public void interact(Entity e, char c){
+	public void interact(Entity e, Main.Interaction i){
 		// TODO: action selection if there are multiple
 		// TODO: non-player entity interaction
 
-		if(c=='g' && inv!=null){
-			
-		}else if(c=='o' && isLocked){
+		if(i == Main.Interaction.OPEN && isLocked){
 			if(e.inv.hasKey(Main.floorNumber)){
 				isLocked = false;
 				e.inv.useKey(Main.floorNumber);
@@ -42,6 +41,7 @@ public class StaticEntity extends Entity {
 					inv.printContents(true);
 					Main.setGameState(Main.GameState.PICKUP);
 					Main.currentInventory = inv;
+					// TODO (R) Refactor, potentially drop items to floor.
 				}
 			}else{
 				Main.view.appendText("It's locked, and you don't have a key to open it.");

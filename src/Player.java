@@ -122,11 +122,12 @@ public class Player extends Creature {
 	}
 	
 	public boolean enemiesNearby(){
+		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), luminosity);
 		for(Entity e: map.entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
 				// check closeness
-				if(c.awakeCheck() && this.inRange(c.getPos(), viewDis)){
+				if(vision[c.getY()][c.getX()]){
 					return true;
 				}	
 			}
@@ -141,7 +142,7 @@ public class Player extends Creature {
 		}
 		
 		resting = false;
-		Main.view.appendText("You feel better - HP: "+getHP());
+		Main.view.appendText(String.format("You feel better - HP: %d", (int) getHP()));
 		Main.view.refreshText();
 	}
 	
@@ -173,8 +174,11 @@ public class Player extends Creature {
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
-				Main.view.appendText("You hit the "+target.getName());								
-				Main.view.appendText(target.getName()+" 's HP: "+Math.max(0,target.getHP()));				
+				Main.view.appendText("You hit the "+target.getName());
+				
+				// floor rounding except when below 1.
+				int oppHP = (int) Math.max(0,target.getHP());
+				Main.view.appendText(String.format("%s's HP: %d", target.getName(), oppHP > 0 ? Math.max(oppHP, 1) : 0));				
 			}else{
 				Main.view.appendText("You miss the "+target.getName());				
 			}

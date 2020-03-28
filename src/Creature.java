@@ -29,6 +29,8 @@ public class Creature extends Entity {
 	private double speed = 1.0;
 	private double satiation = 10; // TEMP
 	
+	private static final int AWAKE_DISTANCE = 4;
+	
 	private ArmourSet armourSet = new ArmourSet();
 	
 	private AI ai;
@@ -110,6 +112,7 @@ public class Creature extends Entity {
 				removeStatus(s);
 			}
 		}
+		endStep();
 	}
 	
 	public void endStep() {
@@ -125,8 +128,11 @@ public class Creature extends Entity {
 		if(awake) return true;
 		if(ai == null) return false;
 		// TODO (+) add creature viewDis
-		boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.luminosity); 
-		if(vision[Main.player.getY()][Main.player.getX()]){
+		//boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.luminosity); 
+		// if(vision[Main.player.getY()][Main.player.getX()]){
+		
+		// Basic check
+		if((Math.abs(getX() - Main.player.getX()) <= AWAKE_DISTANCE && Math.abs(getY() - Main.player.getY()) <= AWAKE_DISTANCE) && Main.rng.nextInt(5) >= 1) {
 			awake = true;
 			return true;
 		}

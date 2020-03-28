@@ -36,6 +36,7 @@ public class Main {
 
 	private static GameState state;
 	private static InventorySelectAction invSelAction;
+	private static Interaction interaction;
 
 	public static char selectedItem;
 	public static Point targetPos;
@@ -143,22 +144,28 @@ public class Main {
 						if(!player.inv.isEmpty()) {
 							state = GameState.INVENTORY;
 						}
-
+					
 					} else if(e.getKeyCode() == KeyEvent.VK_O){
 						// O: Open Chest
-						// TODO: interact-able checks handled by "Interactable" interface
-						for(Entity n: currentMap.entities) {
-							if(n instanceof StaticEntity) {
-								StaticEntity se = (StaticEntity) n;
-								if(se.getPos().equals(player.getPos())){
-									se.interact(player,'o');
-								}
-							}
+						// TODO: change to general Interactable
+						ArrayList<StaticEntity> interactablesInRange = currentMap.getInteractablesInRange(player.getPos());
+						
+						if(interactablesInRange.size() == 1) {
+							interactablesInRange.get(0).interact(player, Interaction.OPEN);
+							takeTurn();
+						}else if(interactablesInRange.size() > 1){
+							state = GameState.INTERACT_SELECT;
+							interaction = Interaction.OPEN;
+							view.appendText("Enter the direction of what you want to open.");
+						}else {
+							view.appendText("There is nothing to open here.");
 						}
 
 					}else if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C){
 						// Ctrl-C: Clear
 						view.clearText();
+					}else if(e.getKeyCode() == KeyEvent.VK_PERIOD) {
+						takeTurn();
 					}else if(e.getKeyCode() == KeyEvent.VK_5){
 						// 5: Rest
 						player.startRest();
@@ -208,6 +215,10 @@ public class Main {
 						break;
 					}
 					
+					case INTERACT_SELECT : {
+						handleInteractSelect(e);
+					}
+					
 					// Doesn't apply to REGULAR here, as in this branch REGULAR = False.
 					default : {
 						logger.severe("State not recognized or fallthrough occured.");
@@ -228,7 +239,8 @@ public class Main {
 		PICKUP,
 		ITEM_SCREEN,
 		TARGETING,
-		INVENTORY_SELECT
+		INVENTORY_SELECT,
+		INTERACT_SELECT
 	}
 
 	public static void setGameState(GameState s) {
@@ -244,6 +256,19 @@ public class Main {
 	
 	public static void setInvSelAction(InventorySelectAction a) {
 		invSelAction = a;
+	}
+	
+	// TODO (R) Review: move?
+	public static enum Interaction {
+		NONE,
+		OPEN,
+		CLOSE,
+		TALK,
+		ETC
+	}
+	
+	public static void setInteraction(Interaction i) {
+		interaction = i;
 	}
 
 	public static void handleItemPickup(char k) {
@@ -274,6 +299,21 @@ public class Main {
 			targetPos = Direction.translate(targetPos,dir);
 		}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
 			handleTargetConfirm();
+		}
+	}
+	
+	public static void handleInteractSelect(KeyEvent e) {
+		Direction dir = directionValue(e);
+		if(dir != null) {
+			// TODO (R) Review: could map to directions for slightly nicer code
+			ArrayList<StaticEntity> inRange = currentMap.getInteractablesInRange(player.getPos());
+			for(StaticEntity se: inRange) {
+				if(se.getPos().equals(Direction.translate(player.getPos(), dir))) {
+					se.interact(player, interaction);
+					takeTurn();
+					break;
+				}
+			}
 		}
 	}
 	

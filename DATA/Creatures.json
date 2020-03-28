@@ -12,7 +12,7 @@
 		"strength" : 3,
 		"HP" : {
 			"max" : 15,
-			"regenRate" : 1.0
+			"regenRate" : 0.3
 		},
 		"SP" : {
 			"max" : 4,
@@ -39,7 +39,7 @@
 		"strength" : 2,
 		"HP" : {
 			"max" : 7,
-			"regenRate" : 0.5
+			"regenRate" : 0.2
 		},
 		"SP" : {
 			"max" : 3,
@@ -61,10 +61,10 @@
 			"y" : 8
 		},
 		
-		"strength" : 1.5,
+		"strength" : 1.2,
 		"HP" : {
 			"max" : 4,
-			"regenRate" : 0.5
+			"regenRate" : 0.2
 		},
 		"SP" : {
 			"max" : 3,

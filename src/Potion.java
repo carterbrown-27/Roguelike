@@ -196,8 +196,7 @@ public class Potion extends Item implements Consumable {
 		Main.takeTurn();
 
 	}
-	
-	// TODO (T) TEMP
+
 	@Override
 	public boolean isStackable() {
 		return true;

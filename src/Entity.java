@@ -61,11 +61,12 @@ public class Entity extends GameObject {
 			sxs = false;
 		}
 		
-		// TODO (R) review
-		if(map.map[getY()][getX()] == 5){
-			map.map[getY()][getX()] = 7;
+		// TODO (R) Review, switch to door Interactable when implemented
+		if(map.getMap()[getY()][getX()] == 5){
+			map.getMap()[getY()][getX()] = 7;
 			map.tileMap[getY()][getX()].setValue(7);
-
+			
+			// TODO (R) Refactor, add to "sound" system when added. (currently global message)
 			Main.view.appendText("The door creaks open.");
 		}
 		return sxs;
@@ -145,8 +146,6 @@ public class Entity extends GameObject {
 		}
 		return p;
 	}
-	// TODO (A) Implement: keys that match floors, inv print keylist
-	// TODO (M) move this to Inv class
 	
 	// getters
 	public int getX(){ return pos.x; }

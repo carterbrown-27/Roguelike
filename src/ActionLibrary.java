@@ -162,9 +162,7 @@ public class ActionLibrary {
 		
 		// System.out.println(e.name+"'s ACC: "+calcAcc + " {vs} "+target.name+"'s EV: "+calcEV);
 		
-		if((calcAcc >= calcEV && Main.rng.nextInt(9) >= 1) || Main.rng.nextInt(9)==9){
-			return true;
-		}
-		return false;
+		// if hit & win 90/10 or miss & win 10/90
+		return ((calcAcc >= calcEV && Main.rng.nextInt(10) >= 1) || Main.rng.nextInt(10)==0);
 	}
 }

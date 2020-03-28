@@ -42,6 +42,8 @@ public final class Weapon extends Item implements Equippable {
 	@Override
 	public void equip(Creature c) {
 		// TODO (A) Implement
+		Weapon prev = c.weapon;
+		if(prev != null) prev.unequip(c);
 		c.weapon = this;
 		equipped = true;
 	}

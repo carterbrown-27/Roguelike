@@ -3,17 +3,18 @@ import java.util.HashMap;
 public class ArmourSet {
 	
 	// backed by this hash map : <"slotName", Armour>
-	private HashMap<String,Armour> armourMap = new HashMap<>();
+	private HashMap<String,Armour> armourMap;
 	
 	ArmourSet(){
-		armourMap.put("head", null);
-		armourMap.put("chest", null);
-		armourMap.put("legs", null);
-		armourMap.put("feet", null);
-		armourMap.put("hands", null);
+		armourMap = new HashMap<>();
+		armourMap.put("head", 	null);
+		armourMap.put("chest", 	null);
+		armourMap.put("legs", 	null);
+		armourMap.put("feet", 	null);
+		armourMap.put("hands", 	null);
 		armourMap.put("l_ring", null);
 		armourMap.put("r_ring", null);
-		armourMap.put("neck", null);
+		armourMap.put("neck", 	null);
 	}
 	
 	ArmourSet(HashMap<String,Armour> _armourMap){

@@ -1431,6 +1431,20 @@ public class Map {
 	//		}
 	//	}
 
+	public ArrayList<StaticEntity> getInteractablesInRange(Point p) {
+		// TODO: interact-able checks handled by "Interactable" interface
+		// TODO: switch to Set<Interactable>
+		ArrayList<StaticEntity> interactablesInRange = new ArrayList<>(); 
+		for(Entity n: entities) {
+			if(n instanceof StaticEntity) {
+				StaticEntity se = (StaticEntity) n;
+				if(se.isAdjacentTo(p)){
+					interactablesInRange.add(se);
+				}
+			}
+		}
+		return interactablesInRange;
+	}
 
 	// TODO (R) Render Layers (seperately, instead of tile-based)
 	public BufferedImage renderArea(int x1, int y1, int x2, int y2, boolean noLighting){

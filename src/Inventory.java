@@ -7,8 +7,6 @@ public class Inventory {
 	private HashMap<Character,Item> inventoryMap = new HashMap<>();
 	private HashMap<Integer,Integer> keys = new HashMap<>();
 	
-	private ArmourSet armourSet = new ArmourSet();
-	
 	public Item getItem(Character c) {
 		return inventoryMap.get(c);
 	}
@@ -156,6 +154,8 @@ public class Inventory {
 		}
 	}
 	
+	
+	// TODO (+) print list of keys
 	public boolean hasKey(int floor) {
 		return keys.containsKey(floor);
 	}

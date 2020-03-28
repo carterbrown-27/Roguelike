@@ -27,6 +27,8 @@ public final class Armour extends Item implements Equippable {
 
 	@Override
 	public void equip(Creature c) {
+		Armour prev = c.getArmourSet().getSlot(slot);
+		if(prev != null) prev.unequip(c);
 		c.getArmourSet().putInSlot(slot, this);
 		equipped = true;
 	}
