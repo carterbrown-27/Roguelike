@@ -67,7 +67,7 @@ public class Tile {
 	public BufferedImage asLastSeen;
 	public Entity lastEntityHere;
 	
-	public MapTypes maptype;
+	public MapType maptype;
 	public int adj;
 	public Inventory inventory = new Inventory();
 	
@@ -75,7 +75,7 @@ public class Tile {
 	public String name;
 	public int fgAdj;
 
-	Tile(int t, MapTypes mt, int adj){
+	Tile(int t, MapType mt, int adj){
 		type = Tile_Type.values()[t];
 		value = t;
 		maptype = mt;

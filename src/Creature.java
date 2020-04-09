@@ -1,11 +1,6 @@
 import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
-
-import javax.imageio.ImageIO;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;

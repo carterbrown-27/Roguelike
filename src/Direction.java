@@ -16,6 +16,7 @@ public enum Direction {
 		DOWN_LEFT,
 		DOWN_RIGHT
 	};
+	
 	public Point p;
 
 	Direction(int x, int y){

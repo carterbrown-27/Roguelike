@@ -1,6 +1,4 @@
 import java.util.HashMap;
-import java.util.List;
-
 import org.json.JSONObject;
 
 public class Scroll extends Item implements Consumable {

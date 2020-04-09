@@ -1,12 +1,17 @@
 import java.awt.Point;
+import java.util.logging.Logger;
 
 // TODO: static-ize most of this.
 public class ActionLibrary {
+	public static final Logger logger = Logger.getLogger(ActionLibrary.class.getName());
+	
 	private Creature c;
 	public static Player player;
 	private Map map;
 	public Pathfinder.PointBFS pBFS;
 	public int distance;
+	
+	private static final int MAX_PF_DIST = 12;
 	
 	// TODO (M) migrate to Creature
 	ActionLibrary(Creature _c){
@@ -25,16 +30,17 @@ public class ActionLibrary {
 	}
 
 	//goes reverse, therefore last point will be first
+	// TODO: switch to map from player (ala dijkstra) for better performance.
 	public void updatePath(){
-		// boolean flag = false;
-		Pathfinder.PointBFS temp;
 		// flag = false;
-		if (player == null) System.out.println("NO PLAYERRRRRRR AHHHH");
-		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
+		if (player == null) {
+			logger.severe("No player found!");
+		}
+		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
-		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, false);
+		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, false, MAX_PF_DIST);
 		
-		temp = pBFS;
+		Pathfinder.PointBFS temp = pBFS;
 		distance = 0;
 		while(temp!=null && temp.getParent()!=null){
 			distance++;
@@ -59,13 +65,13 @@ public class ActionLibrary {
 		Pathfinder.PointBFS temp;
 		// flag = false;
 		
-		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
+		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
 		if(pBFS==null || pBFS.getParent()==null){
 			int[][] m = map.buildOpenMap();
 			
 			if(avoidP) m[player.getPos().x][player.getPos().y] = 1;
-			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true);
+			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		}
 		
 		temp = pBFS;
@@ -81,7 +87,7 @@ public class ActionLibrary {
 		if(pBFS!=null){
 			pBFS = pBFS.getParent();
 			if(pBFS==null) return false;
-			Point p = pBFS.point;
+			Point p = pBFS.getPoint();
 			return c.move(c.getAdjacentDir(p));
 		}
 		return false;

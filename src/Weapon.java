@@ -1,6 +1,4 @@
-import java.util.List;
 
-import org.json.JSONObject;
 
 public final class Weapon extends Item implements Equippable {
 	private boolean equipped = false;

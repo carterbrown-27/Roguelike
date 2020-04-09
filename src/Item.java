@@ -1,7 +1,6 @@
 import org.json.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public abstract class Item extends GameObject {

@@ -1,7 +1,4 @@
 import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.HashMap;
 
 public class Entity extends GameObject {
 	

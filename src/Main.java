@@ -2,8 +2,6 @@
 
 import java.io.*;
 import javax.imageio.*;
-import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -295,7 +293,7 @@ public class Main {
 	public static void handleTargeting(KeyEvent e) {
 		Direction dir = directionValue(e);
 		if(dir != null) {
-			// TODO (+) Aiming visuals & continual L.O.S. check
+			// TODO (+) aiming visuals & continual L.O.S. check
 			targetPos = Direction.translate(targetPos,dir);
 		}else if (e.getKeyCode() == KeyEvent.VK_ENTER){
 			handleTargetConfirm();

@@ -4,7 +4,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 
 // TODO (R) Replace & (J) JSONize this data.
-public enum MapTypes {
+public enum MapType {
 	UNDERCITY ("undercity");
 	
 	// TODO (E) Encapsulate
@@ -21,16 +21,22 @@ public enum MapTypes {
 	public BufferedImage[] defaultImages = new BufferedImage[usedTiles.length];
 	
 	// TODO (R) Switch from [] to ArrayList.
-	private HashMap<Integer,BufferedImage[]> variations = new HashMap<>();
-	private HashMap<Integer,BufferedImage[]> directionals = new HashMap<>();
+	private HashMap<Integer,BufferedImage[]> variations;
+	private HashMap<Integer,BufferedImage[]> directionals;
 	private BufferedImage[][] tilesArray;
-	private HashMap<Integer,Integer> variationPercentages = new HashMap<>();
+	private HashMap<Integer,Integer> variationPercentages;
 	
 	// TODO (A) Create Rooms here instead of storing Room data.
-	public HashMap<Integer,char[][]> precons = new HashMap<>();
-	public HashMap<Integer,ArrayList<String>> precons_fg = new HashMap<>();
+	public HashMap<Integer,char[][]> precons;
+	public HashMap<Integer,ArrayList<String>> precons_fg;
 
-	MapTypes(String type){
+	MapType(String type){
+		variations = new HashMap<>();
+		directionals = new HashMap<>();
+		variationPercentages = new HashMap<>();
+		precons = new HashMap<>();
+		precons_fg = new HashMap<>();
+		
 		if(type.equals("undercity")){
 			BufferedReader br;
 			try{
@@ -48,6 +54,7 @@ public enum MapTypes {
 						count++;
 						rows.clear();
 						if(line.equals("***")) break;
+						
 					}else if(line.equals("+++")){
 						 room = charGridFromStrings(rows);
 						 precons.put(count, room);
@@ -65,10 +72,8 @@ public enum MapTypes {
 					}else{
 						rows.add(line.trim());
 					}
-					
 					line = br.readLine();
 				}
-				
 				
 			}catch(IOException e){
 				e.printStackTrace();

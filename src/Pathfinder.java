@@ -1,5 +1,4 @@
 import java.awt.Point;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -7,17 +6,23 @@ import java.util.Set;
 
 public abstract class Pathfinder {
 
-	public static class PointBFS{
-		public Point point;
+	public static class PointBFS {
+		private Point point;
+		private int dist;
 		private PointBFS parent;
 
 		PointBFS(int x, int y, PointBFS _parent){
 			this.point = new Point(x,y);
 			this.parent = _parent;
+			this.dist = parent != null ? _parent.getDist() + 1 : 0;
 		}
 
 		public PointBFS getParent(){
 			return parent;
+		}
+		
+		public Point getPoint() {
+			return point;
 		}
 
 		public int getX() {
@@ -26,6 +31,10 @@ public abstract class Pathfinder {
 
 		public int getY() {
 			return point.y;
+		}
+		
+		public int getDist() {
+			return dist;
 		}
 	}
 
@@ -38,7 +47,7 @@ public abstract class Pathfinder {
 		return false;
 	}
 
-	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol){
+	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol, int maxDist){
 		Queue<PointBFS> q = new LinkedList<PointBFS>();
 		q.add(new PointBFS(start.x,start.y,null));
 
@@ -49,13 +58,13 @@ public abstract class Pathfinder {
 			if (p.getX() == end.x && p.getY() == end.y) {
 				return p;
 			}
-			if(!isOpen(p, p.point, tempMap,entityCol, q, entities, c)){
+			if(!isOpen(p, p.getPoint(), tempMap,entityCol, q, entities, c) || p.getDist() > maxDist){
 				break;
 			}
 
 			// up
 			for(Direction dir: Direction.values()) {
-				Point newPoint = Direction.translate(p.point, dir);
+				Point newPoint = Direction.translate(p.getPoint(), dir);
 				if(isOpen(p, newPoint, tempMap, entityCol, q, entities, c)){
 					tempMap[p.getY()][p.getX()] = -1;
 					q.add(new PointBFS(newPoint.x,newPoint.y,p));
@@ -66,6 +75,10 @@ public abstract class Pathfinder {
 		return null;
 	}
 
+	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol){
+		return pathfindBFS(start, end, tempMap, entities, c, diagonals, entityCol, Integer.MAX_VALUE);
+	}
+	
 	private static boolean isOpen(PointBFS self, Point check, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c){
 		if (q!=null) {
 			// if(isParentOf(p,x,y)) return false;
@@ -95,7 +108,7 @@ public abstract class Pathfinder {
 
 	@SuppressWarnings("unused")
 	private static boolean isOpen(PointBFS start, Direction dir, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c) {
-		Point check = Direction.translate(start.point, dir);
+		Point check = Direction.translate(start.getPoint(), dir);
 		return isOpen(start, check, map, entityCol, q, entities, c);
 	}
 }
