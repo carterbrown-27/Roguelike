@@ -18,7 +18,7 @@ public class StaticEntity extends Entity {
 		this.setSprite(type.spriteA);
 		
 		if(type.hasInventory){
-			getInv().makeRandomInventory(type.inventoryTierModifier + Main.floorNumber, type.inventoryAmount);
+			getInv().makeRandomInventory(type.inventoryTierModifier + Main.getFloorNumber(), type.inventoryAmount);
 		}
 	}
 	
@@ -27,20 +27,20 @@ public class StaticEntity extends Entity {
 		// TODO: non-player entity interaction
 
 		if(i == Main.Interaction.OPEN && isLocked){
-			if(e.getInv().hasKey(Main.floorNumber)){
+			if(e.getInv().hasKey(Main.getFloorNumber())){
 				isLocked = false;
-				e.getInv().useKey(Main.floorNumber);
+				e.getInv().useKey(Main.getFloorNumber());
 				if(getInv().isEmpty()){
-					Main.view.appendText("You open the "+type.name+" and find nothing.");
+					Main.getView().appendText("You open the "+type.name+" and find nothing.");
 				}else{
-					Main.view.appendText("You open the "+type.name+" to find:");
+					Main.getView().appendText("You open the "+type.name+" to find:");
 					getInv().printContents(true);
 					Main.setGameState(Main.GameState.PICKUP);
-					Main.currentInventory = getInv();
+					Main.setCurrentInventory(getInv());
 					// TODO (R) Refactor, potentially drop items to floor.
 				}
 			}else{
-				Main.view.appendText("It's locked, and you don't have a key to open it.");
+				Main.getView().appendText("It's locked, and you don't have a key to open it.");
 			}
 		}
 	}

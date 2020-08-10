@@ -21,6 +21,7 @@ public class Map {
 	public int[][] foreground;
 	public Tile[][] tileMap;
 	public boolean[][] lightMap;
+	private int[][] openMap;
 
 	public static int smooths = 4;
 	// public static Entity[][] entity_map = new Entity[height][width];
@@ -52,6 +53,7 @@ public class Map {
 
 		// TODO (R) Review
 		tileMap = new Tile[height][width];
+		openMap = new int[height][width];
 
 		if(undercity){
 			generateUndercity();
@@ -216,7 +218,7 @@ public class Map {
 				if(x==0||x==width-1||y==0||y==height-1){
 					map[y][x] = 1;
 					// random placement
-				} else if(Main.rng.nextInt(100)<=randFillPercent){
+				} else if(Main.getRng().nextInt(100)<=randFillPercent){
 					map[y][x] = 1;
 				}else{
 					map[y][x] = 0;
@@ -245,27 +247,27 @@ public class Map {
 			invalidDoors = new ArrayList<PointDir>();
 			Queue<Room> q = new LinkedList<Room>();
 
-			int start_x = Main.rng.nextInt(width*2/3) + width/6 - 1;
-			int start_y = Main.rng.nextInt(height*2/3) + height/6 - 1;
+			int start_x = Main.getRng().nextInt(width*2/3) + width/6 - 1;
+			int start_y = Main.getRng().nextInt(height*2/3) + height/6 - 1;
 
 			q.add(new Room(new PointDir(new Point(start_x,start_y),'R'), true, Room.RoomType.REGULAR, this));
 
 			// starting point
 			// Top = 0, Right = 1, Bottom = 2, Left = 3
 
-			//			int quadrant = Main.rng.nextInt(3);
+			//			int quadrant = Main.getRng().nextInt(3);
 			//			switch(quadrant){
 			//			case 0:
-			//				q.add(new PointDir(new Point(Main.rng.nextInt(width-1), Main.rng.nextInt(height/3)), dirs[DOWN]));
+			//				q.add(new PointDir(new Point(Main.getRng().nextInt(width-1), Main.getRng().nextInt(height/3)), dirs[DOWN]));
 			//				break;
 			//			case 1:
-			//				q.add(new PointDir(new Point(width-Main.rng.nextInt(width/3)-1, Main.rng.nextInt(height-1)), dirs[LEFT]));
+			//				q.add(new PointDir(new Point(width-Main.getRng().nextInt(width/3)-1, Main.getRng().nextInt(height-1)), dirs[LEFT]));
 			//				break;
 			//			case 2:
-			//				q.add(new PointDir(new Point(Main.rng.nextInt(width-1), height-Main.rng.nextInt(height/3)-1), 'T'));
+			//				q.add(new PointDir(new Point(Main.getRng().nextInt(width-1), height-Main.getRng().nextInt(height/3)-1), 'T'));
 			//				break;
 			//			case 3:
-			//				q.add(new PointDir(new Point(Main.rng.nextInt(width/3),Main.rng.nextInt(height-1)), dirs[RIGHT]));
+			//				q.add(new PointDir(new Point(Main.getRng().nextInt(width/3),Main.getRng().nextInt(height-1)), dirs[RIGHT]));
 			//				break;
 			//			}
 
@@ -276,7 +278,7 @@ public class Map {
 				for(int t = 0; t < R.doors; t++){
 
 					Room r;
-					if (Main.rng.nextInt(10)>=4) {
+					if (Main.getRng().nextInt(10)>=4) {
 						int attempts = 0;
 						Room.RoomType prev = null;
 						final int ROOM_ATTEMPTS = 4;
@@ -284,7 +286,7 @@ public class Map {
 							PointDir p = R.getRandomDoor();
 							if(p==null) break;
 							Point ahead = aheadTile(p);
-							if(isOpen(ahead) && Main.rng.nextInt(4)==4){
+							if(isOpen(ahead) && Main.getRng().nextInt(4)==4){
 								workingDoors.add(p);
 								break;
 							}
@@ -315,7 +317,7 @@ public class Map {
 						if (doors!=null) {
 							workingDoors.add(p);
 							for (PointDir i : doors) {
-								if(Main.rng.nextInt(10)>=5){
+								if(Main.getRng().nextInt(10)>=5){
 									r = new Room(i, Room.RoomType.RANDOM, this);
 									workingDoors.add(i);
 									if(r.valid){
@@ -363,7 +365,7 @@ public class Map {
 					i--;
 				}else if(isSandwich(p.point.x,p.point.y) ){
 					doorCount++;
-					if(true /*|| Main.rng.nextInt(7)>=1*/){
+					if(true /*|| Main.getRng().nextInt(7)>=1*/){
 						map[p.point.y][p.point.x] = 5;
 					}
 					//					else{
@@ -398,7 +400,7 @@ public class Map {
 		int length = 0; 
 		PointDir end = door;
 		boolean obstructed = false;
-		while(!obstructed && length<=5 && (Main.rng.nextInt(7)<=5 || length <=3)){
+		while(!obstructed && length<=5 && (Main.getRng().nextInt(7)<=5 || length <=3)){
 			// TODO (F) fix obstruction detection.
 			Point temp = aheadTile(end);
 			if((!isOnMap(temp) || map[temp.y][temp.x] != 1) || end.point.x <= 1 || end.point.y >= height-2 || end.point.y <= 1 || end.point.x >= width-2){
@@ -412,9 +414,9 @@ public class Map {
 					map[end.point.y][end.point.x] = 0;
 				}
 				// doors on sides
-				if(Main.rng.nextInt(8)>=6){
+				if(Main.getRng().nextInt(8)>=6){
 					if (dir=='U' || dir=='D') {
-						if (Main.rng.nextBoolean()) {
+						if (Main.getRng().nextBoolean()) {
 							// left of path
 							if (!isOpen(end.point.x-1, end.point.y) && end.point.x - 1 > 1)  {
 								doors.add(new PointDir(new Point(end.point.x-1, end.point.y), 'L'));
@@ -434,7 +436,7 @@ public class Map {
 							}
 						}
 					}else if(dir=='L' || dir=='R'){
-						if (Main.rng.nextBoolean()) {
+						if (Main.getRng().nextBoolean()) {
 							// up of path
 							if (!isOpen(end.point.x, end.point.y-1) && end.point.y - 1 > 1) {
 								doors.add(new PointDir(new Point(end.point.x, end.point.y-1), 'U'));
@@ -459,15 +461,15 @@ public class Map {
 			}
 		}
 		// map[door.point.x][door.point.y] = 5;
-		if(Main.rng.nextInt(10)>=7){
+		if(Main.getRng().nextInt(10)>=7){
 			if(end.dir=='U' || end.dir=='D'){
-				if(Main.rng.nextBoolean()){
+				if(Main.getRng().nextBoolean()){
 					end.dir = 'L';
 				}else{
 					end.dir = 'R';
 				}
 			}else{
-				if(Main.rng.nextBoolean()){
+				if(Main.getRng().nextBoolean()){
 					end.dir = 'U';
 				}else{
 					end.dir = 'D';
@@ -619,8 +621,8 @@ public class Map {
 		int y;
 		do{
 			// System.out.println("picking point...");
-			x = Main.rng.nextInt(width-1);
-			y = Main.rng.nextInt(height-1);
+			x = Main.getRng().nextInt(width-1);
+			y = Main.getRng().nextInt(height-1);
 		}while(!isEmpty(x,y) || map[y][x] == 5);
 		return (new Point(x,y));
 	}
@@ -630,8 +632,8 @@ public class Map {
 		int y;
 		do{
 			// System.out.println("picking point...");
-			x = Main.rng.nextInt(width-1);
-			y = Main.rng.nextInt(height-1);
+			x = Main.getRng().nextInt(width-1);
+			y = Main.getRng().nextInt(height-1);
 		}while(!isFullOpen(x,y) || map[y][x] == 5);
 		return (new Point(x,y));
 	}
@@ -654,8 +656,8 @@ public class Map {
 
 	// TODO (R) Refactor to FW, pick 2 points whose edge is not null, and exceeds a certain distance.
 	public void placeExits(){
-		int[][] openMap = buildOpenMap();
-		
+		buildOpenMap();
+
 		int x1=0;
 		int y1=0;
 		int x2=0;
@@ -671,12 +673,12 @@ public class Map {
 		do {
 			do {
 				do {
-					x1 = Main.rng.nextInt(width-1);
-					y1 = Main.rng.nextInt(height-1);
+					x1 = Main.getRng().nextInt(width-1);
+					y1 = Main.getRng().nextInt(height-1);
 				} while (!isOpen(x1,y1));
 				do {
-					x2 = Main.rng.nextInt(width-1);
-					y2 = Main.rng.nextInt(height-1);
+					x2 = Main.getRng().nextInt(width-1);
+					y2 = Main.getRng().nextInt(height-1);
 				} while (!isOpen(x2,y2));
 				tries++;
 			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
@@ -780,14 +782,11 @@ public class Map {
 
 
 	/**END OF GENERATION**/
-
-
 	// 0 = open
 	// 1 = closed
 	// 2 = amph/fly open
 	// 3 = fly open
-	public int[][] buildOpenMap(){
-		int[][] openMap = new int[height][width];
+	public void buildOpenMap(){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
 				if(map[y][x] == 1){
@@ -801,8 +800,14 @@ public class Map {
 				}else{
 					openMap[y][x] = 0;
 				}
+				//System.out.print(openMap[y][x]+" ");
 			}
+			//System.out.println();
 		}
+	}
+
+	public int[][] getOpenMap(){
+		buildOpenMap(); // TODO: bug, why does this need to be called here??
 		return openMap;
 	}
 
@@ -861,17 +866,17 @@ public class Map {
 	//	}
 
 	public void updateFOV(){
-		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.player.luminosity);
+		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.getPlayer().luminosity);
 
 		for(Entity e: entities){
 			if(e instanceof Creature) {
 				Creature c = (Creature) e;
 				if(c.isInPlayerView()){
 					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-					if(!c.isInPlayerView()) Main.view.appendText("The "+c.getName()+" is no longer in view.");
+					if(!c.isInPlayerView()) Main.getView().appendText("The "+c.getName()+" is no longer in view.");
 				}else{
 					c.setInPlayerView(lightMap[c.getY()][c.getX()]);
-					if(c.isInPlayerView()) Main.view.appendText("A "+c.getName()+" moves into view.");
+					if(c.isInPlayerView()) Main.getView().appendText("A "+c.getName()+" moves into view.");
 				}
 			}
 		}

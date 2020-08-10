@@ -67,7 +67,7 @@ public class Room {
 		if(roomType.equals(RoomType.RANDOM)){
 			// TODO (T%) Tabulate %s
 			logger.fine("picking type.");
-			int a = Main.rng.nextInt(10);
+			int a = Main.getRng().nextInt(10);
 			if(a>=7){
 				roomType = RoomType.SEWER;
 			}else if(a>=4){
@@ -103,9 +103,9 @@ public class Room {
 				int offsetCount = 0;
 				do{
 					if(dir=='U' || dir=='D'){
-						offset = Main.rng.nextInt(w-1)+1; // from 1 -> w
+						offset = Main.getRng().nextInt(w-1)+1; // from 1 -> w
 					}else{
-						offset = Main.rng.nextInt(h-1)+1;
+						offset = Main.getRng().nextInt(h-1)+1;
 					}
 
 					Point p = precon_getDoorstep();
@@ -159,7 +159,7 @@ public class Room {
 			}
 			int rand;
 			if(doorPoints.size()>1){
-				rand = Main.rng.nextInt(doorPoints.size()-1);
+				rand = Main.getRng().nextInt(doorPoints.size()-1);
 			}else{
 				rand = 0;
 			}
@@ -178,27 +178,27 @@ public class Room {
 
 	public void setBounds(){
 		if (roomType.equals(RoomType.REGULAR)) {
-			int min = Main.rng.nextInt(1)+3;
-			w = Main.rng.nextInt(5) + min;
-			h = Main.rng.nextInt(5) + min;
+			int min = Main.getRng().nextInt(1)+3;
+			w = Main.getRng().nextInt(5) + min;
+			h = Main.getRng().nextInt(5) + min;
 		}else if (roomType.equals(RoomType.SEWER)){
 			final int l_min = 8;
 			final int l_var = 6;
 
 			if(dir=='U' || dir=='D'){
 				// wide
-				w = Main.rng.nextInt(l_var)+l_min;
-				h = Main.rng.nextInt(2)+4;
+				w = Main.getRng().nextInt(l_var)+l_min;
+				h = Main.getRng().nextInt(2)+4;
 			}else{
 				// tall
-				h = Main.rng.nextInt(l_var)+l_min;
-				w = Main.rng.nextInt(2)+4;
+				h = Main.getRng().nextInt(l_var)+l_min;
+				w = Main.getRng().nextInt(2)+4;
 			}
 		}else if(roomType.equals(RoomType.PRECON)){
 			if(!preconPicked){
 				// TODO (R) Refactor, move logic to MapType.
-				precon_id = Main.rng.nextInt(map.getMapType().precons.size());
-				rotationNinety = Main.rng.nextInt(3);
+				precon_id = Main.getRng().nextInt(map.getMapType().precons.size());
+				rotationNinety = Main.getRng().nextInt(3);
 
 				h = map.getMapType().precons.get(precon_id).length - 2;
 				w = map.getMapType().precons.get(precon_id)[0].length - 2;
@@ -217,10 +217,10 @@ public class Room {
 		if(!roomType.equals(RoomType.PRECON)){
 			if(dir=='U' || dir=='D'){
 				// System.out.println(w);
-				offset = Main.rng.nextInt(w-1)+1; // from 1 -> w
+				offset = Main.getRng().nextInt(w-1)+1; // from 1 -> w
 			}else{
 				// System.out.println(h);
-				offset = Main.rng.nextInt(h-1)+1;
+				offset = Main.getRng().nextInt(h-1)+1;
 			}
 		}
 	}
@@ -228,16 +228,16 @@ public class Room {
 	public Map.PointDir randomDoor(){
 		int tries = 0;
 		while(tries < 15){
-			int d = Main.rng.nextInt(3);
+			int d = Main.getRng().nextInt(3);
 			Map.PointDir p = null;
 			if(d==0 && (start || door.dir != 'U')){
-				p = new Map.PointDir(new Point(Main.rng.nextInt(w-1)+1 + x, y), 'U');
+				p = new Map.PointDir(new Point(Main.getRng().nextInt(w-1)+1 + x, y), 'U');
 			}else if(d==1 && (start || door.dir != 'R')){
-				p = new Map.PointDir(new Point(x + tw-1, Main.rng.nextInt(h-1)+1 + y), 'R');					
+				p = new Map.PointDir(new Point(x + tw-1, Main.getRng().nextInt(h-1)+1 + y), 'R');					
 			}else if(d==2 && (start || door.dir != 'D')){
-				p = new Map.PointDir(new Point(Main.rng.nextInt(w-1)+1 + x, y + th-1), 'D');					
+				p = new Map.PointDir(new Point(Main.getRng().nextInt(w-1)+1 + x, y + th-1), 'D');					
 			}else if(start || door.dir != 'L'){
-				p = new Map.PointDir(new Point(x, Main.rng.nextInt(h-1)+1 + y), 'L');
+				p = new Map.PointDir(new Point(x, Main.getRng().nextInt(h-1)+1 + y), 'L');
 			}
 			if(p == null || (roomMap != null && roomMap[p.point.y-y][p.point.x-x] == 'X')){
 				tries++;
@@ -382,7 +382,7 @@ public class Room {
 
 		int doorCount = doors-temp;
 		while(doorCount > 0 && possibleDoors.size()>1){
-			int r = Main.rng.nextInt(possibleDoors.size()-1);
+			int r = Main.getRng().nextInt(possibleDoors.size()-1);
 
 			doorPoints.add(possibleDoors.get(r));
 			possibleDoors.remove(r);
@@ -424,14 +424,14 @@ public class Room {
 	public void buildSewer(){
 		if(h<=3 || w<=3) return;
 		int waterWidth = 2;
-		boolean noBridge = (doors==0 && Main.rng.nextInt(10)<=7);
+		boolean noBridge = (doors==0 && Main.getRng().nextInt(10)<=7);
 		if((door.dir == 'U' || door.dir == 'D') && w>4){
 			// horizontal
 			int river_h;
 			if(h<=4){
 				river_h = 1;
 			}else{
-				river_h = Main.rng.nextInt(h-4)+1;
+				river_h = Main.getRng().nextInt(h-4)+1;
 			}
 
 			// - 2 for edges, -2 for width, -river_h, +1
@@ -441,14 +441,14 @@ public class Room {
 				waterWidth = 2;
 			}else{
 				if(false){
-					waterWidth = Main.rng.nextInt(h-2-river_h+1-2)+2;
+					waterWidth = Main.getRng().nextInt(h-2-river_h+1-2)+2;
 				}else{
 					waterWidth = h-2;
 				}
 			}
 
 			// width || x x x || = 7 = 3 possible = [0,1,2] + 2) -> 7-5 = [2,3,4]
-			int bridge_x = Main.rng.nextInt(w-3)+2;
+			int bridge_x = Main.getRng().nextInt(w-3)+2;
 			for(int i = 1; i <= w; i++){
 				for(int t = 1; t <= waterWidth; t++){
 					if (noBridge || i!=bridge_x) {
@@ -465,21 +465,21 @@ public class Room {
 			if(w<=4){
 				river_w = 1;
 			}else{
-				river_w = Main.rng.nextInt(w-4)+1;
+				river_w = Main.getRng().nextInt(w-4)+1;
 			}
 
 			if(w-2-river_w+1 == 2){
 				waterWidth = 2;
 			}else{
 				if(false){
-					waterWidth = Main.rng.nextInt(w-2-river_w+1-2)+2;
+					waterWidth = Main.getRng().nextInt(w-2-river_w+1-2)+2;
 				}else{
 					waterWidth = w-2;
 				}
 			}
 
 			// TODO: move map altering logic to Map
-			int bridge_y = Main.rng.nextInt(h-3)+2;
+			int bridge_y = Main.getRng().nextInt(h-3)+2;
 			for(int i = 1; i <= h; i++){
 				for(int t = 1; t <= waterWidth; t++){
 					if (noBridge || i!=bridge_y) {

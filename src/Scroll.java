@@ -12,7 +12,7 @@ public class Scroll extends Item implements Consumable {
 		super.addPrompt('r', "(r)ead");      
 		this.setAmount(_amount);
 
-		if(stringHelper == null) stringHelper = new StringHelper(Main.rng);
+		if(stringHelper == null) stringHelper = new StringHelper(Main.getRng());
 		this.fakeName = randomScrollName(this.getTypeName());
 
 		JSONObject effectData = super.getItemData().getJSONObject("effects");
@@ -33,7 +33,7 @@ public class Scroll extends Item implements Consumable {
 		String quantity = super.getQuantityString();
 
 		// TODO (R) Refactor
-		if(Main.player.isItemIdentified(this)) {
+		if(Main.getPlayer().isItemIdentified(this)) {
 			return String.format("%s - %s %s", super.getInventoryID(), quantity, super.getAmount() > 1 ? name.replace("scroll", "scrolls") : name);
 		}else {
 			return String.format("%s - %s scroll%s reading %s", super.getInventoryID(), quantity, super.getAmount() > 1 ? "s" : "", name);
@@ -49,12 +49,12 @@ public class Scroll extends Item implements Consumable {
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {
 			if(c.getInv().containsUnidentified()){
-				Main.view.appendText("Identify what?");
+				Main.getView().appendText("Identify what?");
 				c.getInv().printContents(false);
 				Main.setGameState(Main.GameState.INVENTORY_SELECT);
 				Main.setInvSelAction(Main.InventorySelectAction.IDENTIFY);
 			}else{
-				Main.view.appendText("There is nothing in your pack to identify!");
+				Main.getView().appendText("There is nothing in your pack to identify!");
 			}
 		}else if(effects.containsKey("TELEPORT")) {
 			c.setPos(c.map.randomEmptySpace());
@@ -69,7 +69,7 @@ public class Scroll extends Item implements Consumable {
 
 	@Override
 	public String getDisplayName() {
-		if(Main.player.isItemIdentified(this)){
+		if(Main.getPlayer().isItemIdentified(this)){
 			return super.getDisplayName();
 		}else {
 			return fakeName;
@@ -78,7 +78,7 @@ public class Scroll extends Item implements Consumable {
 
 	@Override
 	public String getDescription() {
-		if(Main.player.isItemIdentified(this)){
+		if(Main.getPlayer().isItemIdentified(this)){
 			return super.getDescription();
 		}else {
 			return "An unknown scroll.";

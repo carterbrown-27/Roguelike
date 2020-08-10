@@ -42,7 +42,7 @@ public abstract class GameObject {
 		for(SpriteSource src: SpriteSource.values()) {
 			if(!imageSources.containsKey(src)) {
 				try {
-					imageSources.put(src,ImageIO.read(new File(src.fileLocation)));
+					imageSources.put(src, ImageIO.read(new File(src.fileLocation)));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

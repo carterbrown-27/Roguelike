@@ -19,7 +19,7 @@ public class RandomChart {
 	}
 	
 	public int pick(){
-		int rnd = Main.rng.nextInt(100);
+		int rnd = Main.getRng().nextInt(100);
 		for(int[] i: chart){
 			if(rnd < i[1]){
 				return i[0];

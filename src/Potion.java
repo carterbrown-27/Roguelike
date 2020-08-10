@@ -41,7 +41,7 @@ public class Potion extends Item implements Consumable {
 		super.addPrompt('q', "(q)uaff");
 		
 		// seed this rng.
-		if(rng == null) rng = new Random(Main.rng.nextInt());
+		if(rng == null) rng = new Random(Main.getRng().nextInt());
 		this.setAmount(_amount);
 		this.fakeName = randomPotionName(this.getTypeName());
 		
@@ -161,7 +161,7 @@ public class Potion extends Item implements Consumable {
 	// TODO (R) Review
 	@Override
 	public String getDisplayName() {
-		if(Main.player.isItemIdentified(this)){
+		if(Main.getPlayer().isItemIdentified(this)){
 			return super.getDisplayName();
 		}else {
 			return fakeName;
@@ -170,7 +170,7 @@ public class Potion extends Item implements Consumable {
 	
 	@Override
 	public String getDescription() {
-		if(Main.player.isItemIdentified(this)){
+		if(Main.getPlayer().isItemIdentified(this)){
 			return super.getDescription();
 		}else {
 			return "An unknown potion.";

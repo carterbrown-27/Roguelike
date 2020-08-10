@@ -141,26 +141,26 @@ public class Player extends Creature {
 		}
 		
 		resting = false;
-		Main.view.appendText(String.format("You feel better - HP: %d", (int) getHP()));
-		Main.view.refreshText();
+		Main.getView().appendText(String.format("You feel better - HP: %d", (int) getHP()));
+		Main.getView().refreshText();
 	}
 	
 	public void startRest(){
 		if (getHP() < getHP_max()) {
 			if (!enemiesNearby()) {
 				if (!resting) {
-					Main.view.appendText("You start resting.");
+					Main.getView().appendText("You start resting.");
 					resting = true;
 					rest();
 				} else {
-					Main.view.appendText("You stop resting.");
+					Main.getView().appendText("You stop resting.");
 					resting = false;
 				}
 			} else {
-				Main.view.appendText("You cannot rest now, there are enemies nearby.");
+				Main.getView().appendText("You cannot rest now, there are enemies nearby.");
 			}
 		}else{
-			Main.view.appendText("You aren't tired.");			
+			Main.getView().appendText("You aren't tired.");			
 		}
 	}
 	
@@ -173,13 +173,13 @@ public class Player extends Creature {
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
-				Main.view.appendText("You hit the "+target.getName());
+				Main.getView().appendText("You hit the "+target.getName());
 				
 				// floor rounding except when below 1.
 				int oppHP = (int) Math.max(0,target.getHP());
-				Main.view.appendText(String.format("%s's HP: %d", target.getName(), oppHP > 0 ? Math.max(oppHP, 1) : 0));				
+				Main.getView().appendText(String.format("%s's HP: %d", target.getName(), oppHP > 0 ? Math.max(oppHP, 1) : 0));				
 			}else{
-				Main.view.appendText("You miss the "+target.getName());				
+				Main.getView().appendText("You miss the "+target.getName());				
 			}
 			return true;
 		}
@@ -200,12 +200,12 @@ public class Player extends Creature {
 	
 	public void identify(Item i) {
 		identifiedItems.add(i.getTypeName());
-		Main.view.appendText("It was a "+i.getTypeName()+".");
+		Main.getView().appendText("It was a "+i.getTypeName()+".");
 	}
 	
 	
 	public void pickUp(char c, Inventory origInv){
-		Main.view.appendText("You pick up the " + origInv.getItem(c).getDisplayName());
+		Main.getView().appendText("You pick up the " + origInv.getItem(c).getDisplayName());
 		origInv.pickUp(c,this);
 		Main.takeTurn();
 	}
@@ -224,13 +224,13 @@ public class Player extends Creature {
 //		if(e.weapon!=null) unweild(e.weapon);
 //		i.equipped = true;
 //		e.weapon = i;
-//		Main.view.appendText("You are now weilding your "+i.name+".");
+//		Main.getView().appendText("You are now weilding your "+i.name+".");
 //	}
 //	
 //	public void unweild(Weapon i){
 //		if(i!=null) i.equipped = false;
 //		e.weapon = null;
-//		Main.view.appendText("You unweild your "+i.name+".");
+//		Main.getView().appendText("You unweild your "+i.name+".");
 //	}
 //	
 //	public void quiver(Missile i){
@@ -241,7 +241,7 @@ public class Player extends Creature {
 //		}
 //		i.equipped = true;
 //		e.quivered = i;
-//		Main.view.appendText("You quiver your "+i.name+"(s).");
+//		Main.getView().appendText("You quiver your "+i.name+"(s).");
 //	}
 //	
 //	public void unquiver(Missile i){
@@ -251,7 +251,7 @@ public class Player extends Creature {
 //			return;
 //		}
 //		e.quivered = null;
-//		Main.view.appendText("You put away your "+i.name+"(s).");
+//		Main.getView().appendText("You put away your "+i.name+"(s).");
 //	}
 	
 //	public void takeOff(Item i){
@@ -272,7 +272,7 @@ public class Player extends Creature {
 //		}else if(e.ring_right.equals(i)){
 //			e.ring_right = null;
 //		}
-//		Main.view.appendText("You take off your "+i.name+".");
+//		Main.getView().appendText("You take off your "+i.name+".");
 //	}
 	
 //	public void putOn(Item i){
@@ -298,14 +298,14 @@ public class Player extends Creature {
 //				e.ring_right = i;
 //			}else{
 //				// take off rings
-//				Main.view.appendText("you must take off one of your two rings first.");
+//				Main.getView().appendText("you must take off one of your two rings first.");
 //			}
 //		}else if(i.isInClass(Item.Items.amulets)){
 //			if(e.amulet!=null) takeOff(e.amulet);
 //			e.amulet = i;
 //		}
 //		i.worn = true;
-//		Main.view.appendText("You put on your "+i.name+".");
+//		Main.getView().appendText("You put on your "+i.name+".");
 //	}
 	
 //	public ArrayList<Entity> getAdjacents() {

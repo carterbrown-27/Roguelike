@@ -213,12 +213,12 @@ public abstract class Item extends GameObject {
 		// TODO (A) Implement
 		// TODO (+) More Sophisticated Random Calculations.
 		float plusMinus = 1/3f * tierMean;
-		int tier = Math.round((Main.rng.nextFloat()*2*plusMinus) + tierMean - plusMinus);
+		int tier = Math.round((Main.getRng().nextFloat()*2*plusMinus) + tierMean - plusMinus);
 		
 		ItemType type = randomItemType(0);
 		
 		List<String> ids = getAllItemIDs(type, tier);
-		String id = ids.get(Main.rng.nextInt(ids.size()));
+		String id = ids.get(Main.getRng().nextInt(ids.size()));
 		
 		return createItemByID(type._class,id);
 	}
@@ -266,7 +266,7 @@ public abstract class Item extends GameObject {
 		// pick any but a special item.
 		int r;
 		do{
-			r = Main.rng.nextInt(ItemType.values().length);
+			r = Main.getRng().nextInt(ItemType.values().length);
 		} while (ItemType.values()[r].equals(ItemType.SPECIAL));
 
 		return ItemType.values()[r];
@@ -274,7 +274,7 @@ public abstract class Item extends GameObject {
 	
 	// TODO (F) Fix
 	public void drop(Creature from) {
-		Main.view.appendText("You drop the "+this.getDisplayName());
+		Main.getView().appendText("You drop the "+this.getDisplayName());
 		// TODO (R) Refactor
 		from.getInv().deleteItem(this);
 		from.map.addItemToSpace(this, from.getPos());

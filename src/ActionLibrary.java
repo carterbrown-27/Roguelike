@@ -1,7 +1,7 @@
 import java.awt.Point;
 import java.util.logging.Logger;
 
-// TODO: static-ize most of this.
+// TODO: convert to enum Action type
 public class ActionLibrary {
 	public static final Logger logger = Logger.getLogger(ActionLibrary.class.getName());
 	
@@ -30,15 +30,15 @@ public class ActionLibrary {
 	}
 
 	//goes reverse, therefore last point will be first
-	// TODO: switch to map from player (ala dijkstra) for better performance.
+	// TODO: switch to map from player (ala djikstra) for better performance.
 	public void updatePath(){
 		// flag = false;
 		if (player == null) {
 			logger.severe("No player found!");
 		}
-		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
-		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.buildOpenMap(), map.entities, c, true, false, MAX_PF_DIST);
+		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.getOpenMap(), map.entities, c, true, false, MAX_PF_DIST);
 		
 		Pathfinder.PointBFS temp = pBFS;
 		distance = 0;
@@ -65,13 +65,13 @@ public class ActionLibrary {
 		Pathfinder.PointBFS temp;
 		// flag = false;
 		
-		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
 		if(pBFS==null || pBFS.getParent()==null){
-			int[][] m = map.buildOpenMap();
+			int[][] m = map.getOpenMap();
 			
 			if(avoidP) m[player.getPos().x][player.getPos().y] = 1;
-			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.buildOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
 		}
 		
 		temp = pBFS;
@@ -108,13 +108,13 @@ public class ActionLibrary {
 	public double getAttackDamage(){
 		double baseDamage = c.getStrength();
 		if(c.weapon!=null) baseDamage += c.weapon.getDamage();
-		return baseDamage/2 + (Main.rng.nextDouble()*baseDamage);
+		return baseDamage/2 + (Main.getRng().nextDouble()*baseDamage);
 	}
 
 	public double calculateDmg(Creature target, double damage_modifier){
 		double atkDmg = getAttackDamage() * damage_modifier;
 		// 50% DEF <-> 100% DEF
-		double defAmt = target.getDefence()/2 + (Main.rng.nextDouble()*target.getDefence())/2;
+		double defAmt = target.getDefence()/2 + (Main.getRng().nextDouble()*target.getDefence())/2;
 		
 		// System.out.println("AtkDmg: "+atkDmg+" - DefAmt"+defAmt);
 		return round(Math.max(0,atkDmg-defAmt), 1);
@@ -159,13 +159,13 @@ public class ActionLibrary {
 		// standard formula -- hail mary
 		
 		// 50% ACC <-> 125% ACC
-		double calcAcc = round(accuracy/2+(Main.rng.nextDouble()*accuracy*3/4),4);
+		double calcAcc = round(accuracy/2+(Main.getRng().nextDouble()*accuracy*3/4),4);
 		// 50% EV <-> 125% EV
-		double calcEV = round(target.getEV()/2+(Main.rng.nextDouble()*target.getEV()*3/4),4);
+		double calcEV = round(target.getEV()/2+(Main.getRng().nextDouble()*target.getEV()*3/4),4);
 		
 		// System.out.println(e.name+"'s ACC: "+calcAcc + " {vs} "+target.name+"'s EV: "+calcEV);
 		
 		// if hit & win 90/10 or miss & win 10/90
-		return ((calcAcc >= calcEV && Main.rng.nextInt(10) >= 1) || Main.rng.nextInt(10)==0);
+		return ((calcAcc >= calcEV && Main.getRng().nextInt(10) >= 1) || Main.getRng().nextInt(10)==0);
 	}
 }

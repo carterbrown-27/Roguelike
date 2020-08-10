@@ -24,7 +24,6 @@ public class FOV {
 		this.height = opacityMap.length;
 		this.width = opacityMap[0].length;
 		this.radius = radius;
-		
 		this.lightMap = new boolean[height][width];
 
 		lightMap[startY][startX] = true;

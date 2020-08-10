@@ -123,11 +123,11 @@ public class Creature extends Entity {
 		if(isAwake()) return true;
 		if(ai == null) return false;
 		// TODO (+) add creature viewDis
-		//boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.player.luminosity); 
-		// if(vision[Main.player.getY()][Main.player.getX()]){
+		//boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.getPlayer().luminosity); 
+		// if(vision[Main.getPlayer().getY()][Main.getPlayer().getX()]){
 		
 		// Basic check
-		if((Math.abs(getX() - Main.player.getX()) <= AWAKE_DISTANCE && Math.abs(getY() - Main.player.getY()) <= AWAKE_DISTANCE) && Main.rng.nextInt(5) >= 1) {
+		if((Math.abs(getX() - Main.getPlayer().getX()) <= AWAKE_DISTANCE && Math.abs(getY() - Main.getPlayer().getY()) <= AWAKE_DISTANCE) && Main.getRng().nextInt(5) >= 1) {
 			super.setAwake(true);
 			return true;
 		}
@@ -145,7 +145,7 @@ public class Creature extends Entity {
 			
 			// TODO (R) Refactor
 			if (getHP()<0.05) {
-				Main.view.appendText("You kill the " + super.getName() + ".");
+				Main.getView().appendText("You kill the " + super.getName() + ".");
 				return turnEnding.DEAD; // dead
 			}
 			if(!ai.takeTurn()){
@@ -162,13 +162,13 @@ public class Creature extends Entity {
 			toggle(s, true);
 			// TODO (P) Polymorph
 			if(!super.getName().equals("player")){
-				Main.view.appendText(String.format("The %s is %s!", getName(), s.name));
+				Main.getView().appendText(String.format("The %s is %s!", getName(), s.name));
 			}else{
-				Main.view.appendText(String.format("You are %s!", s.name));
+				Main.getView().appendText(String.format("You are %s!", s.name));
 			}
-			getStatuses().put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+			getStatuses().put(s, (int) ActionLibrary.round(s.baseDuration*2/3*Main.getRng().nextDouble() + s.baseDuration*2/3,0));
 		}else{
-			getStatuses().replace(s, getStatuses().get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.rng.nextDouble() + s.baseDuration*2/3,0));
+			getStatuses().replace(s, getStatuses().get(s) + (int) ActionLibrary.round(s.baseDuration*2/3*Main.getRng().nextDouble() + s.baseDuration*2/3,0));
 		}
 	}
 
@@ -176,9 +176,9 @@ public class Creature extends Entity {
 		toggle(s, false);
 		// TODO (P) Polymorph
 		if(!super.getName().equals("player")){
-			Main.view.appendText("The "+getName()+" is no longer "+s.name+".");
+			Main.getView().appendText("The "+getName()+" is no longer "+s.name+".");
 		}else{
-			Main.view.appendText("You are no longer "+s.name+".");
+			Main.getView().appendText("You are no longer "+s.name+".");
 		}
 		getStatuses().remove(s);
 	}
@@ -195,13 +195,15 @@ public class Creature extends Entity {
 	
 	public static String pickRandomType(int tier) {
 		// TODO (A) Implement
-		return Main.rng.nextBoolean() ? "rat" : "bat";
+		return Main.getRng().nextBoolean() ? "rat" : "bat";
 	}
-	
+
+	// TODO: move tile-type logic to Tile Class
 	@Override
-	public boolean canOccupySpace(int[][] openMap, int x, int y) {
-		int space = openMap[y][x];
-		return super.canOccupySpace(openMap, x, y) || (space == 2 && isFlyingOrAmphib()) || (space == 3 && isFlying());
+	public boolean canOccupySpace(int x, int y) {
+		int space = map.getOpenMap()[y][x];
+		System.out.println(space);
+		return super.canOccupySpace(x, y) || (space == 2 && isFlyingOrAmphib()) || (space == 3 && isFlying());
 	}
 	
 	// GETTERS, SETTERS, MUTATORS

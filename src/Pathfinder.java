@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+// TODO: use global djikstra "want" maps instead of individual BFS
 public abstract class Pathfinder {
 
 	public static class PointBFS {

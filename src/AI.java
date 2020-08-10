@@ -1,14 +1,12 @@
 public class AI {
 	private Creature c;
 	private ActionLibrary lib;
-	private static Player player;
 
 	AI(Creature _c){
 		// ("configuring AI...");
 		this.c = _c;
 		this.lib = new ActionLibrary(this.c);
 		// TODO (A) Replace this with "influence map" from Map
-		player = Main.player;
 		// ("done.");
 	}
 
@@ -28,11 +26,11 @@ public class AI {
 	// 1 is success
 	// 2 is fail
 	public boolean basic(){
-		if(c.isAdjacentTo(player.getPos())){
-			if(lib.melee(player,1)){
-				Main.view.appendText("The "+c.getName()+" hits you!");
+		if(c.isAdjacentTo(Main.getPlayer().getPos())){
+			if(lib.melee(Main.getPlayer(),1)){
+				Main.getView().appendText("The "+c.getName()+" hits you!");
 			}else{
-				Main.view.appendText("The "+c.getName()+" misses you.");				
+				Main.getView().appendText("The "+c.getName()+" misses you.");
 			}
 			return true;
 		}else{

@@ -207,8 +207,8 @@ public enum MapType {
 	}
 	
 	public BufferedImage pickImage(int type, int adj){
-		if(variations.containsKey(type) && Main.rng.nextInt(100)<variationPercentages.get(type)){
-			return variations.get(type)[Main.rng.nextInt(variations.get(type).length-1)];
+		if(variations.containsKey(type) && Main.getRng().nextInt(100)<variationPercentages.get(type)){
+			return variations.get(type)[Main.getRng().nextInt(variations.get(type).length-1)];
 		}else if(directionals.containsKey(type)){
 			return directionals.get(type)[adj];
 		}

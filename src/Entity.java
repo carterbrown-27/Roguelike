@@ -11,7 +11,8 @@ public class Entity extends GameObject {
 	
 	private Inventory inv;
 	private FOV fov;
-	
+
+	// TODO: Review location of related logic
 	private boolean waiting = false;
 	private boolean inPlayerView = false;
 	private boolean awake = false;
@@ -20,7 +21,7 @@ public class Entity extends GameObject {
 	
 	private double HP = 1.0;
 	private double HP_max = 1; // 6 dmg = player with dagger
-	
+
 	Entity(String id, Point _pos, Map _map){
 		// TODO (I) Implement
 		super();
@@ -52,6 +53,10 @@ public class Entity extends GameObject {
 		NORMAL;
 	}
 
+	public void setPassable(boolean passable) {
+		this.passable = passable;
+	}
+
 	// u:0,r:1,d:2,l:3
 	// ur: 4,rd: 5, dl: 6, lu: 7
 	public boolean move(Direction dir){
@@ -68,20 +73,19 @@ public class Entity extends GameObject {
 			map.tileMap[getY()][getX()].setValue(7);
 			
 			// TODO (R) Refactor, add to "sound" system when added. (currently global message)
-			Main.view.appendText("The door creaks open.");
+			Main.getView().appendText("The door creaks open.");
 		}
 		return sxs;
 	}
 
 	public boolean isOpen(int x, int y){
 		if(!map.isOnMap(x,y)) return false;
-		int[][] openMap = map.buildOpenMap();
-		return canOccupySpace(openMap,x,y);
+		return canOccupySpace(x,y);
 	}
 	
-	public boolean canOccupySpace(int[][] openMap, int x, int y) {
+	public boolean canOccupySpace(int x, int y) {
 		if(!map.isOnMap(x,y)) return false;
-		return openMap[y][x] == 0;
+		return map.getOpenMap()[y][x] == 0; // TODO: change access
 	}
 	
 	public boolean isOpen(Point p) {

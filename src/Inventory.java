@@ -21,7 +21,7 @@ public class Inventory {
 	
 	public boolean containsUnidentified(){
 		for(Item i: inventoryMap.values()){
-			if(i.isUnknown() && !Main.player.isItemIdentified(i)){
+			if(i.isUnknown() && !Main.getPlayer().isItemIdentified(i)){
 				return true;
 			}
 		}
@@ -41,14 +41,14 @@ public class Inventory {
 
 	public void printContents(boolean floor){
 		if(floor){
-			Main.view.appendText("Things here:");
+			Main.getView().appendText("Things here:");
 		}else{
-			Main.view.appendText("Your Inventory:");
+			Main.getView().appendText("Your Inventory:");
 		}
 		
 		for(char c: inventoryMap.keySet()){
 			Item i = inventoryMap.get(c);
-			Main.view.appendText(i.toString());
+			Main.getView().appendText(i.toString());
 		}
 	}
 
@@ -98,7 +98,7 @@ public class Inventory {
 			i.setInventoryID(firstOpen);
 		} else {
 			// TODO (A) Implement returning item to floor.
-			Main.view.appendText("Inventory full.");
+			Main.getView().appendText("Inventory full.");
 			return;
 		}
 	}
@@ -127,7 +127,7 @@ public class Inventory {
 	
 	public void makeRandomInventory(int tier, int amount){
 		// random n from amt*66% to amt*133%.
-		double n = (double) amount*2/3 + (Main.rng.nextDouble() * (double) amount*2/3);
+		double n = (double) amount*2/3 + (Main.getRng().nextDouble() * (double) amount*2/3);
 		n = (int) ActionLibrary.round(n, 0);
 		
 		for(int x = 0; x < n; x++){
