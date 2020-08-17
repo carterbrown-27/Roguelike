@@ -24,14 +24,13 @@ public class Map {
 	private int[][] openMap;
 
 	public static int smooths = 4;
+	public static final float percentBrightness = .60f;
 	// public static Entity[][] entity_map = new Entity[height][width];
 
 	// TODO (I) Populate w/ creatures.
 	public HashSet<Entity> entities;
 
 	public Player player;
-
-	public int tileSize = 24;
 
 	private FOV fov = new FOV();
 
@@ -907,11 +906,17 @@ public class Map {
 	}
 
 	// TODO (R) Render Layers (seperately, instead of tile-based)
+	// TODO (R) Clean up
 	public BufferedImage renderArea(int x1, int y1, int x2, int y2, boolean noLighting){
 		int areaHeight = Math.abs(y2-y1)+1;
 		int areaWidth = Math.abs(x2-x1)+1;
 
-		BufferedImage area = new BufferedImage(areaWidth*tileSize,areaHeight*tileSize,BufferedImage.TYPE_INT_ARGB);
+		BufferedImage area = new BufferedImage(
+				areaWidth * Main.TILE_SIZE,
+				areaHeight * Main.TILE_SIZE,
+				BufferedImage.TYPE_INT_ARGB
+		);
+
 		Graphics2D g = (Graphics2D) area.getGraphics();
 		BufferedImage dark;
 
@@ -938,9 +943,15 @@ public class Map {
 
 					if(tile!=dark && !noLighting && !lightMap[y][x]){
 						if (tileMap[y][x].visited) {
-							BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
+							BufferedImage image = new BufferedImage(
+									Main.TILE_SIZE,
+									Main.TILE_SIZE,
+									BufferedImage.TYPE_4BYTE_ABGR
+							);
+
 							Graphics tileG = image.getGraphics();
 							tileG.drawImage(tileMap[y][x].asLastSeen, 0, 0, null);
+
 							Entity LEH = tileMap[y][x].lastEntityHere;
 							if(LEH!=null && isOnMap(LEH.getPos()) && !lightMap[LEH.getY()][LEH.getX()]){
 								// if last creature here has died, don't show
@@ -948,8 +959,6 @@ public class Map {
 									tileG.drawImage(LEH.getSprite(), 0, 0, null);
 								}
 							}
-
-							final float percentBrightness = .60f;
 
 							tileG.setColor(new Color(0,0,0, (int) (255*(1-percentBrightness)) ));
 							tileG.fillRect(0, 0, image.getWidth(), image.getHeight());
@@ -959,9 +968,9 @@ public class Map {
 							tile = dark;
 						}
 					}
-					g.drawImage(tile,x_ofs*tileSize, y_ofs*tileSize,null);
+					g.drawImage(tile,x_ofs*Main.TILE_SIZE, y_ofs*Main.TILE_SIZE,null);
 
-					BufferedImage fullImg = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_ARGB);
+					BufferedImage fullImg = new BufferedImage(Main.TILE_SIZE, Main.TILE_SIZE, BufferedImage.TYPE_INT_ARGB);
 					Graphics fg = fullImg.getGraphics();
 					fg.drawImage(tile, 0, 0, null);
 
@@ -994,17 +1003,17 @@ public class Map {
 
 					// draw tile. items. fg.
 					fg.dispose();
-					g.drawImage(fullImg, x_ofs * tileSize, y_ofs * tileSize, null);
+					g.drawImage(fullImg, x_ofs * Main.TILE_SIZE, y_ofs * Main.TILE_SIZE, null);
 
 					// update tile memory
 					if(!noLighting && isOnMap(x,y) && lightMap[y][x]) tileMap[y][x].view(fullImg,lastEntity);
 
 					// finally, draw entities
-					if(lastEntity!=null) g.drawImage(lastEntity.getSprite(), x_ofs*tileSize, y_ofs*tileSize, null);
+					if(lastEntity!=null) g.drawImage(lastEntity.getSprite(), x_ofs*Main.TILE_SIZE, y_ofs*Main.TILE_SIZE, null);
 
 					// and draw player
 					if(player != null && player.getX() == x && player.getY() == y){
-						g.drawImage(player.getSprite(),x_ofs*tileSize,y_ofs*tileSize,null);
+						g.drawImage(player.getSprite(),x_ofs*Main.TILE_SIZE,y_ofs*Main.TILE_SIZE,null);
 						// fg.drawImage(player.getImg(),0,0,null);
 					}
 				}
@@ -1028,7 +1037,7 @@ public class Map {
 
 	@Deprecated
 	public BufferedImage addVignette(BufferedImage image, int x, int y, int r){
-		int d = r*2*tileSize;
+		int d = r*2*Main.TILE_SIZE;
 		Graphics g = (Graphics2D) image.getGraphics();
 		g.setColor(new Color(225,185,85,45));
 		g.fillOval(x,y,d,d);
@@ -1037,7 +1046,7 @@ public class Map {
 
 	@Deprecated
 	public BufferedImage addCenterVignette(BufferedImage image, int r){
-		int pixr = r*tileSize;
+		int pixr = r*Main.TILE_SIZE;
 		return addVignette(image,image.getWidth()/2 - pixr,image.getHeight()/2 - pixr,r);
 	}
 

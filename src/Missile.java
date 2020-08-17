@@ -6,7 +6,7 @@ public class Missile extends Item implements Consumable, Equippable {
 
 	Missile(String id, int _amount){
 		super(id);
-		super.addPrompt('o', "thr(o)w");
+		super.addPrompt('t', "(t)hrow");
 		super.setAmount(_amount);
 	}
 
@@ -19,6 +19,7 @@ public class Missile extends Item implements Consumable, Equippable {
 	public void equip(Creature c) {
 		Missile prev = c.quivered;
 		if(prev != null) prev.unequip(c);
+		c.quivered = this;
 		this.equipped = true;
 	}
 
