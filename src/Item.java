@@ -16,6 +16,8 @@ public abstract class Item extends GameObject {
 	private String typeName;
 	private String displayName = "<name>";
 	private String description = "<description>";
+	private boolean stackable = false;
+	private boolean unknown = false;
 	private int amount = 1;
 	
 	private LinkedHashMap<Character,String> actions = new LinkedHashMap<>();
@@ -162,13 +164,7 @@ public abstract class Item extends GameObject {
 		}
 	}
 	
-	public boolean isUnknown(){
-		return false;
-	}
 
-	public boolean isStackable(){
-		return false;
-	}
 	
 	public BufferedImage getSprite() {
 		return super.getSprite();
@@ -181,6 +177,14 @@ public abstract class Item extends GameObject {
 	// TODO (R) Review, is this good practice? resolve unchecked warnings.
 	private static final Class[] itemClasses = {Weapon.class,Armour.class,Potion.class,Scroll.class,Missile.class,Food.class,Item.class};
 	private static final String[] itemTypeNames = {"Weapons","Armour","Potions","Scrolls","Missiles","Food","Special"};
+
+	public boolean isUnknown() {
+		return unknown;
+	}
+
+	public boolean isStackable() {
+		return stackable;
+	}
 
 	public static enum ItemType {
 		WEAPON (0),
@@ -240,7 +244,7 @@ public abstract class Item extends GameObject {
 		JSONObject itemListObj = masterJSON.getJSONObject(type.name).getJSONObject("list");
 		
 		// decrease to 0.
-		for(;result.isEmpty() && tier >= MIN_TIER; tier--) {
+		for(; result.isEmpty() && tier >= MIN_TIER; tier--) {
 			for(String id: items) {
 				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
 					result.add(id);
@@ -249,7 +253,7 @@ public abstract class Item extends GameObject {
 		}
 		
 		// then go up
-		for(;result.isEmpty() && tier <= MAX_TIER; tier++) {
+		for(; result.isEmpty() && tier <= MAX_TIER; tier++) {
 			for(String id: items) {
 				if(itemListObj.getJSONObject(id).getInt("tier") == tier) {
 					result.add(id);
@@ -286,6 +290,14 @@ public abstract class Item extends GameObject {
 
 	public char getInventoryID() {
 		return inventoryID;
+	}
+
+	public void setStackable(boolean b){
+		stackable = b;
+	}
+
+	public void setUnknown(boolean b){
+		unknown = b;
 	}
 	
 	// TODO (I) move, refactor

@@ -39,10 +39,9 @@ public class View {
 	
 	// TODO (R) Set new Layout.
 	public void init() {
-		// GUI gui = new GUI();
-		// gui.run();
 
 		frame = new JFrame();
+
 		// TODO (X) Overhaul GUI.
 		JFrame_HEIGHT = 900;
 		JFrame_WIDTH = 1600;

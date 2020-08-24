@@ -123,7 +123,7 @@ public class Creature extends Entity {
 		if(isAwake()) return true;
 		if(ai == null) return false;
 		// TODO (+) add creature viewDis
-		//boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.getPlayer().luminosity); 
+		// boolean[][] vision = fov.calculate(map.buildOpacityMap(), getX(), getY(), Main.getPlayer().luminosity);
 		// if(vision[Main.getPlayer().getY()][Main.getPlayer().getX()]){
 		
 		// Basic check
@@ -202,7 +202,6 @@ public class Creature extends Entity {
 	@Override
 	public boolean canOccupySpace(int x, int y) {
 		int space = map.getOpenMap()[y][x];
-		System.out.println(space);
 		return super.canOccupySpace(x, y) || (space == 2 && isFlyingOrAmphib()) || (space == 3 && isFlying());
 	}
 	

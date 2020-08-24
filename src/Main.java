@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 import java.util.logging.Logger;
 
 // TODO (*) Decouple GUI from Main, Switch to JavaFX for GUI, create JApplet from JavaFX.
@@ -52,6 +53,7 @@ public class Main {
 	private static StringHelper stringHelper;
 
 	private static BufferedImage targetImg;
+	private static BufferedImage targetDot;
 
 	public static void main(String[] args){
 
@@ -60,6 +62,7 @@ public class Main {
 		// TEMP
 		try{
 			targetImg = ImageIO.read(new File("imgs/crosshair.png"));
+			targetDot = ImageIO.read(new File("imgs/targetdot.png"));
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -542,7 +545,7 @@ public class Main {
 	}
 
 	public static void handleTargetConfirm() {
-		ArrayList<Point> line = FOV.bresenhamLine(player.getPos(), targetPos);
+		List<Point> line = Bresenham.findLine(currentMap.getIdentityMap(), player.getPos(), targetPos);
 
 		Projectile projectile = new Projectile(player.quivered, player.getPos(), currentMap);
 		boolean valid = true;
@@ -568,10 +571,21 @@ public class Main {
 
 	public static void updateTarget(int relX, int relY){
 		int d = getImageDimension();
+
 		BufferedImage targetLayer = new BufferedImage(d, d, BufferedImage.TYPE_INT_ARGB);
+
+		List<Point> line = Bresenham.findLine(currentMap.getIdentityMap(), player.getPos(), targetPos);
 
 		Graphics g = targetLayer.getGraphics();
 		g.drawImage(targetImg, relX * TILE_SIZE, relY * TILE_SIZE, null);
+
+		int plx = player.getX() - player.viewDis, ply = player.getY() - player.viewDis;
+		for(int i = 1; i < line.size()-1; i++){
+			Point p = line.get(i);
+			// System.out.println(p);
+			g.drawImage(targetDot, (p.x - plx) * TILE_SIZE, (p.y - ply) * TILE_SIZE, null);
+		}
+
 		g.dispose();
 
 		curTargetLayer = targetLayer;
@@ -612,7 +626,7 @@ public class Main {
 		}
 
 		if(selectedInv.isOneItem()){
-			player.pickUp(selectedInv.getFirstItem(),selectedInv);
+			player.pickUp(selectedInv.getFirstItem(), selectedInv);
 		}else if(!selectedInv.isEmpty()){
 			state = GameState.PICKUP;
 			currentInventory = selectedInv;
@@ -625,11 +639,11 @@ public class Main {
 			if(floors.size()<= getFloorNumber() +1){
 				newFloor();
 			}else{
-				changeFloor(getFloorNumber() +1,true,false);
+				changeFloor(getFloorNumber() + 1,true,false);
 			}
 		}else if(currentMap.valueAt(player.getPos()) == 2 && getFloorNumber() > 0){
 			// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
-			changeFloor(getFloorNumber() -1,false,false);
+			changeFloor(getFloorNumber() - 1,false,false);
 		}
 		view.appendText("Current Floor: "+ getFloorNumber());
 	}

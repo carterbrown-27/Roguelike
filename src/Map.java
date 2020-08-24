@@ -22,6 +22,7 @@ public class Map {
 	public Tile[][] tileMap;
 	public boolean[][] lightMap;
 	private int[][] openMap;
+	private Point[][] identityMap;
 
 	public static int smooths = 4;
 	public static final float percentBrightness = .60f;
@@ -32,8 +33,7 @@ public class Map {
 
 	public Player player;
 
-	private FOV fov = new FOV();
-
+	private FOV fov = new FOV(); // TODO (R) Decide if Class FOV should be staticized
 	private MapType mapType = MapType.UNDERCITY;
 
 	public final boolean undercity = true;
@@ -53,6 +53,13 @@ public class Map {
 		// TODO (R) Review
 		tileMap = new Tile[height][width];
 		openMap = new int[height][width];
+
+		identityMap = new Point[height][width];
+		for(int y = 0; y < height; y++){
+			for(int x = 0; x < width; x++){
+				identityMap[y][x] = new Point(x,y);
+			}
+		}
 
 		if(undercity){
 			generateUndercity();
@@ -392,7 +399,7 @@ public class Map {
 	}
 
 	public ArrayList<PointDir> buildCorridor(PointDir door, boolean fromOtherC){
-		logger.fine("building corridor...");
+		logger.fine("Building corridor...");
 		ArrayList<PointDir> doors = new ArrayList<PointDir>();
 
 		char dir = door.dir;
@@ -515,16 +522,11 @@ public class Map {
 			point = p;
 			dir = d;
 		}
-		
-		public static final int UP = 0;
-		public static final int RIGHT = 1;
-		public static final int DOWN = 2;
-		public static final int LEFT = 3;
-//		private static final char[] dirChars = new char[] {'T','R','D','L'};
-//
-//		public static char getDirChar(int i) {
-//			return dirChars[i];
-//		}
+
+//		public static final int UP = 0;
+//		public static final int RIGHT = 1;
+//		public static final int DOWN = 2;
+//		public static final int LEFT = 3;
 	}
 
 	public Point aheadTile(PointDir p){
@@ -810,10 +812,14 @@ public class Map {
 		return openMap;
 	}
 
+	public Point[][] getIdentityMap(){
+		return identityMap;
+	}
+
 	public void buildTileMap(){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
-				tileMap[y][x] = new Tile(map[y][x],getMapType(),tileTypeAdj(x,y));
+				tileMap[y][x] = new Tile(map[y][x], mapType, tileTypeAdj(x,y));
 				int f = foreground[y][x];
 				// if(f==1 && tileMap[y][x].value != 6) f = 0;
 				if(f!=0) tileMap[y][x].setForeground(f,fgTypeAdj(x,y));

@@ -1,17 +1,16 @@
 import java.awt.image.BufferedImage;
 
-// TODO (X) Overhaul
+// TODO (X) Overhaul: Rebuild from scratch
 public class Tile {
-
 	public enum Tile_Type{
 		FLOOR					(0),
 		WALL					(1),
-		STAIRS_UP			(2),
-		STAIRS_DOWN		(3),
+		STAIRS_UP				(2),
+		STAIRS_DOWN				(3),
 		TEST					(4), // temp
 		DOOR					(5), // t
 		WATER					(6),		
-		DOOR_OPEN			(7); // t
+		DOOR_OPEN				(7); // t
 
 		boolean isOpen = true;
 		boolean isTransparent = true;
@@ -38,7 +37,7 @@ public class Tile {
 
 	public enum Fg_Type{
 		NONE			(0),
-		BRIDGE		(1);
+		BRIDGE			(1);
 		
 		boolean isOpen = true;
 		boolean isTransparent = true;

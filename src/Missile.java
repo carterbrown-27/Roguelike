@@ -8,6 +8,7 @@ public class Missile extends Item implements Consumable, Equippable {
 		super(id);
 		super.addPrompt('t', "(t)hrow");
 		super.setAmount(_amount);
+		super.setStackable(true);
 	}
 
 	Missile(String id){
@@ -60,10 +61,4 @@ public class Missile extends Item implements Consumable, Equippable {
 	public void use(Creature c) {
 
 	}
-
-	@Override
-	public boolean isStackable() {
-		return true;
-	}
-
 }

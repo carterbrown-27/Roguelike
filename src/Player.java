@@ -106,8 +106,7 @@ public class Player extends Creature {
 	public boolean isItemIdentified(Item i) {
 		return identifiedItems.contains(i.getTypeName());
 	}
-	
-	
+
 	public void basic(Direction dir){
 		if(!move(dir)){
 			if(melee(getTarget(dir),1)){

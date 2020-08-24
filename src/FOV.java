@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 public class FOV {
 
-	/*** @SquidLib interpretation
-	 * thanks to them, link here:
-	 * <github link here> ***/
+	/***
+	 * @author SquidPony
+	 * (interpretation of their code)
+	 * https://github.com/SquidPony/SquidLib
+	 ***/
 
 	/** true = opaque **/
 	boolean[][] opacityMap;
@@ -79,7 +81,7 @@ public class FOV {
 				lightMap[currentY][currentX] = true;
 
 				if (blocked) { //previous cell was a blocking one
-					if (!opacityMap[currentY][currentX]) {//hit a wall
+					if (!opacityMap[currentY][currentX]) { //hit a wall
 						newStart = rightSlope;
 						continue;
 					} else {
@@ -97,9 +99,10 @@ public class FOV {
 			}
 		}
 	}
-	
+
+	@Deprecated
 	public static ArrayList<Point> bresenhamLine(Point start, Point end){
-		ArrayList<Point> linePoints = new ArrayList<Point>();
+		ArrayList<Point> linePoints = new ArrayList<>();
 		
 		// TODO: float -> int optimization
 		int x1 = start.x;

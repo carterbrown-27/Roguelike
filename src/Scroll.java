@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import org.json.JSONObject;
 
@@ -6,13 +9,23 @@ public class Scroll extends Item implements Consumable {
 	private static HashMap<String,String> scrollNames = new HashMap<>();
 	private String fakeName;
 	private HashMap<String,Integer> effects = new HashMap<>();
+	private static BufferedWriter bw;
 
 	Scroll(String id, int _amount){
 		super(id);
-		super.addPrompt('r', "(r)ead");      
+		super.addPrompt('r', "(r)ead");
+		super.setStackable(true);
+		super.setUnknown(true);
 		this.setAmount(_amount);
 
 		if(stringHelper == null) stringHelper = new StringHelper(Main.getRng());
+//		if(bw == null){
+//			try{
+//				bw = new BufferedWriter(new FileWriter("Logs/ScrollNames.txt"))
+//			}catch(IOException e){
+//				e.printStackTrace();
+//			}
+//		}
 		this.fakeName = randomScrollName(this.getTypeName());
 
 		JSONObject effectData = super.getItemData().getJSONObject("effects");
@@ -86,22 +99,20 @@ public class Scroll extends Item implements Consumable {
 	}
 
 	public static String randomScrollName(String realName) {
-		if(scrollNames.containsKey(realName)) {
+		if (scrollNames.containsKey(realName)) {
 			return scrollNames.get(realName);
 		}
-		String name = (stringHelper.randomName()+" "+stringHelper.randomName()).toUpperCase();
+		// TODO: Although chance is very, very, small, ensure that two scroll types cannot have the same fake name
+		// Odds = Ω(1/(7*Σ[i,4,10](i!))) (if name generator was completely random, which it is not, it would be 1/30 million)
+		String name = (stringHelper.randomName() + " " + stringHelper.randomName()).toUpperCase();
 		scrollNames.put(realName, name);
+//		try{
+//			bw.write(realName);
+//			bw.flush();
+//		}catch(IOException e){
+//			e.printStackTrace();
+//		}
+
 		return name;
-	}
-
-	// TODO (T) TEMP
-	@Override
-	public boolean isStackable() {
-		return true;
-	}
-
-	@Override
-	public boolean isUnknown() {
-		return true;
 	}
 }

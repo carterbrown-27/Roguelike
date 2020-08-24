@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
 
-// TODO (R) Replace & (J) JSONize this data.
+// TODO (R) Replace with Tile Info & (J) JSONize other data.
 public enum MapType {
 	UNDERCITY ("undercity");
 	

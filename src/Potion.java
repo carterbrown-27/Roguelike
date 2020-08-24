@@ -39,6 +39,8 @@ public class Potion extends Item implements Consumable {
 	Potion(String id, int _amount){
 		super(id);
 		super.addPrompt('q', "(q)uaff");
+		super.setStackable(true);
+		super.setUnknown(true);
 		
 		// seed this rng.
 		if(rng == null) rng = new Random(Main.getRng().nextInt());
@@ -194,15 +196,5 @@ public class Potion extends Item implements Consumable {
 		c.getInv().removeOne(this.getInventoryID());
 		Main.takeTurn();
 
-	}
-
-	@Override
-	public boolean isStackable() {
-		return true;
-	}
-	
-	@Override
-	public boolean isUnknown() {
-		return true;
 	}
 }

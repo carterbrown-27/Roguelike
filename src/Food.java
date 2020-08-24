@@ -6,6 +6,7 @@ public class Food extends Item implements Consumable {
 	Food(String id) {
 		super(id);
 		super.addPrompt('e', "(e)at");
+		super.setStackable(true);
 		JSONObject itemData = super.getItemData();
 		foodValue = itemData.getDouble("foodValue");
 		// TODO Auto-generated constructor stub
@@ -17,10 +18,4 @@ public class Food extends Item implements Consumable {
 		c.changeSAT(+foodValue);
 		c.getInv().removeOne(this.getInventoryID());
 	}
-	
-	@Override
-	public boolean isStackable() {
-		return true;
-	}
-
 }
