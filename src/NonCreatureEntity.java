@@ -3,13 +3,13 @@ import java.awt.image.BufferedImage;
 
 // TODO: deprecate entirely or move logic to new Interface: Interactable
 // add Doors as Interactables.
-public class StaticEntity extends Entity {
+public class NonCreatureEntity extends Entity {
 	
 	public SEType type;
 	public boolean isLocked;
 	public int linkedKey;
 	
-	StaticEntity(String name, Point pos, Map map){
+	NonCreatureEntity(String name, Point pos, Map map){
 		super(name, pos, map);
 		
 		// TODO (X) Delete

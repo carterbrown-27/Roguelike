@@ -2,20 +2,29 @@ import java.awt.image.BufferedImage;
 
 // TODO (X) Overhaul: Rebuild from scratch
 public class Tile {
-	public enum Tile_Type{
+	public enum TerrainType {
+		FLOOR,
+		WALL,
+		WATER,
+		LAVA,
+		DIFFICULT,
+		STAIRS
+	}
+
+	public enum TileType{
 		FLOOR					(0),
 		WALL					(1),
 		STAIRS_UP				(2),
 		STAIRS_DOWN				(3),
 		TEST					(4), // temp
-		DOOR					(5), // t
+		DOOR					(5), // temp
 		WATER					(6),		
-		DOOR_OPEN				(7); // t
+		DOOR_OPEN				(7); // temp
 
 		boolean isOpen = true;
 		boolean isTransparent = true;
 
-		Tile_Type(int t){
+		TileType(int t){
 			if(t==1){
 				isOpen = false;
 				isTransparent = false;
@@ -36,16 +45,11 @@ public class Tile {
 	}
 
 	public enum Fg_Type{
-		NONE			(0),
-		BRIDGE			(1);
+		NONE	,
+		BRIDGE	;
 		
 		boolean isOpen = true;
 		boolean isTransparent = true;
-
-		Fg_Type(int t){
-			
-		}
-
 		public boolean isOpen(){
 			return isOpen;
 		}
@@ -55,7 +59,7 @@ public class Tile {
 		}
 	}
 
-	public Tile_Type type;
+	public TileType type;
 	public Fg_Type fgtype;
 	public int fgval = 0;
 	
@@ -75,7 +79,7 @@ public class Tile {
 	public int fgAdj;
 
 	Tile(int t, MapType mt, int adj){
-		type = Tile_Type.values()[t];
+		type = TileType.values()[t];
 		value = t;
 		maptype = mt;
 		this.adj = adj;
@@ -84,7 +88,7 @@ public class Tile {
 	}
 
 	public void setValue(int t){
-		type = Tile_Type.values()[t];
+		type = TileType.values()[t];
 		value = t;
 		image = maptype.pickImage(value, adj);
 		icon = maptype.tile_characters[t];

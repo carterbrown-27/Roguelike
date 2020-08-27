@@ -896,13 +896,13 @@ public class Map {
 	//		}
 	//	}
 
-	public ArrayList<StaticEntity> getInteractablesInRange(Point p) {
+	public ArrayList<NonCreatureEntity> getInteractablesInRange(Point p) {
 		// TODO: interact-able checks handled by "Interactable" interface
 		// TODO: switch to Set<Interactable>
-		ArrayList<StaticEntity> interactablesInRange = new ArrayList<>(); 
+		ArrayList<NonCreatureEntity> interactablesInRange = new ArrayList<>();
 		for(Entity n: entities) {
-			if(n instanceof StaticEntity) {
-				StaticEntity se = (StaticEntity) n;
+			if(n instanceof NonCreatureEntity) {
+				NonCreatureEntity se = (NonCreatureEntity) n;
 				if(se.isAdjacentTo(p)){
 					interactablesInRange.add(se);
 				}

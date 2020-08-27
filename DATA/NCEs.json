@@ -1,0 +1,52 @@
+{
+  "door" : {
+    "name" : "Door",
+    "interactable" : true,
+    "toggles" : true,
+
+    "sprites" : {
+      "default" : {
+        "x" : 0,
+        "y" : 0
+      },
+      "activated" : {
+        "x" : 2,
+        "y" : 0
+      }
+    }
+  },
+
+  "silver chest" : {
+    "name" : "Silver Chest",
+    "interactable" : true,
+    "toggles" : true,
+    "hasInventory" : true,
+
+    "sprites" : {
+      "default" : {
+        "x" : 5,
+        "y" : 0
+      },
+      "activated": {
+        "x" : 6,
+        "y" : 0
+      }
+    },
+
+    "inventory" : {
+      "tier" : 2,
+      "size" : 2
+    }
+  },
+
+  "statue" : {
+    "name" : "Door",
+
+    "sprites" : {
+      "default" : {
+        "x" : 7,
+        "y" : 9
+      }
+    }
+  }
+}

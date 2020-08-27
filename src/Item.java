@@ -299,58 +299,11 @@ public abstract class Item extends GameObject {
 	public void setUnknown(boolean b){
 		unknown = b;
 	}
-	
-	// TODO (I) move, refactor
-//	public void quaff(Entity e, char c){
-//		boolean discover = true;
-//		if(discover && !Main.player.identifiedItems.containsKey(type)){
-//			identify();
-//		}
-//		e.inv.removeItem(c);
-//		Main.refreshText();
-//		Main.takeTurn();
-//	}
 
-	// TODO (I) move, refactor
-//	public void read(Entity e, char c){                                
-//		if(type.supertype.equals(Items.Item_Supertype.SCROLL)){
-//			boolean discover = true;
-//			if(type.equals(Items.SCR_ID)){
-//				e.inv.removeItem(c);
-//				if(e.inv.containsUnidentified()){
-//					Main.appendText("Identify what?");
-//					e.inv.printContents(false);
-//					Main.pickItem = true;
-//					Main.identify = true;
-//				}else{
-//					Main.appendText("There is nothing in your pack to identify!");
-//				}
-//			}else if(type.equals(Items.SCR_TELE)){
-//				Point p = e.map.randomEmptySpace();
-//				e.x = p.x;
-//				e.y = p.y;
-//
-//				if(!e.creature.hasAI){
 //					Main.appendText("You spin quickly and then abruptly stop.\nYour surroundings look different.");
 //				}else{
 //					Main.appendText("The "+e.creature.NAME+" vanishes with a loud thunk.");
-//				}
-//				e.inv.removeItem(c);
-//			}
-//
-//			if(discover && !Main.player.identifiedItems.containsKey(type)){
-//				identify();
-//			}
-//
-//			Main.refreshText();
-//			Main.takeTurn();
-//		}
-//	}
 
-//	public void eat(Entity e, char c){
-//		if(type.supertype!=Items.Item_Supertype.FOOD) return;
-//
-//		String descriptor;
 //		if(type.foodValue >= 10){
 //			descriptor = "great!";
 //		}else if(type.foodValue >= 5){
@@ -360,13 +313,4 @@ public abstract class Item extends GameObject {
 //		}else{
 //			descriptor = "fine.";
 //		}
-//
-//		e.SAT += type.foodValue; // xTODO: cap
-//		e.inv.removeItem(c);
-//
-//		Main.appendText("That "+type.name+" tasted "+descriptor);
-//		Main.refreshText();
-//		Main.takeTurn();
-//
-//	}
 }

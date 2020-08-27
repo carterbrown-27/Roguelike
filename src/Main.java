@@ -67,7 +67,8 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		state = GameState.REGULAR;
+		setGameState(GameState.REGULAR);
+		setInvSelAction(InventorySelectAction.NONE);
 
 		rng = new Random();
 
@@ -87,7 +88,7 @@ public class Main {
 		view.getFrame().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e){
-				logger.fine("Key Pressed "+KeyEvent.getKeyText(e.getKeyCode()));
+				logger.fine("Key Pressed " + KeyEvent.getKeyText(e.getKeyCode()));
 
 				if(!isRunning()){
 					logger.warning("Game not running.");
@@ -138,7 +139,7 @@ public class Main {
 						if(state == GameState.TARGETING){
 							setRegularGameState();
 						} else {
-							state = GameState.TARGETING;
+							setGameState(GameState.TARGETING);
 
 							// TODO (T) TEMP
 							view.clearText();
@@ -162,19 +163,19 @@ public class Main {
 						player.getInv().printContents(false);
 
 						if(!player.getInv().isEmpty()) {
-							state = GameState.INVENTORY;
+							setGameState(GameState.INVENTORY);
 						}
 					
 					} else if(e.getKeyCode() == KeyEvent.VK_O){
 						// O: Open Chest
 						// TODO: change to general Interactable
-						ArrayList<StaticEntity> interactablesInRange = currentMap.getInteractablesInRange(player.getPos());
+						ArrayList<NonCreatureEntity> interactablesInRange = currentMap.getInteractablesInRange(player.getPos());
 						
 						if(interactablesInRange.size() == 1) {
 							interactablesInRange.get(0).interact(player, Interaction.OPEN);
 							takeTurn();
 						}else if(interactablesInRange.size() > 1){
-							state = GameState.INTERACT_SELECT;
+							setGameState(GameState.INTERACT_SELECT);
 							interaction = Interaction.OPEN;
 							view.appendText("Enter the direction of what you want to open.");
 						}else {
@@ -317,11 +318,12 @@ public class Main {
 	}
 
 	public static void setGameState(GameState s) {
+		if(state != s) logger.info(String.format("Game State Changed from %s to %s", state, s));
 		state = s;
 	}
 
 	public static void setRegularGameState(){
-		state = GameState.REGULAR;
+		setGameState(GameState.REGULAR);
 		curTargetLayer = null;
 		currentInventory = null;
 		invSelAction = InventorySelectAction.NONE;
@@ -375,8 +377,8 @@ public class Main {
 		Direction dir = directionValue(e);
 		if(dir != null) {
 			// TODO (R) Review: could map to directions for slightly nicer code
-			ArrayList<StaticEntity> inRange = currentMap.getInteractablesInRange(player.getPos());
-			for(StaticEntity se: inRange) {
+			ArrayList<NonCreatureEntity> inRange = currentMap.getInteractablesInRange(player.getPos());
+			for(NonCreatureEntity se: inRange) {
 				if(se.getPos().equals(Direction.translate(player.getPos(), dir))) {
 					se.interact(player, interaction);
 					takeTurn();
@@ -470,8 +472,10 @@ public class Main {
 			}
 		}
 
-		setRegularGameState();
 		view.refreshStats();
+		if(invSelAction == InventorySelectAction.NONE){
+			Main.takeTurn();
+		}
 	}
 
 	public static void handleInventory(char k) {
@@ -496,18 +500,19 @@ public class Main {
 		}
 
 		if(selected) {
-			state = GameState.ITEM_SCREEN;
+			setGameState(GameState.ITEM_SCREEN);
 		} else {
 			setRegularGameState();
 		}
 	}
 
 	public static void handleInventorySelect(char k) {
-		logger.fine("Inventory Selection Handler called.");
+		logger.info("Inventory Selection Handler called.");
 		
 		boolean flag = false;
 		if (player.getInv().contains(k)) {
 			Item i = player.getInv().getItem(k);
+			System.out.println("id!");
 			if(invSelAction == InventorySelectAction.IDENTIFY  && !player.isItemIdentified(i)){
 				flag = true;
 				player.identify(i);
@@ -601,8 +606,8 @@ public class Main {
 		// TODO (F) Fix Chests
 		if(tileInv.isEmpty()){
 			for(Entity n: currentMap.entities){
-				if(n instanceof StaticEntity) {
-					StaticEntity se = (StaticEntity) n;
+				if(n instanceof NonCreatureEntity) {
+					NonCreatureEntity se = (NonCreatureEntity) n;
 					if(se.getPos().equals(player.getPos())){
 						if(!se.isLocked){
 							selectedInv = se.getInv();
@@ -628,7 +633,7 @@ public class Main {
 		if(selectedInv.isOneItem()){
 			player.pickUp(selectedInv.getFirstItem(), selectedInv);
 		}else if(!selectedInv.isEmpty()){
-			state = GameState.PICKUP;
+			setGameState(GameState.PICKUP);
 			currentInventory = selectedInv;
 			view.appendText("Pick up what?");
 		}
@@ -636,29 +641,29 @@ public class Main {
 
 	public static void handleUseStaircase() {
 		if(currentMap.valueAt(player.getPos()) == 3){
-			if(floors.size()<= getFloorNumber() +1){
+			if(floors.size()<= floorNumber +1){
 				newFloor();
 			}else{
-				changeFloor(getFloorNumber() + 1,true,false);
+				changeFloor(floorNumber + 1,true,false);
 			}
-		}else if(currentMap.valueAt(player.getPos()) == 2 && getFloorNumber() > 0){
+		}else if(currentMap.valueAt(player.getPos()) == 2 && floorNumber > 0){
 			// floors.set(currentFloor, (new Map(floors.get(currentFloor))));
-			changeFloor(getFloorNumber() - 1,false,false);
+			changeFloor(floorNumber - 1,false,false);
 		}
-		view.appendText("Current Floor: "+ getFloorNumber());
+		view.appendText("Current Floor: "+ floorNumber);
 	}
 
 	public static void startGame(){
 		floors.clear();
 		floorNumber = 0;
 
-		floors.put(getFloorNumber(),  new Map(MAP_H, MAP_W, MAP_FILL));
-		currentMap = floors.get(getFloorNumber());
+		floors.put(floorNumber,  new Map(MAP_H, MAP_W, MAP_FILL));
+		currentMap = floors.get(floorNumber);
 		ropePoint = currentMap.getPosition(2);
 		player = new Player(ropePoint.x,ropePoint.y, getCurrentMap());
 		view.getFrame().setIconImage(player.getSprite().getScaledInstance(96,96,Image.SCALE_SMOOTH));
 
-		changeFloor(getFloorNumber(), true, true);
+		changeFloor(floorNumber, true, true);
 
 		// TODO (T) TEMP player default inventory
 		Weapon dagger = new Weapon("dagger");
@@ -680,14 +685,14 @@ public class Main {
 		blackOverlay();
 		// floors.replace(currentFloor, new Map(map_h,map_w,map_fill,rng));
 		logger.fine("Now " + floors.size() + " floors.");
-		floors.put(getFloorNumber() +1, new Map(MAP_H, MAP_W, MAP_FILL));
-		changeFloor(getFloorNumber() +1,true,true);
+		floors.put(floorNumber +1, new Map(MAP_H, MAP_W, MAP_FILL));
+		changeFloor(floorNumber +1,true,true);
 	}
 
 	public static void changeFloor(int floor, boolean down, boolean isNew){
 		long time = System.currentTimeMillis();
 		floorNumber = floor;
-		currentMap = floors.get(getFloorNumber());
+		currentMap = floors.get(floorNumber);
 		Point startPoint= currentMap.getPosition(2);
 
 		// TODO: update for multiple stairs
@@ -709,14 +714,14 @@ public class Main {
 				// logger.info("point picked");
 				// TODO: tierCalculation.
 				logger.fine("Adding Entity...");
-				new Creature(getFloorNumber(),t, getCurrentMap());
+				new Creature(rng.nextInt(2)+1, t, getCurrentMap()); // TEMP
 			}
 
 			// TODO (T) TEMP populate level with items
 			int items = rng.nextInt(6)+14; // 6+8, 6+28
 			for(int i = 0; i < items; i++){
 				Point t = currentMap.randomOpenSpace();
-				Item item = Item.randomItem(getFloorNumber());
+				Item item = Item.randomItem(floorNumber);
 				logger.fine("Adding item: "+ item.getDisplayName());
 				currentMap.tileMap[t.y][t.x].inventory.addItem(item);
 			}
@@ -726,15 +731,15 @@ public class Main {
 			for(int i = 0; i < chests; i++){
 				Point t = currentMap.randomEmptySpace();
 				logger.fine("adding Chest/Key pair");
-				currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key", getFloorNumber()));
+				currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key", floorNumber));
 				t = currentMap.randomEmptySpace();
 
-				currentMap.entities.add(new StaticEntity("chest", t, getCurrentMap()));
+				currentMap.entities.add(new NonCreatureEntity("chest", t, getCurrentMap()));
 			}
 		}
 
 		try{
-			File output = new File(String.format("renders/%d_%d-t%d.png", getSeed(), getFloorNumber(), System.currentTimeMillis()));
+			File output = new File(String.format("renders/%d_%d-t%d.png", getSeed(), floorNumber, System.currentTimeMillis()));
 			ImageIO.write(currentMap.renderMap(), "png", output);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -793,11 +798,12 @@ public class Main {
 				// TODO (T) TEMP
 				if(c.getHP() <= 0) {
 					dead.add(c);
+				} else if(c.isAwake()) {
+					creatureQueue.add(c);
 				}
-				else if(c.isAwake()) creatureQueue.add(c);
 			}
 		}
-		
+
 		// TODO (T) TEMP
 		for(Creature c: creatureQueue) {
 			c.takeTurn();
@@ -811,13 +817,14 @@ public class Main {
 		Point pos = player.getPos();
 		lastPos = pos;
 		// if(player.HP != playerHP) appendText("Player HP = " + ActionLibrary.round(player.HP,2));
-		if(player.getHP() < 0.05){
+		if(player.getHP() <= 0){
 			view.appendText("You die...");
 			running = false;
 		}
 
 		curMapLayer = renderMapLayer(player.getX(), player.getY());
 
+		setRegularGameState();
 		renderAndUpdate();
 	}
 	

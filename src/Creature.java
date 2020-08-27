@@ -1,5 +1,6 @@
 import java.awt.Point;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.JSONObject;
@@ -75,8 +76,8 @@ public class Creature extends Entity {
 		ai = new AI(this);
 	}
 	
-	Creature(int tier, Point p, Map map){
-		this(pickRandomType(tier),p,map);
+	Creature(int level, Point p, Map map) {
+		this(pickRandomType(level),p,map);
 	}
 	// methods
 	
@@ -100,14 +101,12 @@ public class Creature extends Entity {
 				}else if(s.equals(Status.POISONED)){
 					changeHP(-1);
 				}
-				// TODO (R) Review: add static regen
 			}
 			getStatuses().replace(s, getStatuses().get(s)-1);
 			if(getStatuses().get(s) <= 0){
 				removeStatus(s);
 			}
 		}
-		endStep();
 	}
 	
 	public void endStep() {
@@ -136,7 +135,7 @@ public class Creature extends Entity {
 	
 	// TODO (F) Fix
 	public turnEnding takeTurn(){
-		//waiting = false;
+		// waiting = false;
 		if(ai == null){
 			return turnEnding.NOTACREATURE; // not a creature
 		}
@@ -144,10 +143,11 @@ public class Creature extends Entity {
 			upkeep();
 			
 			// TODO (R) Refactor
-			if (getHP()<0.05) {
+			if (getHP() <= 0) {
 				Main.getView().appendText("You kill the " + super.getName() + ".");
 				return turnEnding.DEAD; // dead
 			}
+			endStep();
 			if(!ai.takeTurn()){
 				// waiting = true;
 				return turnEnding.WAITING;
@@ -193,9 +193,18 @@ public class Creature extends Entity {
 		}
 	}
 	
-	public static String pickRandomType(int tier) {
-		// TODO (A) Implement
-		return Main.getRng().nextBoolean() ? "rat" : "bat";
+	public static String pickRandomType(int level) {
+		if(masterJSON == null) initMasterJSON();
+		// TODO (A) Implement Properly
+		ArrayList<String> list = new ArrayList<>();
+		for(String s: masterJSON.keySet()){
+			if(level == masterJSON.getJSONObject(s).getInt("level")){
+				list.add(s);
+			}
+		}
+
+		// will error if no creatures exist at level
+		return list.get(Main.getRng().nextInt(list.size()));
 	}
 
 	// TODO: move tile-type logic to Tile Class

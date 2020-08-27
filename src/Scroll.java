@@ -59,25 +59,27 @@ public class Scroll extends Item implements Consumable {
 		// TODO (A) Implement
 		c.getInv().removeOne(this.getInventoryID());
 
+		if(c instanceof Player) {
+			((Player) c).identify(this);
+		}
+
 		// TODO (T) TEMP
 		if(effects.containsKey("IDENTIFY")) {
-			if(c.getInv().containsUnidentified()){
+			if (c.getInv().containsUnidentified()) {
 				Main.getView().appendText("Identify what?");
 				c.getInv().printContents(false);
 				Main.setGameState(Main.GameState.INVENTORY_SELECT);
 				Main.setInvSelAction(Main.InventorySelectAction.IDENTIFY);
-			}else{
+				// System.out.println("here1");
+			} else {
 				Main.getView().appendText("There is nothing in your pack to identify!");
 			}
-		}else if(effects.containsKey("TELEPORT")) {
-			c.setPos(c.map.randomEmptySpace());
 		}
 
-		if(c instanceof Player) {
-			((Player) c).identify(this);
+		if(effects.containsKey("TELEPORT")) {
+			c.setPos(c.map.randomEmptySpace());
 		}
 		// "noise", "dizzy" etc
-		Main.takeTurn();
 	}
 
 	@Override

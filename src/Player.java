@@ -199,7 +199,7 @@ public class Player extends Creature {
 	
 	public void identify(Item i) {
 		identifiedItems.add(i.getTypeName());
-		Main.getView().appendText("It was a "+i.getTypeName()+".");
+		Main.getView().appendText(String.format("It was a %s.", i.getTypeName()));
 	}
 	
 	
