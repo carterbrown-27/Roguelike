@@ -70,8 +70,8 @@ public class Entity extends GameObject {
 		// TODO (R) Review, switch to door Interactable when implemented
 		if(map.getMap()[getY()][getX()] == 5){
 			map.getMap()[getY()][getX()] = 7;
-			map.tileMap[getY()][getX()].setValue(7);
-			
+			map.getTile(pos).setValue(7);
+
 			// TODO (R) Refactor, add to "sound" system when added. (currently global message)
 			Main.getView().appendText("The door creaks open.");
 		}

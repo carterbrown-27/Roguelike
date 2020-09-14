@@ -1,7 +1,10 @@
 import org.json.*;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public abstract class Item extends GameObject {
 	private static JSONObject masterJSON;
@@ -161,10 +164,9 @@ public abstract class Item extends GameObject {
 		this.amount += amt;
 		if(this.amount < 0) {
 			this.amount = 0;
+
 		}
 	}
-	
-
 	
 	public BufferedImage getSprite() {
 		return super.getSprite();
@@ -186,7 +188,7 @@ public abstract class Item extends GameObject {
 		return stackable;
 	}
 
-	public static enum ItemType {
+	public enum ItemType {
 		WEAPON (0),
 		ARMOUR (1),
 		POTION (2),

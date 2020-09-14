@@ -163,12 +163,12 @@ public enum MapType {
 			
 			
 			BufferedImage[] tempDir = new BufferedImage[16];	
-			tempDir[15-1] = vertB;
-			tempDir[15-4] = vertB;
-			tempDir[15-2] = horiB;
-			tempDir[15-8] = horiB;
-			tempDir[15-5] = vertB;
-			tempDir[15-10] = horiB;
+			tempDir[1] = vertB;
+			tempDir[4] = vertB;
+			tempDir[2] = horiB;
+			tempDir[8] = horiB;
+			tempDir[5] = vertB; // up and down
+			tempDir[10] = horiB;
 			directionals.put(100+1, tempDir);
  		}
 	}
@@ -200,7 +200,7 @@ public enum MapType {
 					return foregroundImages[type];
 				}
 			}else{
-				return directionals.get(real)[15-adj];
+				return directionals.get(real)[adj];
 			}
 		}
 		return foregroundImages[type];

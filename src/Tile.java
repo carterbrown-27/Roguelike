@@ -45,8 +45,8 @@ public class Tile {
 	}
 
 	public enum Fg_Type{
-		NONE	,
-		BRIDGE	;
+		NONE,
+		BRIDGE;
 		
 		boolean isOpen = true;
 		boolean isTransparent = true;
@@ -60,8 +60,7 @@ public class Tile {
 	}
 
 	public TileType type;
-	public Fg_Type fgtype;
-	public int fgval = 0;
+	public Fg_Type fgtype = Fg_Type.NONE;
 	
 	public BufferedImage image;
 	public int value;
@@ -73,8 +72,7 @@ public class Tile {
 	public MapType maptype;
 	public int adj;
 	public Inventory inventory = new Inventory();
-	
-	
+
 	public String name;
 	public int fgAdj;
 
@@ -94,10 +92,13 @@ public class Tile {
 		icon = maptype.tile_characters[t];
 	}
 
-	public void setForeground(int t, int fgAdj){
+	public void setForeground(Fg_Type f, int fgAdj){
 		this.fgAdj = fgAdj;
-		fgval = t;
-		fgtype = Fg_Type.values()[t];
+		fgtype = f;
+	}
+
+	public void setForeground(Fg_Type f){
+		fgtype = f;
 	}
 
 	public void addItem(Item i){
@@ -109,8 +110,8 @@ public class Tile {
 	}
 
 	public BufferedImage getFgImage(){
-		if(fgval == 0) return null;
-		return maptype.pickFGImage(fgval,fgAdj,adj);
+		if(fgtype == Fg_Type.NONE) return null;
+		return maptype.pickFGImage(fgtype.ordinal(), fgAdj, adj);
 	}
 	
 	public void setImage(BufferedImage _image){

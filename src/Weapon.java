@@ -11,7 +11,7 @@ public final class Weapon extends Item implements Equippable {
 		super.setAmount(1);
 		
 		// TODO (A) introduce logic to see if it is weilded/not.
-		super.addPrompt('u', "(u)nwield");
+		super.addPrompt('u', "(u)nequip");
 		super.addPrompt('w', "(w)ield");
 		// TODO: weapon init here:
 		damage = super.getItemData().getDouble("damage");

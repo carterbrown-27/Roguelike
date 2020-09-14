@@ -455,7 +455,7 @@ public class Room {
 						map.map[y + river_h + t][x + i] = 6;
 					}else{
 						map.map[y + river_h + t][x + i] = 6;
-						map.foreground[y + river_h + t][x + i] = 1;
+						map.getTile(new Point(x + i, y + river_h + t)).setForeground(Tile.Fg_Type.BRIDGE, 0);
 					}
 				}
 			}
@@ -486,7 +486,7 @@ public class Room {
 						map.map[y + i][x + river_w + t] = 6;
 					}else{
 						map.map[y + i][x + river_w + t] = 6;
-						map.foreground[y + i][x + river_w + t] = 1;
+						map.getTile(new Point(x + river_w + t, y + i)).setForeground(Tile.Fg_Type.BRIDGE);
 					}
 				}
 			}
@@ -494,12 +494,12 @@ public class Room {
 	}
 
 	public boolean surroundCheck(){
-		for(int _x = x; _x <= x+tw-1; _x++){
-			for(int _y = y; _y <= y+th-1; _y++){
-				if(_x == door.point.x && _y == door.point.y) continue;
-				if(!map.isOnMap(_x,_y)){
+		for(int i = x; i <= x+tw-1; i++){
+			for(int j = y; j <= y+th-1; j++){
+				if(i == door.point.x && j == door.point.y) continue;
+				if(!map.isOnMap(i,j)){
 					return false;
-				}else if(map.isOpen(_x,_y)){
+				}else if(map.isOpen(i,j)){
 					return false;
 				}
 			}

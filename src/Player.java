@@ -28,7 +28,7 @@ public class Player extends Creature {
 	}
 	
 	// TODO: consider moving some of this data
-	public enum Ability{
+	public enum Ability {
 		BASIC (0),
 		SLASH (1),
 		LUNGE (2);

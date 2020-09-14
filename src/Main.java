@@ -55,6 +55,10 @@ public class Main {
 	private static BufferedImage targetImg;
 	private static BufferedImage targetDot;
 
+	public static BufferedImage curMapLayer;
+	public static BufferedImage curFXLayer;
+	public static BufferedImage curTargetLayer;
+
 	public static void main(String[] args){
 
 		running = true;
@@ -139,15 +143,7 @@ public class Main {
 						if(state == GameState.TARGETING){
 							setRegularGameState();
 						} else {
-							setGameState(GameState.TARGETING);
-
-							// TODO (T) TEMP
-							view.clearText();
-							view.appendText("Throw where?");
-
-							targetPos = player.getPos();
-							// solution to rel equations when targetPos = player.getPos() is = to player.viewDis
-							updateTarget(player.viewDis, player.viewDis);
+							setTargetingGameState();
 						}
 
 					} else if(e.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -255,6 +251,32 @@ public class Main {
 		renderAndUpdate();
 	}
 
+	public enum GameState {
+		REGULAR,
+		INVENTORY,
+		PICKUP,
+		ITEM_SCREEN,
+		TARGETING,
+		INVENTORY_SELECT,
+		INTERACT_SELECT
+	}
+
+	public enum InventorySelectAction {
+		NONE,
+		IDENTIFY,
+		ENCHANT,
+		ETC
+	}
+
+	// TODO (R) Review: move?
+	public enum Interaction {
+		NONE,
+		OPEN,
+		CLOSE,
+		TALK,
+		ETC
+	}
+
 	public static Random getRng() {
 		return rng;
 	}
@@ -306,17 +328,6 @@ public class Main {
 	public static void setCurrentInventory(Inventory inv){
 		currentInventory = inv;
 	}
-
-	public static enum GameState {
-		REGULAR,
-		INVENTORY,
-		PICKUP,
-		ITEM_SCREEN,
-		TARGETING,
-		INVENTORY_SELECT,
-		INTERACT_SELECT
-	}
-
 	public static void setGameState(GameState s) {
 		if(state != s) logger.info(String.format("Game State Changed from %s to %s", state, s));
 		state = s;
@@ -330,24 +341,18 @@ public class Main {
 		renderAndUpdate();
 	}
 
-	public static enum InventorySelectAction {
-		NONE,
-		IDENTIFY,
-		ENCHANT,
-		ETC
+	public static void setTargetingGameState(){
+		setGameState(GameState.TARGETING);
+		view.clearText();
+		view.appendText("Throw where?");
+
+		targetPos = player.getPos();
+		// solution to rel equations when targetPos = player.getPos() is = to player.viewDis
+		updateTarget(player.viewDis, player.viewDis);
 	}
 	
 	public static void setInvSelAction(InventorySelectAction a) {
 		invSelAction = a;
-	}
-	
-	// TODO (R) Review: move?
-	public static enum Interaction {
-		NONE,
-		OPEN,
-		CLOSE,
-		TALK,
-		ETC
 	}
 	
 	public static void setInteraction(Interaction i) {
@@ -362,7 +367,7 @@ public class Main {
 		}
 
 		if(currentInventory == null){
-			currentInventory = currentMap.tileMap[player.getY()][player.getX()].inventory;
+			currentInventory = currentMap.getTile(player.getPos()).inventory;
 		}
 
 		if (currentInventory.contains(k)) {
@@ -418,30 +423,30 @@ public class Main {
 
 			switch(k) {
 
-			case 'w' : {
-				view.appendText("You wield your "+i.getDisplayName());
-				eq.equip(player);
-				break;
-			}
+				// TODO (R): Get rid of duplicate logic
+				case 'w' : {
+					view.appendText("You wield your "+i.getDisplayName());
+					eq.equip(player);
+					break;
+				}
 
-			case 'p' : {
-				view.appendText("You put on your "+i.getDisplayName());
-				eq.equip(player);
-				break;
-			}
+				case 'p' : {
+					view.appendText("You put on your "+i.getDisplayName());
+					eq.equip(player);
+					break;
+				}
 
-			case 'u' : {
-				view.appendText("You unwield your "+i.getDisplayName());
-				eq.unequip(player);
-				break;
-			}
+				case 'v' : {
+					view.appendText("You quiver your "+i.getDisplayName());
+					eq.equip(player);
+					break;
+				}
 
-			case 't' : {
-				view.appendText("You take off your "+i.getDisplayName());
-				eq.unequip(player);
-				break;
-			}
-
+				case 'u' : {
+					view.appendText("You unequip your "+i.getDisplayName());
+					eq.unequip(player);
+					break;
+				}
 			}
 			// TODO (A) Implement... Something?
 		}
@@ -467,6 +472,11 @@ public class Main {
 			case 'e' : {
 				view.appendText("You eat the "+i.getDisplayName());
 				cnsm.use(player);
+				break;
+			}
+
+			case 't' : {
+				setTargetingGameState();
 				break;
 			}
 			}
@@ -549,28 +559,29 @@ public class Main {
 		}
 	}
 
+	// TODO (A) Add throwing of non-quivered objects
 	public static void handleTargetConfirm() {
+		if(player.getPos() == targetPos) return;
 		List<Point> line = Bresenham.findLine(currentMap.getIdentityMap(), player.getPos(), targetPos);
 
 		Projectile projectile = new Projectile(player.quivered, player.getPos(), currentMap);
-		boolean valid = true;
-		for(int i = 1; i < line.size()-1; i++){
+		int i;
+		for(i = 1; i < line.size()-1; i++){
 			Point p = line.get(i);
+			// TODO (T) TEMP: move to tile logic.
 			if(!projectile.canOccupySpace(p.x, p.y)){
-				valid = false;
+				i--;
 				break;
 			}
 		}
-		
-		// TODO: (A) Implement
-		if(valid){
-			// valid target
-			view.appendText("Valid target.");
-		}else{
-			// invalid
-			view.appendText("Invalid target.");
-		}
 
+		Point to = line.get(i);
+		// TODO (T) Add a better stack-splitting system
+		currentMap.getTile(to).inventory.addItem(new Missile(player.quivered.getTypeName(), 1));
+		player.getInv().removeOne(player.quivered.getInventoryID());
+
+		curMapLayer = renderMapLayer(player.getX(), player.getY());
+		renderAndUpdate();
 		setRegularGameState();
 	}
 
@@ -599,7 +610,7 @@ public class Main {
 	}
 
 	public static void handleGet() {
-		Inventory tileInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
+		Inventory tileInv = currentMap.getTile(player.getPos()).inventory;
 		Inventory selectedInv = null;
 
 
@@ -723,7 +734,7 @@ public class Main {
 				Point t = currentMap.randomOpenSpace();
 				Item item = Item.randomItem(floorNumber);
 				logger.fine("Adding item: "+ item.getDisplayName());
-				currentMap.tileMap[t.y][t.x].inventory.addItem(item);
+				currentMap.getTile(t).inventory.addItem(item);
 			}
 
 			// TODO (T) TEMP populate level with chests/keys
@@ -731,7 +742,7 @@ public class Main {
 			for(int i = 0; i < chests; i++){
 				Point t = currentMap.randomEmptySpace();
 				logger.fine("adding Chest/Key pair");
-				currentMap.tileMap[t.y][t.x].inventory.addItem(new Key("Silver Key", floorNumber));
+				currentMap.getTile(t).inventory.addItem(new Key("Silver Key", floorNumber));
 				t = currentMap.randomEmptySpace();
 
 				currentMap.entities.add(new NonCreatureEntity("chest", t, getCurrentMap()));
@@ -778,7 +789,7 @@ public class Main {
 
 	// TODO (X) Overhaul
 	public static void takeTurn(){
-		Inventory floorInv = currentMap.tileMap[player.getY()][player.getX()].inventory;
+		Inventory floorInv = currentMap.getTile(player.getPos()).inventory;
 		if(!floorInv.isEmpty() && (lastPos!=null && !player.getPos().equals(lastPos))){
 			floorInv.printContents(true);
 		}
@@ -828,10 +839,6 @@ public class Main {
 		renderAndUpdate();
 	}
 	
-	public static BufferedImage curMapLayer;
-	public static BufferedImage curFXLayer;
-	public static BufferedImage curTargetLayer;
-	
 	public static void renderAndUpdate(){
 		// TODO (F) Standardize render sizes
 		// TEMP
@@ -853,6 +860,7 @@ public class Main {
 	public static int getImageTileDimension(){
 		return (player.viewDis * 2 + 1);
 	}
+
 	public static int getImageDimension(){
 		return getImageTileDimension() * TILE_SIZE;
 	}

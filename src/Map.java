@@ -11,22 +11,21 @@ public class Map {
 
 	public int height = 52; // 52
 	public int width = 90; // 90
-	public final int MIN_DOORS = 32; // 32
+	public final int MIN_DOORS = 25; // 32
 
 	public int randFillPercent = 46; // 46 [+4 / -3]
 	public boolean randSeed = true;
-	
+
+	private Tile[][] tileMap;
+
 	// TODO: compress this all into tileMap
 	public int[][] map;
-	public int[][] foreground;
-	public Tile[][] tileMap;
-	public boolean[][] lightMap;
+	private boolean[][] lightMap;
 	private int[][] openMap;
 	private Point[][] identityMap;
 
 	public static int smooths = 4;
 	public static final float percentBrightness = .60f;
-	// public static Entity[][] entity_map = new Entity[height][width];
 
 	// TODO (I) Populate w/ creatures.
 	public HashSet<Entity> entities;
@@ -34,11 +33,13 @@ public class Map {
 	public Player player;
 
 	private FOV fov = new FOV(); // TODO (R) Decide if Class FOV should be staticized
-	private MapType mapType = MapType.UNDERCITY;
 
+	private MapType mapType = MapType.UNDERCITY;
 	public final boolean undercity = true;
 
 	public boolean debugFlag = false;
+
+	/** CONSTRUCTORS **/
 
 	Map(int _height, int _width, int _randFillPercent, int _smooths){
 		height = _height;
@@ -47,7 +48,6 @@ public class Map {
 		smooths = _smooths;
 
 		map = new int[height][width];
-		foreground = new int[height][width];
 		entities = new HashSet<>();
 
 		// TODO (R) Review
@@ -78,9 +78,26 @@ public class Map {
 		if(debugFlag) logger.warning("debug flag raised");
 	}
 	
-	Map(int _height, int _width, int _randFillPercent){
-		this(_height,_width,_randFillPercent,smooths);
+	Map(int _height, int _width, int _randFillPercent) {
+		this(_height, _width, _randFillPercent, smooths);
 	}
+
+	/** SUBCLASSES **/
+	public static class PointDir {
+		public Point point;
+		public char dir;
+
+		public Point getPos(){
+			return point;
+		}
+
+		PointDir(Point p, char d){
+			point = p;
+			dir = d;
+		}
+	}
+
+	/** METHODS **/
 	
 	public void cutOut(Room r){
 		for(int cx = r.x+1; cx < r.x+r.tw-1; cx++){
@@ -92,10 +109,10 @@ public class Map {
 
 	public void reset(Room r){
 		r.doorPoints.clear();
-		for(int cx = r.x+1; cx < r.x+r.tw-1; cx++){
-			for(int cy = r.y+1; cy < r.y+r.th-1; cy++){
+		for(int cx = r.x + 1; cx < r.x + r.tw - 1; cx++){
+			for(int cy = r.y + 1; cy < r.y + r.th - 1; cy++){
 				map[cy][cx] = 1;
-				foreground[cy][cx] = 0;
+				tileMap[cy][cx].setForeground(Tile.Fg_Type.NONE);
 			}
 		}
 	}
@@ -150,13 +167,11 @@ public class Map {
 					}
 				}
 
-				foreground[r.y+p.y][r.x+p.x] = t;
+				tileMap[r.y+p.y][r.x+p.x].setForeground(Tile.Fg_Type.values()[t]);
 				// TODO: directions
 			}
 		}
 	}
-
-	// methods
 
 	public void printPrecons() {
 		for(char[][] r: getMapType().precons.values()){
@@ -217,6 +232,10 @@ public class Map {
 		return isEmpty(new Point(x,y));
 	}
 
+	public Tile getTile(Point p){
+		return tileMap[p.y][p.x];
+	}
+
 	public void generateCaves(){
 		for(int x=0; x < width; x++){
 			for(int y=0; y < height; y++){
@@ -246,7 +265,8 @@ public class Map {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					map[y][x] = 1;
-					foreground[y][x] = 0;
+					tileMap[y][x] = new Tile(1, mapType, 0);
+					tileMap[y][x].setForeground(Tile.Fg_Type.NONE);
 				}
 			}
 			workingDoors = new ArrayList<PointDir>();
@@ -500,33 +520,13 @@ public class Map {
 		return false;
 	}
 
-	/** Surrounds the map with a 1-tile wall, so that non-wall tiles cannot occupy the outer edges of the map.
-	 */
+	// Surrounds the map with a 1-tile wall, so that non-wall tiles cannot occupy the outer edges of the map.
 	public void encaseMap() {
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
 				if(x==0 || y==0 || x==width-1 || y==height-1) map[y][x] = 1;
 			}
 		}
-	}
-
-	public static class PointDir {
-		public Point point;
-		public char dir;
-
-		public Point getPos(){
-			return point;
-		}
-
-		PointDir(Point p, char d){
-			point = p;
-			dir = d;
-		}
-
-//		public static final int UP = 0;
-//		public static final int RIGHT = 1;
-//		public static final int DOWN = 2;
-//		public static final int LEFT = 3;
 	}
 
 	public Point aheadTile(PointDir p){
@@ -544,7 +544,6 @@ public class Map {
 		return null;
 	}
 
-	// default 4
 	public int[][] smoothMap(int threshold){
 		int[][] temp = new int[height][width];
 		for(int x=0; x < width; x++){
@@ -562,8 +561,8 @@ public class Map {
 		int walls = 0;
 		for(int x = centerX-1; x <= centerX+1; x++){
 			for(int y = centerY-1; y <= centerY+1; y++){
-				if(x>=0&&y>=0 && x<width && y<height){
-					if(x!=centerX||y!=centerY){
+				if(x >=0 && y >= 0 && x < width && y < height){
+					if(x != centerX || y != centerY){
 						if(map[x][y] == 1) walls++;
 					}
 				}else{
@@ -572,16 +571,6 @@ public class Map {
 			}
 		}
 		return walls;
-	}
-
-	public int[][] copyMap(){
-		int[][] temp = new int[height][width];
-		for(int y = 0; y < height; y++){
-			for(int x = 0; x < width; x++){
-				temp[y][x] = map[y][x];
-			}
-		}
-		return temp;
 	}
 
 	public int tileTypeAdj(int centerX, int centerY){
@@ -602,30 +591,30 @@ public class Map {
 	public int fgTypeAdj(int centerX, int centerY){
 		// generates binary numbers (8421=urdl)
 		int type = 0;
-		int f = foreground[centerY][centerX];
+		Tile.Fg_Type f = tileMap[centerY][centerX].fgtype;
 
 		// up 
-		if(!(centerY<=0) && f != foreground[centerY-1][centerX]) type+=1;
+		if(centerY > 0 && f != tileMap[centerY-1][centerX].fgtype) type += 1;
 		// right
-		if(!(centerX>=width-1) && f != foreground[centerY][centerX+1]) type+=2;
+		if(centerX < width-1 && f != tileMap[centerY][centerX+1].fgtype) type += 2;
 		// down
-		if(!(centerY>=height-1) && f != foreground[centerY+1][centerX]) type+=4;
+		if(centerY < height-1 && f != tileMap[centerY+1][centerX].fgtype) type += 4;
 		// left
-		if(!(centerX<=0) && f!= foreground[centerY][centerX-1]) type+=8;
+		if(centerX > 0 && f != tileMap[centerY][centerX-1].fgtype) type += 8;
 
 		// System.out.println(type);
 		return type;
 	}
 
 	public Point randomEmptySpace(){
-		int x;
-		int y;
+		int x, y;
 		do{
 			// System.out.println("picking point...");
 			x = Main.getRng().nextInt(width-1);
 			y = Main.getRng().nextInt(height-1);
 		}while(!isEmpty(x,y) || map[y][x] == 5);
-		return (new Point(x,y));
+
+		return new Point(x,y);
 	}
 
 	public Point randomOpenSpace(){
@@ -639,11 +628,12 @@ public class Map {
 		return (new Point(x,y));
 	}
 
+	// TODO (D) Deprecate
 	public Point getPosition(int uniqueTile){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
-				if(map[y][x]==uniqueTile){
-					return (new Point(x,y));
+				if(map[y][x] == uniqueTile){
+					return new Point(x,y);
 				}
 			}
 		}
@@ -654,15 +644,11 @@ public class Map {
 		return map[p.y][p.x];
 	}
 
-
 	// TODO (R) Refactor to FW, pick 2 points whose edge is not null, and exceeds a certain distance.
 	public void placeExits(){
 		buildOpenMap();
 
-		int x1=0;
-		int y1=0;
-		int x2=0;
-		int y2=0;
+		int x1, x2, y1, y2;
 
 		int tries = 0;
 		int bigtries=0;
@@ -677,13 +663,16 @@ public class Map {
 					x1 = Main.getRng().nextInt(width-1);
 					y1 = Main.getRng().nextInt(height-1);
 				} while (!isOpen(x1,y1));
+
 				do {
 					x2 = Main.getRng().nextInt(width-1);
 					y2 = Main.getRng().nextInt(height-1);
 				} while (!isOpen(x2,y2));
 				tries++;
 			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
+
 			logger.fine("Placed exits.");
+
 			if(tries<=150){
 				p = Pathfinder.pathfindBFS(new Point(x1,y1), new Point(x2,y2), openMap, entities, player, true, true);
 				if(p==null || p.getParent() == null){
@@ -693,6 +682,7 @@ public class Map {
 				break;
 			}
 			bigtries++;
+
 		} while (p==null || p.getParent() == null && bigtries < 10);
 
 		if(tries>300){
@@ -715,6 +705,7 @@ public class Map {
 		}
 	}
 
+	@Deprecated
 	public int[][] dijkstra(Pathfinder pf, Point src){
 		int[][] dijk = new int[this.height][this.width];
 
@@ -737,13 +728,13 @@ public class Map {
 
 	public boolean hasSouthFace(int x, int y){
 		int t = tileTypeAdj(x,y);
-		if((t>=4 && t<=7)||(t>=12 && t<=15)) return true;
+		if((t>=4 && t<=7) || (t>=12 && t<=15)) return true;
 		return false;
 	}
 
 	public boolean isTouchingVisible(int x, int y){
-		for(int cx = x-1; cx<=x+1; cx++){
-			for(int cy = y-1; cy<=y+1; cy++){
+		for(int cx = x-1; cx <= x+1; cx++){
+			for(int cy = y-1; cy <= y+1; cy++){
 				if(isOpen(cx,cy) || isTransparent(cx,cy)) return true;
 			}
 		}
@@ -756,8 +747,9 @@ public class Map {
 		return false;
 	}
 
+	@Deprecated
 	public void doctorMap(){
-		// this is where all janky map fixes go
+		// (this is where all janky map fixes go)
 		// cleans up errors in map
 
 		for(int x = 0; x < width; x++){
@@ -774,15 +766,13 @@ public class Map {
 						//						map[y][x] = 1;
 						//						foreground[y][x] = 0;
 					}
-				}else if(foreground[y][x] == 1){
-					foreground[y][x] = 0;
+				}else if(tileMap[y][x].fgtype == Tile.Fg_Type.BRIDGE){
+					tileMap[y][x].setForeground(Tile.Fg_Type.NONE);
 				}
 			}
 		}
 	}
 
-
-	/**END OF GENERATION**/
 	// 0 = open
 	// 1 = closed
 	// 2 = amph/fly open
@@ -793,7 +783,7 @@ public class Map {
 				if(map[y][x] == 1){
 					openMap[y][x] = 1;
 				}else if(map[y][x] == 6){
-					if(foreground[y][x] == 1){
+					if(tileMap[y][x].fgtype == Tile.Fg_Type.BRIDGE){
 						openMap[y][x] = 0;
 					}else{
 						openMap[y][x] = 2;
@@ -819,25 +809,23 @@ public class Map {
 	public void buildTileMap(){
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
+				// TEMP
+				Tile.Fg_Type f = tileMap[y][x].fgtype;
 				tileMap[y][x] = new Tile(map[y][x], mapType, tileTypeAdj(x,y));
-				int f = foreground[y][x];
-				// if(f==1 && tileMap[y][x].value != 6) f = 0;
-				if(f!=0) tileMap[y][x].setForeground(f,fgTypeAdj(x,y));
+				tileMap[y][x].setForeground(f, fgTypeAdj(x,y));
 			}
 		}
 	}
 
-	// returns unique name
 	public void addEntity(Entity entity){
 		entities.add(entity);
 	}
 
-	// prints map to console
 	public void printMap(){
 		for(int y=0; y < height; y++){
 			for(int x=0; x < width; x++){
-				if(foreground[y][x] != 0){
-					System.out.print(getMapType().foreground_characters[foreground[y][x]]+" ");
+				if(tileMap[y][x].fgtype != Tile.Fg_Type.NONE){
+					System.out.print(getMapType().foreground_characters[tileMap[y][x].fgtype.ordinal()]+" ");
 				}else{
 					System.out.print(getMapType().tile_characters[map[y][x]]+" ");
 				}
@@ -860,16 +848,6 @@ public class Map {
 		return temp;
 	}
 
-	//	public boolean[][] skew(boolean[][] map){
-	//		boolean[][] temp = new boolean[map[0].length][map.length];
-	//		for(int x=0; x < map[0].length; x++){
-	//			for(int y=0; y < map.length; y++){
-	//				temp[y][x] = map[y][y];
-	//			}
-	//		}
-	//		return temp;
-	//	}
-
 	public void updateFOV(){
 		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.getPlayer().luminosity);
 
@@ -887,14 +865,6 @@ public class Map {
 		}
 		//		updateViewed();
 	}
-
-	//	public void updateViewed(){
-	//		for(int x = 0; x < width; x++){
-	//			for(int y = 0; y < height; y++){
-	//				if(!visitedTiles[y][x] && lightMap[y][x]) visitedTiles[y][x] = true; 
-	//			}
-	//		}
-	//	}
 
 	public ArrayList<NonCreatureEntity> getInteractablesInRange(Point p) {
 		// TODO: interact-able checks handled by "Interactable" interface

@@ -8,7 +8,7 @@ public final class Armour extends Item implements Equippable {
 	Armour(String id) {
 		super(id);
 		super.setAmount(1);
-		super.addPrompt('t', "(t)ake off");
+		super.addPrompt('u', "(u)nequip");
 		super.addPrompt('p', "(p)ut on");
 		
 		JSONObject itemData = super.getItemData();
