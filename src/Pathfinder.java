@@ -48,27 +48,29 @@ public abstract class Pathfinder {
 		return false;
 	}
 
-	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol, int maxDist){
+	public static PointBFS pathfindBFS(Point start, Point end, Tile[][] tileMap, HashSet<Entity> entities, Creature c, boolean entityCol, int maxDist){
 		Queue<PointBFS> q = new LinkedList<PointBFS>();
 		q.add(new PointBFS(start.x,start.y,null));
 
-		int checkedTiles = 0;
-		while (!q.isEmpty() && checkedTiles < tempMap.length*tempMap[0].length) {
-			checkedTiles++;
+		final int H = tileMap.length, W = tileMap[0].length;
+		boolean[][] visited = new boolean[H][W];
+
+		while (!q.isEmpty()) {
 			PointBFS p = q.remove();
+
 			if (p.getX() == end.x && p.getY() == end.y) {
 				return p;
 			}
-			if(!isOpen(p, p.getPoint(), tempMap,entityCol, q, entities, c) || p.getDist() > maxDist){
-				break;
-			}
+
+			visited[p.getY()][p.getX()] = true;
+
+			int dist = p.getDist();
 
 			// up
 			for(Direction dir: Direction.values()) {
 				Point newPoint = Direction.translate(p.getPoint(), dir);
-				if(isOpen(p, newPoint, tempMap, entityCol, q, entities, c)){
-					tempMap[p.getY()][p.getX()] = -1;
-					q.add(new PointBFS(newPoint.x,newPoint.y,p));
+				if(dist < maxDist && !visited[newPoint.y][newPoint.x] && isOpen(newPoint, tileMap, entityCol, entities, c)){
+					q.add(new PointBFS(newPoint.x, newPoint.y, p));
 				}
 			}
 		}
@@ -76,40 +78,25 @@ public abstract class Pathfinder {
 		return null;
 	}
 
-	public static PointBFS pathfindBFS(Point start, Point end, int[][] tempMap, HashSet<Entity> entities, Creature c, boolean diagonals, boolean entityCol){
-		return pathfindBFS(start, end, tempMap, entities, c, diagonals, entityCol, Integer.MAX_VALUE);
+	public static PointBFS pathfindBFS(Point start, Point end, Tile[][] tileMap, HashSet<Entity> entities, Creature c, boolean entityCol){
+		return pathfindBFS(start, end, tileMap, entities, c, entityCol, (int) 1e8);
 	}
 	
-	private static boolean isOpen(PointBFS self, Point check, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c){
-		if (q!=null) {
-			// if(isParentOf(p,x,y)) return false;
-			for (PointBFS i : q) {
-				if (i.getX() == check.x && i.getY() == check.y)
-					return false;
-			}
-		}
-		if(check.x<0 || check.y<0 || check.y>=map.length || check.x>=map[check.y].length) return false;
-		if (entityCol) {
+	private static boolean isOpen(Point p, Tile[][] tileMap, boolean entityCol, Set<Entity> entities, Creature c){
+		if(p.x<0 || p.y<0 || p.y>=tileMap.length || p.x>=tileMap[p.y].length) return false;
+		if(entityCol) {
 			for (Entity e : entities) {
-				if (!e.equals((Entity) c) && !e.isPassable() && e.getX() == check.x && e.getY() == check.y){
+				if (!e.equals(c) && !e.isPassable() && e.getX() == p.x && e.getY() == p.y){
 					return false;
 				}
 			}
 		}
-		//		if(Main.player != null && !end.equals(Main.player.e.getPos()) && Main.player.e.getPos().equals(new Point(_x,check.y))){
+		//		if(Main.player != null && !end.equals(Main.player.e.getPos()) && Main.player.e.getPos().equals(new Point(_x,p.y))){
 		//			return false;
 		//		}
 
 		// TODO (F) fix collision checking, maybe flesh out Tile class
-		if(map[check.y][check.x] != 1 && (map[check.y][check.x] != 2 || (c!=null && (c.isFlying() || c.isAmphibious() ))) &&
-				(map[check.y][check.x] != 3 || (c!=null && c.isFlying() ))) return true;
-		return false;
-	}
-
-
-	@SuppressWarnings("unused")
-	private static boolean isOpen(PointBFS start, Direction dir, int[][] map, boolean entityCol, Queue<PointBFS> q,  Set<Entity> entities, Creature c) {
-		Point check = Direction.translate(start.getPoint(), dir);
-		return isOpen(start, check, map, entityCol, q, entities, c);
+		// this currently checks the tile BASED ON THE CREATURE's MAP, which works for this application
+		return tileMap[p.y][p.x].canOccupy(c.isFlying(), c.isAmphibious());
 	}
 }

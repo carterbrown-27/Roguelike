@@ -19,11 +19,6 @@ public class Player extends Creature {
 	Player(int x, int y, Map _map){
 		super("player", new Point(x,y),_map);
 		map = _map;
-		
-		// TODO (X) Remove
-		map.entities.remove(this);
-		
-		map.player = this;
 		lib = new ActionLibrary(this);
 	}
 	

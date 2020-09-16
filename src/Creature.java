@@ -206,16 +206,15 @@ public class Creature extends Entity {
 		// will error if no creatures exist at level
 		return list.get(Main.getRng().nextInt(list.size()));
 	}
-
-	// TODO: move tile-type logic to Tile Class
-	@Override
-	public boolean canOccupySpace(int x, int y) {
-		int space = map.getOpenMap()[y][x];
-		return super.canOccupySpace(x, y) || (space == 2 && isFlyingOrAmphib()) || (space == 3 && isFlying());
-	}
 	
 	// GETTERS, SETTERS, MUTATORS
-	
+
+	@Override
+	public boolean isOpen(int x, int y){
+		if(!map.isOnMap(x,y)) return false;
+		return map.getTile(new Point(x,y)).canOccupy(flying, amphibious);
+	}
+
 	public boolean isFlying() {
 		return flying;
 	}

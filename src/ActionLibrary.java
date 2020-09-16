@@ -6,7 +6,6 @@ public class ActionLibrary {
 	public static final Logger logger = Logger.getLogger(ActionLibrary.class.getName());
 	
 	private Creature c;
-	public static Player player;
 	private Map map;
 	public Pathfinder.PointBFS pBFS;
 	public int distance;
@@ -17,13 +16,6 @@ public class ActionLibrary {
 	ActionLibrary(Creature _c){
 		this.c = _c;
 		map = c.map;
-		
-		// TODO (F) Refactor
-		if(c instanceof Player) {
-			player = (Player) c;
-		}else {
-			player = map.player;
-		}
 		// System.out.println("updating path...");
 		// updatePath();
 		// System.out.println("done.");
@@ -33,12 +25,12 @@ public class ActionLibrary {
 	// TODO: switch to map from player (ala djikstra) for better performance.
 	public void updatePath(){
 		// flag = false;
-		if (player == null) {
-			logger.severe("No player found!");
+		if (Main.getPlayer() == null) {
+			logger.severe("No Main.getPlayer() found!");
 		}
-		pBFS = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+		pBFS = Pathfinder.pathfindBFS(Main.getPlayer().getPos(), c.getPos(), map.getTileMap(), map.entities, c, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
-		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(player.getPos(), c.getPos(), map.getOpenMap(), map.entities, c, true, false, MAX_PF_DIST);
+		Pathfinder.PointBFS direct_path = Pathfinder.pathfindBFS(Main.getPlayer().getPos(), c.getPos(), map.getTileMap(), map.entities, c, true, MAX_PF_DIST);
 		
 		Pathfinder.PointBFS temp = pBFS;
 		distance = 0;
@@ -59,19 +51,20 @@ public class ActionLibrary {
 			distance = directDistance;
 		}
 	}
-	
+
+	@Deprecated
 	public void newPath(Point p, boolean avoidP){
 		// boolean flag = false;
 		Pathfinder.PointBFS temp;
 		// flag = false;
 		
-		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+		pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getTileMap(), map.entities, c, true, MAX_PF_DIST);
 		// System.out.println("done pathing");
 		if(pBFS==null || pBFS.getParent()==null){
-			int[][] m = map.getOpenMap();
+			Tile[][] m = map.getTileMap();
 			
-			if(avoidP) m[player.getPos().x][player.getPos().y] = 1;
-			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getOpenMap(), map.entities, c, true, true, MAX_PF_DIST);
+			// if(avoidP) m[Main.getPlayer().getPos().x][Main.getPlayer().getPos().y] = 1;
+			pBFS = Pathfinder.pathfindBFS(p, c.getPos(), map.getTileMap(), map.entities, c, true, MAX_PF_DIST);
 		}
 		
 		temp = pBFS;
@@ -124,7 +117,7 @@ public class ActionLibrary {
 	public boolean lunge(){
 		c.changeSP(-3);
 		// System.out.println("Lunge:");
-		return (move(false) && melee(player,0.5));
+		return (move(false) && melee(Main.getPlayer(),0.5));
 	}
 
 

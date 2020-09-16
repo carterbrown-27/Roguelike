@@ -80,12 +80,7 @@ public class Entity extends GameObject {
 
 	public boolean isOpen(int x, int y){
 		if(!map.isOnMap(x,y)) return false;
-		return canOccupySpace(x,y);
-	}
-	
-	public boolean canOccupySpace(int x, int y) {
-		if(!map.isOnMap(x,y)) return false;
-		return map.getOpenMap()[y][x] == 0; // TODO: change access
+		return map.getTile(new Point(x,y)).canOccupy(false, false);
 	}
 	
 	public boolean isOpen(Point p) {
@@ -101,7 +96,7 @@ public class Entity extends GameObject {
 		for(Entity e: map.entities){
 			if(!e.isPassable() && p.equals(e.getPos())) return false;
 		}
-		if(p.equals(map.player.getPos())) return false;
+		if(p.equals(Main.getPlayer().getPos())) return false;
 		return isOpen(p);
 	}
 	

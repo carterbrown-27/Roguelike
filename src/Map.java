@@ -21,16 +21,12 @@ public class Map {
 	// TODO: compress this all into tileMap
 	public int[][] map;
 	private boolean[][] lightMap;
-	private int[][] openMap;
-	private Point[][] identityMap;
 
 	public static int smooths = 4;
 	public static final float percentBrightness = .60f;
 
 	// TODO (I) Populate w/ creatures.
 	public HashSet<Entity> entities;
-
-	public Player player;
 
 	private FOV fov = new FOV(); // TODO (R) Decide if Class FOV should be staticized
 
@@ -52,27 +48,19 @@ public class Map {
 
 		// TODO (R) Review
 		tileMap = new Tile[height][width];
-		openMap = new int[height][width];
-
-		identityMap = new Point[height][width];
-		for(int y = 0; y < height; y++){
-			for(int x = 0; x < width; x++){
-				identityMap[y][x] = new Point(x,y);
-			}
-		}
 
 		if(undercity){
 			generateUndercity();
-		}else{
+		}else {
 			generateCaves();
 		}
 
+		logger.info("building tile map...");
+		buildTileMap();
 		logger.info("placing exits...");
 		placeExits();
 		logger.info("exits placed");
 		printMap();
-		logger.info("building tile map...");
-		buildTileMap();
 		// printPrecons();
 		logger.info("Done.");
 		if(debugFlag) logger.warning("debug flag raised");
@@ -216,7 +204,7 @@ public class Map {
 		for(Entity e: entities){
 			if(e.isPassable() == false && e.getPos().equals(p)) return false;
 		}
-		if(player.getPos().equals(p)) return false;
+		if(Main.getPlayer().getPos().equals(p)) return false;
 		return isOpen(p);
 	}
 
@@ -224,7 +212,7 @@ public class Map {
 		for(Entity e: entities){
 			if(e.getPos().equals(p)) return false;
 		}
-		if(player.getPos().equals(p)) return false;
+		if(Main.getPlayer().getPos().equals(p)) return false;
 		return isOpen(p);
 	}
 
@@ -233,7 +221,7 @@ public class Map {
 	}
 
 	public Tile getTile(Point p){
-		return tileMap[p.y][p.x];
+		return isOnMap(p) ? tileMap[p.y][p.x] : null;
 	}
 
 	public void generateCaves(){
@@ -266,6 +254,7 @@ public class Map {
 				for (int y = 0; y < height; y++) {
 					map[y][x] = 1;
 					tileMap[y][x] = new Tile(1, mapType, 0);
+					tileMap[y][x].pos = new Point(x,y);
 					tileMap[y][x].setForeground(Tile.Fg_Type.NONE);
 				}
 			}
@@ -646,7 +635,7 @@ public class Map {
 
 	// TODO (R) Refactor to FW, pick 2 points whose edge is not null, and exceeds a certain distance.
 	public void placeExits(){
-		buildOpenMap();
+		// buildOpenMap();
 
 		int x1, x2, y1, y2;
 
@@ -674,7 +663,7 @@ public class Map {
 			logger.fine("Placed exits.");
 
 			if(tries<=150){
-				p = Pathfinder.pathfindBFS(new Point(x1,y1), new Point(x2,y2), openMap, entities, player, true, true);
+				p = Pathfinder.pathfindBFS(new Point(x1,y1), new Point(x2,y2), tileMap, entities, Main.getPlayer(), true);
 				if(p==null || p.getParent() == null){
 					logger.warning("Connecting exits failed.");
 				}
@@ -700,8 +689,11 @@ public class Map {
 				p = p.getParent();
 			}
 
+			// TODO (T) TEMP
 			map[y1][x1] = 2;
 			map[y2][x2] = 3;
+			tileMap[y1][x1] = new Tile(2, mapType, 0);
+			tileMap[y2][x2] = new Tile(3, mapType, 0);
 		}
 	}
 
@@ -777,33 +769,33 @@ public class Map {
 	// 1 = closed
 	// 2 = amph/fly open
 	// 3 = fly open
-	public void buildOpenMap(){
-		for(int x = 0; x < width; x++){
-			for(int y = 0; y < height; y++){
-				if(map[y][x] == 1){
-					openMap[y][x] = 1;
-				}else if(map[y][x] == 6){
-					if(tileMap[y][x].fgtype == Tile.Fg_Type.BRIDGE){
-						openMap[y][x] = 0;
-					}else{
-						openMap[y][x] = 2;
-					}
-				}else{
-					openMap[y][x] = 0;
-				}
-				//System.out.print(openMap[y][x]+" ");
-			}
-			//System.out.println();
-		}
-	}
+//	public void buildOpenMap(){
+//		for(int x = 0; x < width; x++){
+//			for(int y = 0; y < height; y++){
+//				if(map[y][x] == 1){
+//					openMap[y][x] = 1;
+//				}else if(map[y][x] == 6){
+//					if(tileMap[y][x].fgtype == Tile.Fg_Type.BRIDGE){
+//						openMap[y][x] = 0;
+//					}else{
+//						openMap[y][x] = 2;
+//					}
+//				}else{
+//					openMap[y][x] = 0;
+//				}
+//				//System.out.print(openMap[y][x]+" ");
+//			}
+//			//System.out.println();
+//		}
+//	}
 
-	public int[][] getOpenMap(){
-		buildOpenMap(); // TODO: bug, why does this need to be called here??
-		return openMap;
-	}
+//	public int[][] getOpenMap(){
+//		buildOpenMap(); // TODO: bug, why does this need to be called here??
+//		return openMap;
+//	}
 
-	public Point[][] getIdentityMap(){
-		return identityMap;
+	public Tile[][] getTileMap() {
+		return tileMap;
 	}
 
 	public void buildTileMap(){
@@ -813,6 +805,7 @@ public class Map {
 				Tile.Fg_Type f = tileMap[y][x].fgtype;
 				tileMap[y][x] = new Tile(map[y][x], mapType, tileTypeAdj(x,y));
 				tileMap[y][x].setForeground(f, fgTypeAdj(x,y));
+				tileMap[y][x].pos = new Point(x,y);
 			}
 		}
 	}
@@ -849,7 +842,7 @@ public class Map {
 	}
 
 	public void updateFOV(){
-		lightMap = fov.calculate(buildOpacityMap(), player.getX(), player.getY(), Main.getPlayer().luminosity);
+		lightMap = fov.calculate(buildOpacityMap(), Main.getPlayer().getX(), Main.getPlayer().getY(), Main.getPlayer().luminosity);
 
 		for(Entity e: entities){
 			if(e instanceof Creature) {
@@ -988,8 +981,8 @@ public class Map {
 					if(lastEntity!=null) g.drawImage(lastEntity.getSprite(), x_ofs*Main.TILE_SIZE, y_ofs*Main.TILE_SIZE, null);
 
 					// and draw player
-					if(player != null && player.getX() == x && player.getY() == y){
-						g.drawImage(player.getSprite(),x_ofs*Main.TILE_SIZE,y_ofs*Main.TILE_SIZE,null);
+					if(Main.getPlayer() != null && Main.getPlayer().getX() == x && Main.getPlayer().getY() == y){
+						g.drawImage(Main.getPlayer().getSprite(),x_ofs*Main.TILE_SIZE,y_ofs*Main.TILE_SIZE,null);
 						// fg.drawImage(player.getImg(),0,0,null);
 					}
 				}

@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 // TODO (*) Decouple GUI from Main, Switch to JavaFX for GUI, create JApplet from JavaFX.
 public class Main {
@@ -562,22 +564,21 @@ public class Main {
 	// TODO (A) Add throwing of non-quivered objects
 	public static void handleTargetConfirm() {
 		if(player.getPos() == targetPos) return;
-		List<Point> line = Bresenham.findLine(currentMap.getIdentityMap(), player.getPos(), targetPos);
+		List<Tile> line = Bresenham.findLine(currentMap.getTileMap(), player.getPos(), targetPos);
 
 		Projectile projectile = new Projectile(player.quivered, player.getPos(), currentMap);
 		int i;
 		for(i = 1; i < line.size()-1; i++){
-			Point p = line.get(i);
+			Tile t = line.get(i);
 			// TODO (T) TEMP: move to tile logic.
-			if(!projectile.canOccupySpace(p.x, p.y)){
+			if(!t.canOccupy(true, false)){
 				i--;
 				break;
 			}
 		}
 
-		Point to = line.get(i);
 		// TODO (T) Add a better stack-splitting system
-		currentMap.getTile(to).inventory.addItem(new Missile(player.quivered.getTypeName(), 1));
+		line.get(i).inventory.addItem(new Missile(player.quivered.getTypeName(), 1));
 		player.getInv().removeOne(player.quivered.getInventoryID());
 
 		curMapLayer = renderMapLayer(player.getX(), player.getY());
@@ -590,7 +591,7 @@ public class Main {
 
 		BufferedImage targetLayer = new BufferedImage(d, d, BufferedImage.TYPE_INT_ARGB);
 
-		List<Point> line = Bresenham.findLine(currentMap.getIdentityMap(), player.getPos(), targetPos);
+		List<Point> line = Bresenham.findLine(currentMap.getTileMap(), player.getPos(), targetPos).stream().map(x -> x.pos).collect(Collectors.toList());;
 
 		Graphics g = targetLayer.getGraphics();
 		g.drawImage(targetImg, relX * TILE_SIZE, relY * TILE_SIZE, null);
@@ -665,13 +666,17 @@ public class Main {
 	}
 
 	public static void startGame(){
+		player = new Player(0, 0,null);
+
 		floors.clear();
 		floorNumber = 0;
-
 		floors.put(floorNumber,  new Map(MAP_H, MAP_W, MAP_FILL));
 		currentMap = floors.get(floorNumber);
+
+		player.map = currentMap;
 		ropePoint = currentMap.getPosition(2);
-		player = new Player(ropePoint.x,ropePoint.y, getCurrentMap());
+		player.setPos(ropePoint);
+
 		view.getFrame().setIconImage(player.getSprite().getScaledInstance(96,96,Image.SCALE_SMOOTH));
 
 		changeFloor(floorNumber, true, true);
@@ -710,7 +715,6 @@ public class Main {
 		if(!down) startPoint= currentMap.getPosition(3);
 		player.map = currentMap;
 		player.setPos(startPoint);
-		currentMap.player = player;
 
 		if(isNew){
 			// TODO (T) TEMP populate level with mobs

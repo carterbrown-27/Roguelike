@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 // TODO (X) Overhaul: Rebuild from scratch
@@ -6,7 +7,8 @@ public class Tile {
 		FLOOR,
 		WALL,
 		WATER,
-		LAVA,
+		FLYABLE_ONLY,
+		SWIM_ONLY,
 		DIFFICULT,
 		STAIRS
 	}
@@ -38,10 +40,6 @@ public class Tile {
 		public boolean isOpen(){
 			return isOpen;
 		}
-
-		public boolean isTransparent(){
-			return isTransparent();
-		}
 	}
 
 	public enum Fg_Type{
@@ -53,14 +51,14 @@ public class Tile {
 		public boolean isOpen(){
 			return isOpen;
 		}
-
-		public boolean isTransparent(){
-			return isTransparent();
-		}
 	}
 
+	// TODO: Private these
 	public TileType type;
 	public Fg_Type fgtype = Fg_Type.NONE;
+	public TerrainType terrain;
+
+	public Point pos;
 	
 	public BufferedImage image;
 	public int value;
@@ -128,9 +126,8 @@ public class Tile {
 		return type.isOpen();
 	}
 
-	public boolean isTransparent(){
-		return type.isTransparent();
+	public boolean canOccupy(boolean flying, boolean amphib){
+		// TODO (T) TEMP, move to TerrainType
+		return !(type == TileType.WALL || type == TileType.WATER) || (type == TileType.WATER && ((flying || amphib || fgtype == Fg_Type.BRIDGE)));
 	}
-
-
 }
