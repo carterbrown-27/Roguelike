@@ -167,11 +167,11 @@ public class Player extends Creature {
 			// System.out.println("player swing");
 			boolean hit = lib.melee(target, modifier);
 			if(hit){
+				// TODO (T) TEMP
 				Main.getView().appendText("You hit the "+target.getName());
 				
 				// floor rounding except when below 1.
-				int oppHP = (int) Math.max(0,target.getHP());
-				Main.getView().appendText(String.format("%s's HP: %d", target.getName(), oppHP > 0 ? Math.max(oppHP, 1) : 0));				
+				Main.getView().appendText(target.getHPString());
 			}else{
 				Main.getView().appendText("You miss the "+target.getName());				
 			}

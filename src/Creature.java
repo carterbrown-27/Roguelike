@@ -147,6 +147,7 @@ public class Creature extends Entity {
 				Main.getView().appendText("You kill the " + super.getName() + ".");
 				return turnEnding.DEAD; // dead
 			}
+
 			endStep();
 			if(!ai.takeTurn()){
 				// waiting = true;

@@ -3,18 +3,21 @@ import java.awt.Point;
 // TODO (*) consider making this not consumable, just make all items throwable, with this overriding superclass properties.
 public class Missile extends Item implements Consumable, Equippable {
 	private boolean equipped = false;
+	private double damage;
 
-	Missile(String id, int _amount){
+	Missile(String id){
 		super(id);
 		super.addPrompt('v', "qui(v)er"); // TODO: (R) Review
 		super.addPrompt('t', "(t)hrow");
-		super.setAmount(_amount);
+		super.setAmount(super.getItemData().getInt("commonStack"));
 		super.setStackable(true);
+
+		this.damage = super.getItemData().getDouble("damage");
 	}
 
-	Missile(String id){
-		// TODO (+) replace 1 with stack size.
-		this(id,1);
+	Missile(String id, int amt){
+		this(id);
+		this.setAmount(amt);
 	}
 
 	@Override
@@ -61,5 +64,9 @@ public class Missile extends Item implements Consumable, Equippable {
 	@Override
 	public void use(Creature c) {
 		c.getInv().removeOne(this.getInventoryID());
+	}
+
+	public double getDamage() {
+		return damage;
 	}
 }

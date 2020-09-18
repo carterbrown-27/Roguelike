@@ -6,7 +6,7 @@ public class Inventory {
 	// all items are in generalInventory, specifics in the subs.
 	private HashMap<Character,Item> inventoryMap = new HashMap<>();
 	private HashMap<Integer,Integer> keys = new HashMap<>();
-	
+
 	public Item getItem(Character c) {
 		return inventoryMap.get(c);
 	}
@@ -113,16 +113,19 @@ public class Inventory {
 	
 	public Item deleteItem(char c) {
 		if(!inventoryMap.containsKey(c)) return null;
-		return inventoryMap.remove(c);
+		Item i = inventoryMap.remove(c);
+		// TODO (F) Unequip if applicable
+
+		return i;
 	}
 	
-	public void deleteItem(Item i) {
+	public Item deleteItem(Item i) {
 		for(char key: inventoryMap.keySet()) {
 			if(inventoryMap.get(key) == i) {
-				inventoryMap.remove(key);
-				return;
+				return deleteItem(key);
 			}
 		}
+		return null;
 	}
 	
 	public void makeRandomInventory(int tier, int amount){

@@ -158,7 +158,7 @@ public class Entity extends GameObject {
 	}
 	
 	public void changeHP(double delta) {
-		setHP(getHP() + delta);
+		setHP(HP + delta);
 	}
 	
 	public void setHP(double value) {
@@ -171,7 +171,11 @@ public class Entity extends GameObject {
 			HP = getHP_max();
 		}
 	}
-	
+
+	public String getHPString(){
+		return String.format("%s's HP: %d", name, (int) (HP > 0 ? Math.max(HP, 1) : 0));
+	}
+
 	public double getHP_max() {
 		return HP_max;
 	}

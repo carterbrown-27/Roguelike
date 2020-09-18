@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 // TODO (X) Overhaul: Rebuild from scratch
-public class Tile {
+public class Tile extends GameObject{
 	public enum TerrainType {
 		FLOOR,
 		WALL,
@@ -13,59 +13,36 @@ public class Tile {
 		STAIRS
 	}
 
+	// TEMP
 	public enum TileType{
-		FLOOR					(0),
-		WALL					(1),
-		STAIRS_UP				(2),
-		STAIRS_DOWN				(3),
-		TEST					(4), // temp
-		DOOR					(5), // temp
-		WATER					(6),		
-		DOOR_OPEN				(7); // temp
-
-		boolean isOpen = true;
-		boolean isTransparent = true;
-
-		TileType(int t){
-			if(t==1){
-				isOpen = false;
-				isTransparent = false;
-			}else if(t==2 || t==5){
-				isTransparent = false;
-			}else if(t==6){
-				isOpen = false;
-			}
-		}
-
-		public boolean isOpen(){
-			return isOpen;
-		}
+		FLOOR,
+		WALL,
+		STAIRS_UP,
+		STAIRS_DOWN,
+		TEST, // temp
+		DOOR, // temp
+		WATER,
+		DOOR_OPEN; // temp
 	}
 
 	public enum Fg_Type{
 		NONE,
 		BRIDGE;
-		
-		boolean isOpen = true;
-		boolean isTransparent = true;
-		public boolean isOpen(){
-			return isOpen;
-		}
 	}
 
 	// TODO: Private these
 	public TileType type;
 	public Fg_Type fgtype = Fg_Type.NONE;
 	public TerrainType terrain;
-
 	public Point pos;
-	
 	public BufferedImage image;
 	public int value;
 	public char icon;
+
 	public boolean visited = false;
 	public BufferedImage asLastSeen;
 	public Entity lastEntityHere;
+	public Entity entityHere;
 	
 	public MapType maptype;
 	public int adj;
@@ -75,32 +52,28 @@ public class Tile {
 	public int fgAdj;
 
 	Tile(int t, MapType mt, int adj){
-		type = TileType.values()[t];
-		value = t;
-		maptype = mt;
+		this.type = TileType.values()[t];
+		this.value = t;
+		this.maptype = mt;
 		this.adj = adj;
-		image = maptype.pickImage(value, adj);
-		icon = maptype.tile_characters[t];
+		this.image = maptype.pickImage(value, adj);
+		this.icon = maptype.tile_characters[t];
 	}
 
 	public void setValue(int t){
-		type = TileType.values()[t];
-		value = t;
-		image = maptype.pickImage(value, adj);
-		icon = maptype.tile_characters[t];
+		this.type = TileType.values()[t];
+		this.value = t;
+		this.image = maptype.pickImage(value, adj);
+		this.icon = maptype.tile_characters[t];
 	}
 
 	public void setForeground(Fg_Type f, int fgAdj){
+		this.fgtype = f;
 		this.fgAdj = fgAdj;
-		fgtype = f;
 	}
 
 	public void setForeground(Fg_Type f){
 		fgtype = f;
-	}
-
-	public void addItem(Item i){
-		inventory.addItem(i);
 	}
 	
 	public BufferedImage getImage(){
@@ -111,19 +84,11 @@ public class Tile {
 		if(fgtype == Fg_Type.NONE) return null;
 		return maptype.pickFGImage(fgtype.ordinal(), fgAdj, adj);
 	}
-	
-	public void setImage(BufferedImage _image){
-		image = _image;
-	}
 
 	public void view(BufferedImage img, Entity e){
 		visited = true;
 		asLastSeen = img;
 		lastEntityHere = e;
-	}
-
-	public boolean isOpen(){
-		return type.isOpen();
 	}
 
 	public boolean canOccupy(boolean flying, boolean amphib){

@@ -563,27 +563,45 @@ public class Main {
 
 	// TODO (A) Add throwing of non-quivered objects
 	public static void handleTargetConfirm() {
-		if(player.getPos() == targetPos) return;
+		if(player.getPos() == targetPos || player.quivered == null){
+			setRegularGameState();
+			return;
+		}
+
 		List<Tile> line = Bresenham.findLine(currentMap.getTileMap(), player.getPos(), targetPos);
 
 		Projectile projectile = new Projectile(player.quivered, player.getPos(), currentMap);
+		Missile m = new Missile(player.quivered.getTypeName(), 1);
+		player.getInv().removeOne(player.quivered.getInventoryID());
+
+		// TODO (T) TEMP - MOVE THIS TO Inventory.remove()
+		if(player.quivered.getAmount() == 0) player.quivered.unequip(player);
+
+		boolean hit = false;
 		int i;
-		for(i = 1; i < line.size()-1; i++){
+		for(i = 1; i < line.size(); i++){
 			Tile t = line.get(i);
-			// TODO (T) TEMP: move to tile logic.
+			// TODO (T) TEMP: move to Tile
 			if(!t.canOccupy(true, false)){
 				i--;
+				break;
+			}else if(t.entityHere != null){
+				// hit entity
+				hit = true;
+				Entity e = t.entityHere;
+				// TODO (T) TEMP: move to Entity
+				e.changeHP(-m.getDamage());
+				view.appendText(String.format("You hit the %s", e.getName()));
+				view.appendText(e.getHPString());
 				break;
 			}
 		}
 
 		// TODO (T) Add a better stack-splitting system
-		line.get(i).inventory.addItem(new Missile(player.quivered.getTypeName(), 1));
-		player.getInv().removeOne(player.quivered.getInventoryID());
+		if(!hit) line.get(i).inventory.addItem(m);
 
 		curMapLayer = renderMapLayer(player.getX(), player.getY());
-		renderAndUpdate();
-		setRegularGameState();
+		takeTurn();
 	}
 
 	public static void updateTarget(int relX, int relY){
@@ -724,7 +742,7 @@ public class Main {
 				do{
 					t = currentMap.randomOpenSpace();
 					// make sure mobs aren't within 3 tiles of player.
-				}while(Math.abs(t.x- player.getX()) <=3 && Math.abs(t.y- player.getY()) <=3);
+				}while(Math.abs(t.x - player.getX()) <= 3 && Math.abs(t.y - player.getY()) <=3);
 
 				// logger.info("point picked");
 				// TODO: tierCalculation.
@@ -737,7 +755,7 @@ public class Main {
 			for(int i = 0; i < items; i++){
 				Point t = currentMap.randomOpenSpace();
 				Item item = Item.randomItem(floorNumber);
-				logger.fine("Adding item: "+ item.getDisplayName());
+				logger.fine("Adding item: " + item.getDisplayName());
 				currentMap.getTile(t).inventory.addItem(item);
 			}
 
@@ -747,11 +765,13 @@ public class Main {
 				Point t = currentMap.randomEmptySpace();
 				logger.fine("adding Chest/Key pair");
 				currentMap.getTile(t).inventory.addItem(new Key("Silver Key", floorNumber));
-				t = currentMap.randomEmptySpace();
 
+				t = currentMap.randomEmptySpace();
 				currentMap.entities.add(new NonCreatureEntity("chest", t, getCurrentMap()));
 			}
 		}
+
+		currentMap.refreshEntityMap();
 
 		try{
 			File output = new File(String.format("renders/%d_%d-t%d.png", getSeed(), floorNumber, System.currentTimeMillis()));
@@ -801,9 +821,6 @@ public class Main {
 		player.upkeep();
 
 		ArrayList<Creature> dead = new ArrayList<>();
-
-		// int[] order = floors.get(currentFloor).getEntityPriority();
-		// for(int i: order){
 		Queue<Creature> creatureQueue = new LinkedList<>();
 
 		for(Entity e: currentMap.entities){
@@ -827,6 +844,8 @@ public class Main {
 		for(Creature c: dead){
 			c.die();
 		}
+
+		currentMap.refreshEntityMap();
 
 		// TODO (M) death logic to Player.
 		Point pos = player.getPos();

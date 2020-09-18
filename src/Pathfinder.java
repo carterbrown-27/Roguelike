@@ -62,6 +62,7 @@ public abstract class Pathfinder {
 				return p;
 			}
 
+			if(visited[p.getY()][p.getX()]) continue;
 			visited[p.getY()][p.getX()] = true;
 
 			int dist = p.getDist();
@@ -69,7 +70,7 @@ public abstract class Pathfinder {
 			// up
 			for(Direction dir: Direction.values()) {
 				Point newPoint = Direction.translate(p.getPoint(), dir);
-				if(dist < maxDist && !visited[newPoint.y][newPoint.x] && isOpen(newPoint, tileMap, entityCol, entities, c)){
+				if(dist < maxDist && isOpen(newPoint, tileMap, entityCol, entities, c)){
 					q.add(new PointBFS(newPoint.x, newPoint.y, p));
 				}
 			}
@@ -83,7 +84,7 @@ public abstract class Pathfinder {
 	}
 	
 	private static boolean isOpen(Point p, Tile[][] tileMap, boolean entityCol, Set<Entity> entities, Creature c){
-		if(p.x<0 || p.y<0 || p.y>=tileMap.length || p.x>=tileMap[p.y].length) return false;
+		if(p.x < 0 || p.y < 0 || p.y >= tileMap.length || p.x >= tileMap[p.y].length) return false;
 		if(entityCol) {
 			for (Entity e : entities) {
 				if (!e.equals(c) && !e.isPassable() && e.getX() == p.x && e.getY() == p.y){
@@ -91,9 +92,6 @@ public abstract class Pathfinder {
 				}
 			}
 		}
-		//		if(Main.player != null && !end.equals(Main.player.e.getPos()) && Main.player.e.getPos().equals(new Point(_x,p.y))){
-		//			return false;
-		//		}
 
 		// TODO (F) fix collision checking, maybe flesh out Tile class
 		// this currently checks the tile BASED ON THE CREATURE's MAP, which works for this application

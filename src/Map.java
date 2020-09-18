@@ -658,21 +658,21 @@ public class Map {
 					y2 = Main.getRng().nextInt(height-1);
 				} while (!isOpen(x2,y2));
 				tries++;
-			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=300);
+			} while (Math.abs(x1-x2) + Math.abs(y1-y2) < criterion && tries<=100);
 
-			logger.fine("Placed exits.");
+			logger.info("Exits chosen.");
 
 			if(tries<=150){
 				p = Pathfinder.pathfindBFS(new Point(x1,y1), new Point(x2,y2), tileMap, entities, Main.getPlayer(), true);
-				if(p==null || p.getParent() == null){
+				if(p == null || p.getParent() == null){
 					logger.warning("Connecting exits failed.");
 				}
 			}else{
 				break;
 			}
 			bigtries++;
-
-		} while (p==null || p.getParent() == null && bigtries < 10);
+			logger.info("BigTries = " + bigtries);
+		} while ((p==null || p.getParent() == null) && bigtries < 10);
 
 		if(tries>300){
 			logger.severe("Connecting exits failed completely.");
@@ -682,12 +682,8 @@ public class Map {
 				generateCaves();
 			}
 			placeExits();
-			return;
 		}else{
-			while(p.getParent() != null){
-				// map[p.x][p.y] = 4;
-				p = p.getParent();
-			}
+			logger.info("Connected exits.");
 
 			// TODO (T) TEMP
 			map[y1][x1] = 2;
@@ -807,6 +803,18 @@ public class Map {
 				tileMap[y][x].setForeground(f, fgTypeAdj(x,y));
 				tileMap[y][x].pos = new Point(x,y);
 			}
+		}
+	}
+
+	public void refreshEntityMap(){
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				tileMap[y][x].entityHere = null;
+			}
+		}
+
+		for(Entity e: entities){
+			tileMap[e.getY()][e.getX()].entityHere = e;
 		}
 	}
 
@@ -960,7 +968,6 @@ public class Map {
 
 
 					// get Entity image
-
 					if (isOnMap(x,y) && (noLighting || lightMap[y][x])) {
 						for (Entity e : entities) {
 							if (e.getX() == x && e.getY() == y) {
@@ -975,7 +982,7 @@ public class Map {
 					g.drawImage(fullImg, x_ofs * Main.TILE_SIZE, y_ofs * Main.TILE_SIZE, null);
 
 					// update tile memory
-					if(!noLighting && isOnMap(x,y) && lightMap[y][x]) tileMap[y][x].view(fullImg,lastEntity);
+					if(!noLighting && isOnMap(x,y) && lightMap[y][x]) tileMap[y][x].view(fullImg, lastEntity);
 
 					// finally, draw entities
 					if(lastEntity!=null) g.drawImage(lastEntity.getSprite(), x_ofs*Main.TILE_SIZE, y_ofs*Main.TILE_SIZE, null);
